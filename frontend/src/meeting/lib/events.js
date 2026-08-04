@@ -1,0 +1,16 @@
+export const MEETING_EVENTS = {
+  JOIN: 'meeting:join',
+  LEAVE: 'meeting:leave',
+  CHAT: 'meeting:chat',
+  WAITING_REQUEST: 'waiting:request',
+  WAITING_ADMIT: 'waiting:admit',
+  WAITING_DENY: 'waiting:deny',
+  WAITING_STATUS: 'waiting:status',
+  HOST_ACTION: 'host:action',
+  RAISE_HAND: 'meeting:raise-hand',
+  PARTICIPANTS_UPDATE: 'meeting:participants',
+  TYPING: 'meeting:typing',
+  SCREEN_SHARE: 'meeting:screen-share',
+  NOTIFICATION: 'meeting:notification',
+  RECORDING: 'meeting:recording',
+};

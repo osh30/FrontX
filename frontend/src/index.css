@@ -1,0 +1,291 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  html {
+    width: 100%;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+  }
+  
+  body, #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  #root {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Global Dark Mode Overrides (Applied when .dark is present on HTML) */
+.dark body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  color: #f8fafc !important;
+}
+
+.dark .bg-white,
+.dark .bg-white\/50,
+.dark .bg-white\/60,
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white\/90,
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark .bg-purple-50,
+.dark .bg-blue-50 {
+  background-color: rgba(88, 28, 135, 0.3) !important;
+  border-color: rgba(107, 33, 168, 0.5) !important;
+}
+
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-white\/50,
+.dark .border-white {
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: #ffffff !important;
+}
+
+.dark .text-black {
+  color: #ffffff !important;
+}
+
+.dark .text-\[\#111111\] {
+  color: #ffffff !important;
+}
+
+.dark .landing-brand {
+  background-image: none !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: #cbd5e1 !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  color: #f8fafc !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Specific component overrides for dark mode */
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+.dark .landing-nav {
+  background-color: #0B1220 !important;
+}
+
+/* Smooth theme switch (class added temporarily by the theme toggle) */
+.theme-transition,
+.theme-transition * {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease,
+    fill 0.35s ease, box-shadow 0.35s ease !important;
+}
+
+@layer components {
+  .glass-card {
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl;
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .btn-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #06b6d4 100%);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-gradient:hover {
+    background-position: right center;
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+  }
+  
+  .btn-outline {
+    @apply px-8 py-3 rounded-full text-gray-700 font-semibold border-2 border-gray-300 transition-all duration-300;
+  }
+  
+  .btn-outline:hover {
+    @apply border-purple-500 text-purple-600 transform scale-105;
+  }
+  
+  .hero-section {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #764ba2;
+}
+
+/* ─── Performance Optimized Animations ─── */
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+
+@keyframes float-gentle-delay {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+
+@keyframes orbit-sm {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(4px, -4px); }
+  50% { transform: translate(0, -6px); }
+  75% { transform: translate(-4px, -4px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes orbit-sm-reverse {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 3px); }
+  50% { transform: translate(0, 5px); }
+  75% { transform: translate(3px, 3px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes electron-orbit-1 {
+  0% { transform: translate(18px, 0); }
+  25% { transform: translate(0, 18px); }
+  50% { transform: translate(-18px, 0); }
+  75% { transform: translate(0, -18px); }
+  100% { transform: translate(18px, 0); }
+}
+
+@keyframes electron-orbit-2 {
+  0% { transform: translate(-9px, 15.6px); }
+  25% { transform: translate(-18px, 0); }
+  50% { transform: translate(-9px, -15.6px); }
+  75% { transform: translate(9px, 0); }
+  100% { transform: translate(-9px, 15.6px); }
+}
+
+@keyframes electron-orbit-3 {
+  0% { transform: translate(-9px, -15.6px); }
+  25% { transform: translate(9px, 0); }
+  50% { transform: translate(-9px, 15.6px); }
+  75% { transform: translate(-18px, 0); }
+  100% { transform: translate(-9px, -15.6px); }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 3.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-float-gentle-delay {
+  animation: float-gentle-delay 3.5s ease-in-out infinite 1.5s;
+  will-change: transform;
+}
+
+.animate-orbit-sm {
+  animation: orbit-sm 4s linear infinite;
+  will-change: transform;
+}
+
+.animate-orbit-sm-reverse {
+  animation: orbit-sm-reverse 5s linear infinite reverse;
+  will-change: transform;
+}
+
+.animate-electron-1 {
+  animation: electron-orbit-1 3s linear infinite;
+  will-change: transform;
+}
+
+.animate-electron-2 {
+  animation: electron-orbit-2 3s linear infinite;
+  will-change: transform;
+}
+
+.animate-electron-3 {
+  animation: electron-orbit-3 3s linear infinite;
+  will-change: transform;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes shimmerSweep {
+  0% { background-position: 250% 0; }
+  50% { background-position: -250% 0; }
+  100% { background-position: 250% 0; }
+}
+
+@keyframes particleFloat {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.25; }
+  25% { transform: translateY(-8px) translateX(4px); opacity: 0.5; }
+  50% { transform: translateY(-4px) translateX(-3px); opacity: 0.3; }
+  75% { transform: translateY(-10px) translateX(2px); opacity: 0.6; }
+}

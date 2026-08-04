@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FrontX - Alumni Mentorship Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        try {
+          var dark = false;
+          var landing = localStorage.getItem('landing-theme');
+          if (landing) {
+            dark = landing === 'dark';
+          } else {
+            var saved = localStorage.getItem('user');
+            var pref = saved ? (JSON.parse(saved).themePreference || 'system') : 'system';
+            dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          }
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="error-display" style="display:none;padding:20px;font-family:monospace;background:#fef2f2;color:#991b1b;border:2px solid #fca5a5;margin:20px;border-radius:12px;white-space:pre-wrap;word-break:break-all"></div>
+    <script>window.onerror=function(m,s,l,c,e){var d=document.getElementById('error-display');if(d){d.textContent='Error: '+m+'\nFile: '+s+'\nLine: '+l+'\nColumn: '+c+'\n'+(e&&e.stack||'');d.style.display='block';document.getElementById('root').style.display='none'}};window.addEventListener('unhandledrejection',function(e){var d=document.getElementById('error-display');if(d){d.textContent='Promise Error: '+(e.reason&&e.reason.stack||e.reason||'Unknown');d.style.display='block';document.getElementById('root').style.display='none'}});</script>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
