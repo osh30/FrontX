@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import TurnstileWidget from '../component/TurnstileWidget';
@@ -57,7 +57,8 @@ const particlePositions = [
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const [role, setRole] = useState('student');
+  const [searchParams] = useSearchParams();
+  const [role, setRole] = useState(() => (searchParams.get('role') === 'recruiter' ? 'recruiter' : 'student'));
   const [form, setForm] = useState({ name: '', nickname: '', email: '', session: '', department: 'Educational Technology and Engineering', password: '', confirmPassword: '', companyName: '', designation: '', industryType: '', companyWebsite: '', companyAddress: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -87,6 +88,9 @@ const Register = () => {
     // Student/Alumni specific validation
     if (role === 'student' || role === 'alumni') {
       if (!form.session.trim()) errs.session = 'Session is required.';
+      if (form.email && !form.email.toLowerCase().endsWith('@std.uftb.ac.bd')) {
+        errs.email = 'Please use your official UFTB student email address (@std.uftb.ac.bd).';
+      }
     }
 
     // Recruiter specific validation
@@ -219,7 +223,10 @@ const Register = () => {
                 {/* Header */}
                 <motion.div variants={fadeUp} className="text-center space-y-4">
                   <div className="flex justify-center">
-                    <img src={logo} alt="Frontx logo" className="w-16 h-16 object-contain" />
+                    <div className="flex items-center gap-3">
+                      <img src={logo} alt="Frontx logo" className="w-12 h-12 object-contain" />
+                      <span className="text-3xl font-bold text-white tracking-tight">FrontX</span>
+                    </div>
                   </div>
                   <div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Create Account</h1>

@@ -3,6 +3,7 @@ const BlogComment = require('../models/BlogComment');
 const BlogBookmark = require('../models/BlogBookmark');
 const BlogLike = require('../models/BlogLike');
 const User = require('../models/User');
+const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
 
 const BLOG_CATEGORIES = [
   'Study Tips', 'Career', 'Internship', 'Research', 'Programming',
@@ -10,9 +11,79 @@ const BLOG_CATEGORIES = [
   'Project Showcase', 'Success Story', 'Events', 'Technology', 'Others'
 ];
 
-const calcReadingTime = (content) => {
-  const text = content.replace(/<[^>]*>/g, '');
-  const words = text.split(/\s+/).filter(Boolean).length;
+const escapeHtml = (str = '') =>
+  String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const sectionText = (s) => {
+  switch (s.type) {
+    case 'heading': return `${s.heading || ''}`;
+    case 'paragraph': return `${s.text || ''}`;
+    case 'image': return `${s.caption || ''}`;
+    case 'quote': return `${s.quote || ''} ${s.source || ''}`;
+    case 'tip': return `${s.tip || ''}`;
+    case 'facts': return (s.facts || []).join(' ');
+    case 'checklist':
+    case 'numberedSteps': return (s.items || []).join(' ');
+    case 'timeline': return (s.timeline || []).map(t => `${t.title} ${t.description}`).join(' ');
+    case 'comparisonTable': return `${(s.headers || []).join(' ')} ${(s.rows || []).flat().join(' ')}`;
+    case 'faq': return (s.qa || []).map(q => `${q.question} ${q.answer}`).join(' ');
+    default: return '';
+  }
+};
+
+const sectionsToText = (sections = []) =>
+  sections.map(sectionText).filter(Boolean).join(' ');
+
+const sectionsToHtml = (sections = []) => {
+  if (!Array.isArray(sections) || sections.length === 0) return '';
+  return sections.map((s) => {
+    switch (s.type) {
+      case 'heading': {
+        const tag = `h${Math.min(Math.max(s.level || 2, 1), 4)}`;
+        return `<${tag}>${escapeHtml(s.heading)}</${tag}>`;
+      }
+      case 'paragraph':
+        return `<p>${escapeHtml(s.text)}</p>`;
+      case 'image':
+        return s.imageUrl
+          ? `<figure><img src="${escapeHtml(s.imageUrl)}" alt="${escapeHtml(s.alt || s.caption || '')}" />${s.caption ? `<figcaption>${escapeHtml(s.caption)}</figcaption>` : ''}</figure>`
+          : '';
+      case 'quote':
+        return s.quote
+          ? `<blockquote><p>${escapeHtml(s.quote)}</p>${s.source ? `<cite>${escapeHtml(s.source)}</cite>` : ''}</blockquote>`
+          : '';
+      case 'tip':
+        return s.tip ? `<div class="tip">${escapeHtml(s.tip)}</div>` : '';
+      case 'facts':
+        return `<ul class="facts">${(s.facts || []).map(f => `<li>${escapeHtml(f)}</li>`).join('')}</ul>`;
+      case 'checklist':
+      case 'numberedSteps': {
+        const tag = s.type === 'checklist' ? 'ul' : 'ol';
+        return `<${tag} class="${s.type}">${(s.items || []).map(i => `<li>${escapeHtml(i)}</li>`).join('')}</${tag}>`;
+      }
+      case 'timeline':
+        return `<ul class="timeline">${(s.timeline || []).map(t => `<li><strong>${escapeHtml(t.title)}</strong>${t.description ? ` — ${escapeHtml(t.description)}` : ''}</li>`).join('')}</ul>`;
+      case 'comparisonTable':
+        return `<table><thead><tr>${(s.headers || []).map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${(s.rows || []).map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+      case 'faq':
+        return `<div class="faq-list">${(s.qa || []).map(q => `<details><summary>${escapeHtml(q.question)}</summary><p>${escapeHtml(q.answer)}</p></details>`).join('')}</div>`;
+      case 'divider':
+        return '<hr />';
+      default:
+        return '';
+    }
+  }).join('\n');
+};
+
+const calcReadingTime = (sections, content = '') => {
+  let text = content ? content.replace(/<[^>]*>/g, '') : '';
+  const sectionWordCount = sectionsToText(sections || []).split(/\s+/).filter(Boolean).length;
+  const words = text.split(/\s+/).filter(Boolean).length + sectionWordCount;
   const mins = Math.max(1, Math.ceil(words / 200));
   return `${mins} min read`;
 };
@@ -22,6 +93,9 @@ const getBlogs = async (req, res) => {
     const { category, authorRole, search, sort, tag, page = 1, limit = 12 } = req.query;
     let query = {};
 
+    if (!req.user || req.user.role !== 'admin') {
+      query.status = { $ne: 'draft' };
+    }
     if (category && category !== 'All') query.category = category;
     if (authorRole && authorRole !== 'All') query.authorRole = authorRole;
     if (tag) query.tags = { $in: tag.split(',').map(t => new RegExp(t.trim(), 'i')) };
@@ -33,7 +107,7 @@ const getBlogs = async (req, res) => {
       ];
     }
 
-    let sortObj = { isPinned: -1, createdAt: -1 };
+    let sortObj = { featured: -1, isPinned: -1, createdAt: -1 };
     if (sort === 'popular') sortObj = { isPinned: -1, likeCount: -1 };
     if (sort === 'most-liked') sortObj = { likeCount: -1 };
     if (sort === 'most-viewed') sortObj = { views: -1 };
@@ -76,6 +150,46 @@ const getBlogs = async (req, res) => {
   }
 };
 
+const getAdminBlogs = async (req, res) => {
+  try {
+    const { category, search, status, page = 1, limit = 12 } = req.query;
+    let query = {};
+
+    if (status && status !== 'all') {
+      query.status = status === 'published' ? { $ne: 'draft' } : 'draft';
+    }
+    if (category && category !== 'All') query.category = category;
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { summary: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [blogs, total, countDoc] = await Promise.all([
+      Blog.find(query)
+        .populate('author', 'name profilePicture department role')
+        .sort({ featured: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean(),
+      Blog.countDocuments(query),
+      Blog.aggregate([
+        { $group: { _id: null, total: { $sum: 1 }, published: { $sum: { $cond: [{ $ne: ['$status', 'draft'] }, 1, 0] } }, drafts: { $sum: { $cond: [{ $eq: ['$status', 'draft'] }, 1, 0] } }, featured: { $sum: { $cond: ['$featured', 1, 0] } } } }
+      ])
+    ]);
+
+    const counts = countDoc[0] || { total: 0, published: 0, drafts: 0, featured: 0 };
+
+    res.json({ blogs, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)), categories: BLOG_CATEGORIES, counts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const getBlogById = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id)
@@ -83,6 +197,9 @@ const getBlogById = async (req, res) => {
       .lean();
 
     if (!blog) return res.status(404).json({ message: 'Blog not found' });
+    if (blog.status === 'draft' && (!req.user || req.user.role !== 'admin')) {
+      return res.status(404).json({ message: 'Blog not found' });
+    }
 
     await Blog.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
 
@@ -108,19 +225,34 @@ const createBlog = async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const { title, summary, content, coverImage, category, tags } = req.body;
+    const {
+      title, summary, content, contentJson, coverImage, heroImage, category, tags,
+      subtitle, sections, featured, status
+    } = req.body;
+
+    const parsedSections = Array.isArray(sections) ? sections : (sections ? JSON.parse(sections) : []);
+    const parsedTags = tags ? (Array.isArray(tags) ? tags : JSON.parse(tags)) : [];
+    const finalStatus = status === 'draft' ? 'draft' : 'published';
+    const parsedContentJson = Array.isArray(contentJson) ? contentJson : null;
 
     const blog = await Blog.create({
       title,
+      subtitle: subtitle || '',
       summary,
-      content,
+      content: content || (parsedSections.length ? sectionsToHtml(parsedSections) : ''),
+      contentJson: parsedContentJson,
+      sections: parsedSections,
       coverImage: coverImage || null,
+      heroImage: heroImage || coverImage || null,
       category,
-      tags: tags ? (Array.isArray(tags) ? tags : JSON.parse(tags)) : [],
+      tags: parsedTags,
+      featured: !!featured,
+      status: finalStatus,
+      publishedAt: finalStatus === 'published' ? new Date() : null,
       author: req.user.id,
       authorRole: user.role,
       department: user.department || '',
-      readingTime: calcReadingTime(content)
+      readingTime: calcReadingTime(parsedSections, content)
     });
 
     const populated = await Blog.findById(blog._id)
@@ -144,16 +276,42 @@ const updateBlog = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    const { title, summary, content, coverImage, category, tags } = req.body;
+    const {
+      title, summary, content, contentJson, coverImage, heroImage, category, tags,
+      subtitle, sections, featured, status, isPinned
+    } = req.body;
+
     if (title !== undefined) blog.title = title;
+    if (subtitle !== undefined) blog.subtitle = subtitle;
     if (summary !== undefined) blog.summary = summary;
-    if (content !== undefined) {
-      blog.content = content;
-      blog.readingTime = calcReadingTime(content);
+
+    if (contentJson !== undefined) {
+      blog.contentJson = Array.isArray(contentJson) ? contentJson : null;
     }
+
+    if (sections !== undefined) {
+      const parsedSections = Array.isArray(sections) ? sections : JSON.parse(sections);
+      blog.sections = parsedSections;
+      if (contentJson === undefined) {
+        blog.content = parsedSections.length ? sectionsToHtml(parsedSections) : (content || '');
+        blog.readingTime = calcReadingTime(parsedSections, content);
+      }
+    } else if (content !== undefined) {
+      blog.content = content;
+      blog.readingTime = calcReadingTime(blog.sections, content);
+    }
+
     if (coverImage !== undefined) blog.coverImage = coverImage;
+    if (heroImage !== undefined) blog.heroImage = heroImage;
     if (category !== undefined) blog.category = category;
     if (tags !== undefined) blog.tags = Array.isArray(tags) ? tags : JSON.parse(tags);
+    if (featured !== undefined) blog.featured = !!featured;
+    if (isPinned !== undefined) blog.isPinned = !!isPinned;
+
+    if (status !== undefined && blog.status !== status) {
+      blog.status = status === 'draft' ? 'draft' : 'published';
+      if (blog.status === 'published' && !blog.publishedAt) blog.publishedAt = new Date();
+    }
 
     await blog.save();
     const populated = await Blog.findById(blog._id).populate('author', 'name profilePicture department').lean();
@@ -164,6 +322,49 @@ const updateBlog = async (req, res) => {
     res.json(populated);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+const setBlogStatus = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ message: 'Blog not found' });
+
+    const { status } = req.body;
+    if (status !== 'draft' && status !== 'published') {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    blog.status = status;
+    if (status === 'published' && !blog.publishedAt) blog.publishedAt = new Date();
+    if (status === 'draft') blog.publishedAt = null;
+    await blog.save();
+
+    const populated = await Blog.findById(blog._id).populate('author', 'name profilePicture department').lean();
+
+    const io = req.app.get('io');
+    if (io) io.emit('blog:updated', populated);
+
+    res.json(populated);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const uploadBlogImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image provided' });
+    }
+    const result = await uploadToCloudinary(req.file, 'frontx/blogs');
+    res.json({
+      success: true,
+      url: result.secure_url,
+      public_id: result.public_id
+    });
+  } catch (error) {
+    console.error('Cloudinary Upload Error:', error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
   }
 };
 
@@ -255,10 +456,11 @@ const getRecommendedBlogs = async (req, res) => {
 
     const recommended = await Blog.find({
       _id: { $ne: blog._id },
+      status: { $ne: 'draft' },
       $or: [{ category: blog.category }, { tags: { $in: blog.tags } }]
     })
       .populate('author', 'name profilePicture department')
-      .sort({ likeCount: -1, views: -1 })
+      .sort({ featured: -1, likeCount: -1, views: -1 })
       .limit(6)
       .lean();
 
@@ -274,6 +476,10 @@ const addComment = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const { content, parentComment } = req.body;
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: 'Comment text is required' });
+    }
+
     const comment = await BlogComment.create({
       blog: req.params.id,
       author: req.user.id,
@@ -383,9 +589,12 @@ const toggleCommentLike = async (req, res) => {
 
 module.exports = {
   getBlogs,
+  getAdminBlogs,
   getBlogById,
   createBlog,
   updateBlog,
+  setBlogStatus,
+  uploadBlogImage,
   deleteBlog,
   toggleLike,
   toggleBookmark,

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { BookOpen, Search, X, Loader2, FileText, Download, ExternalLink, Calendar, Filter, Plus } from 'lucide-react';
+import { BookOpen, Search, X, Loader2, FileText, Download, Calendar, Filter, Plus } from 'lucide-react';
 
 const API = 'http://localhost:5000/api';
 
@@ -189,9 +189,6 @@ function ResourceCard({ resource: res, index, onViewPdf, onDownload, formatDate 
             </span>
           </div>
 
-          {/* Description */}
-          <p className="text-slate-500 text-[12px] leading-relaxed line-clamp-2 mb-3 flex-1">{res.shortDescription}</p>
-
           {/* Date */}
           <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mb-4">
             <Calendar className="w-3.5 h-3.5" />
@@ -206,7 +203,7 @@ function ResourceCard({ resource: res, index, onViewPdf, onDownload, formatDate 
             <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => onViewPdf(res.pdfUrl)}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold text-white transition-all hover:shadow-[0_0_20px_rgba(99,102,241,0.3)]"
               style={{ background: 'linear-gradient(135deg, #6366F1 0%, #3B82F6 50%, #06B6D4 100%)' }}>
-              <ExternalLink className="w-3.5 h-3.5" /> View PDF
+              View PDF
             </motion.button>
             <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={() => onDownload(res)}
               className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold bg-white/[0.06] text-slate-300 border border-white/[0.08] hover:bg-white/[0.1] transition-all">

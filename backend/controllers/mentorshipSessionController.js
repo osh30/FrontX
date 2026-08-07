@@ -312,6 +312,9 @@ const cancelSession = async (req, res) => {
     session.status = 'Cancelled';
     await session.save();
 
+    const io = req.app.get('io');
+    if (io) io.emit('session_updated');
+
     // Notify students
     for (const studentId of session.selectedStudents) {
       await Notification.create({

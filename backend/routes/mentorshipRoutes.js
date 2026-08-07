@@ -328,6 +328,8 @@ router.put('/request/:id/status', protect, async (req, res) => {
     }
 
     emitToRoom(req, req.user.id.toString(), 'request_updated');
+    const io = req.app.get('io');
+    if (io) io.emit('request_updated');
 
     res.json({ message: `Request ${status} successfully`, request });
   } catch (error) {

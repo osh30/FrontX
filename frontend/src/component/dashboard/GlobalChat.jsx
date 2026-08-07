@@ -550,13 +550,13 @@ export const GlobalChat = ({ user }) => {
   };
 
   const activeConv = conversations.find(c => c._id === activeConvId);
-  const otherUser = activeConv?.other;
+  const otherUser = activeConv?.otherParticipant;
   const isUserOnline = onlineUsers[otherUser?._id] === 'online';
   const filteredConvs = conversations.filter(c => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    return c.other?.name?.toLowerCase().includes(q) ||
-           c.other?.department?.toLowerCase().includes(q) ||
+    return c.otherParticipant?.fullName?.toLowerCase().includes(q) ||
+           c.otherParticipant?.department?.toLowerCase().includes(q) ||
            c.lastMessage?.toLowerCase().includes(q) ||
            (c.label || '').toLowerCase().includes(q);
   });
@@ -716,21 +716,26 @@ export const GlobalChat = ({ user }) => {
                 }`}
               >
                 <div className="relative shrink-0">
-                  <Avatar src={conv.other?.profilePicture} alt={conv.other?.name} size={48} className="border border-gray-200" />
-                  {onlineUsers[conv.other?._id] === 'online' && (
+                  <Avatar src={conv.otherParticipant?.profilePhoto} alt={conv.otherParticipant?.fullName} size={48} className="border border-gray-200" />
+                  {onlineUsers[conv.otherParticipant?._id] === 'online' && (
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-0.5">
                     <h4 className="font-bold text-gray-900 text-sm truncate flex items-center gap-1.5">
-                      {conv.other?.name || 'Unknown'}
+                      {conv.otherParticipant?.fullName || 'Unknown'}
                       {conv.isPinned && <Pin className="w-3 h-3 text-purple-500" />}
                       {conv.label && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">{conv.label}</span>}
                     </h4>
                     <span className="text-[10px] text-gray-400 shrink-0 ml-2">{formatTime(conv.lastMessageTime)}</span>
                   </div>
-                  <p className="text-xs text-gray-500 truncate">{conv.other?.department || ''}</p>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 truncate">
+                    <span className={`shrink-0 px-1.5 py-px rounded-full text-[9px] font-semibold uppercase ${conv.otherParticipant?.role === 'alumni' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                      {conv.otherParticipant?.role === 'alumni' ? 'Alumni' : conv.otherParticipant?.role === 'student' ? 'Student' : ''}
+                    </span>
+                    <p className="truncate">{conv.otherParticipant?.department || ''}</p>
+                  </div>
                   <p className={`text-xs truncate mt-0.5 ${conv.unreadCount > 0 ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>
                     {conv.lastMessage || 'No messages yet'}
                   </p>
@@ -757,12 +762,12 @@ export const GlobalChat = ({ user }) => {
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="relative shrink-0">
-                  <Avatar src={otherUser?.profilePicture} alt={otherUser?.name} size={48} className="border border-gray-200" />
+                  <Avatar src={otherUser?.profilePhoto} alt={otherUser?.fullName} size={48} className="border border-gray-200" />
                   {isUserOnline && <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>}
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-bold text-gray-900 text-sm leading-tight truncate flex items-center gap-1.5">
-                    {otherUser?.name || 'Unknown'}
+                    {otherUser?.fullName || 'Unknown'}
                     {conversationLabel && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">{conversationLabel}</span>}
                   </h3>
                   <p className="text-xs text-gray-500 truncate">

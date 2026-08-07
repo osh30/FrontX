@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, Clock, Eye, Heart, MessageCircle, Bookmark, Share2,
@@ -8,6 +8,7 @@ import {
 import Avatar from './Avatar';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import RichContentRenderer, { blogReadingTime } from '../blog/richContent';
 
 const API = 'http://localhost:5000';
 
@@ -50,7 +51,9 @@ const formatTimeAgo = (dateStr) => {
 };
 
 const BlogDetailsPage = () => {
+  const location = useLocation();
   const { id } = useParams();
+  const blogId = id || location.pathname.split('/')[3];
   const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,7 +76,7 @@ const BlogDetailsPage = () => {
     fetchComments();
     fetchRecommended();
     fetchCurrentUser();
-  }, [id]);
+  }, [blogId]);
 
   const fetchCurrentUser = async () => {
     try {
@@ -88,7 +91,7 @@ const BlogDetailsPage = () => {
   const fetchBlog = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/api/blogs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(`${API}/api/blogs/${blogId}`, { headers: { Authorization: `Bearer ${token}` } });
       setBlog(res.data);
       setIsLiked(res.data.isLiked);
       setIsBookmarked(res.data.isBookmarked);
@@ -104,7 +107,7 @@ const BlogDetailsPage = () => {
   const fetchComments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/api/blogs/${id}/comments`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(`${API}/api/blogs/${blogId}/comments`, { headers: { Authorization: `Bearer ${token}` } });
       setComments(res.data);
     } catch (err) {
       console.error('Failed to fetch comments', err);
@@ -114,7 +117,7 @@ const BlogDetailsPage = () => {
   const fetchRecommended = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`${API}/api/blogs/${id}/recommended`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(`${API}/api/blogs/${blogId}/recommended`, { headers: { Authorization: `Bearer ${token}` } });
       setRecommended(res.data);
     } catch (err) {
       console.error('Failed to fetch recommended', err);
@@ -124,7 +127,7 @@ const BlogDetailsPage = () => {
   const handleLike = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${API}/api/blogs/${id}/like`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API}/api/blogs/${blogId}/like`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setIsLiked(res.data.liked);
       setLikeCount(res.data.likeCount);
     } catch (err) {
@@ -135,7 +138,7 @@ const BlogDetailsPage = () => {
   const handleBookmark = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${API}/api/blogs/${id}/bookmark`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API}/api/blogs/${blogId}/bookmark`, {}, { headers: { Authorization: `Bearer ${token}` } });
       setIsBookmarked(res.data.bookmarked);
       toast.success(res.data.bookmarked ? 'Bookmarked!' : 'Bookmark removed');
     } catch (err) {
@@ -146,7 +149,7 @@ const BlogDetailsPage = () => {
   const handleShare = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API}/api/blogs/${id}/share`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${API}/api/blogs/${blogId}/share`, {}, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Link copied!');
     } catch (err) {
       console.error('Share failed', err);
@@ -158,7 +161,7 @@ const BlogDetailsPage = () => {
     setSubmittingComment(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${API}/api/blogs/${id}/comments`, {
+      const res = await axios.post(`${API}/api/blogs/${blogId}/comments`, {
         content: commentText.trim()
       }, { headers: { Authorization: `Bearer ${token}` } });
       setComments(prev => [{ ...res.data, replies: [] }, ...prev]);
@@ -176,7 +179,7 @@ const BlogDetailsPage = () => {
     setSubmittingReply(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${API}/api/blogs/${id}/comments`, {
+      const res = await axios.post(`${API}/api/blogs/${blogId}/comments`, {
         content: replyText.trim(),
         parentComment: commentId
       }, { headers: { Authorization: `Bearer ${token}` } });
@@ -198,7 +201,7 @@ const BlogDetailsPage = () => {
     if (!editText.trim()) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put(`${API}/api/blogs/${id}/comments/${commentId}`, {
+      const res = await axios.put(`${API}/api/blogs/${blogId}/comments/${commentId}`, {
         content: editText.trim()
       }, { headers: { Authorization: `Bearer ${token}` } });
 
@@ -222,7 +225,7 @@ const BlogDetailsPage = () => {
   const handleDeleteComment = async (commentId, parentCommentId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API}/api/blogs/${id}/comments/${commentId}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${API}/api/blogs/${blogId}/comments/${commentId}`, { headers: { Authorization: `Bearer ${token}` } });
       if (parentCommentId) {
         setComments(prev => prev.map(c => {
           if (c._id === parentCommentId) {
@@ -243,7 +246,7 @@ const BlogDetailsPage = () => {
   const handleCommentLike = async (commentId, parentCommentId) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`${API}/api/blogs/${id}/comments/${commentId}/like`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${API}/api/blogs/${blogId}/comments/${commentId}/like`, {}, { headers: { Authorization: `Bearer ${token}` } });
       const updater = (c) => c._id === commentId ? { ...c, likeCount: res.data.likeCount, liked: res.data.liked } : c;
       if (parentCommentId) {
         setComments(prev => prev.map(c => c._id === parentCommentId ? { ...c, replies: c.replies.map(updater) } : c));
@@ -313,7 +316,7 @@ const BlogDetailsPage = () => {
             <div className="flex items-center gap-3 text-xs text-gray-400">
               {blog.author?.department && <span>{blog.author.department}</span>}
               <span>{formatDate(blog.createdAt)}</span>
-              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {blog.readingTime}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {blogReadingTime(blog)}</span>
             </div>
           </div>
         </div>
@@ -328,11 +331,8 @@ const BlogDetailsPage = () => {
         )}
 
         {/* Content */}
-        <div className="bg-white/50 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm p-8 mb-8">
-          <div
-            className="prose prose-lg max-w-none text-gray-800 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: blog.content }}
-          />
+        <div className="bg-white/50 dark:bg-[#0B1220]/70 backdrop-blur-md rounded-2xl border border-white/50 dark:border-white/10 shadow-sm p-8 mb-8">
+          <RichContentRenderer blog={blog} />
         </div>
 
         {/* Action Bar */}

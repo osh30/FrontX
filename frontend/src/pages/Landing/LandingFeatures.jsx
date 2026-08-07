@@ -249,7 +249,7 @@ export const PlatformOverview = () => {
             transition={{ type: "spring", stiffness: 100, damping: 20, mass: 0.4, delay: 0.1 }}
             className="text-lg text-gray-600"
           >
-            FRONX combines AI intelligence with human experience to accelerate your transition from student to professional.
+            FrontX combines AI intelligence with human experience to accelerate your transition from student to professional.
           </motion.p>
         </div>
 

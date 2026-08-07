@@ -3,7 +3,7 @@ const { PDFParse } = require('pdf-parse');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const StudyPlanner = require('../models/StudyPlanner');
 const Notification = require('../models/Notification');
-const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../middleware/uploadMiddleware');
 
 const MARK_DISTRIBUTION = {
   '1.0': [
@@ -187,6 +187,82 @@ exports.getGradeTable = (req, res) => {
     return res.status(400).json({ message: 'Credit must be 1.0 or 3.0' });
   }
   res.json(getGradeTableForCredit(credit));
+};
+
+// @desc    Add a new course to an existing planner (self-development)
+// @route   POST /api/study-planner/courses
+exports.addCourse = async (req, res) => {
+  try {
+    const { courseCode, courseName, credit } = req.body;
+    if (!courseCode || !courseName) {
+      return res.status(400).json({ message: 'Course code and name are required.' });
+    }
+    if (credit !== 1.0 && credit !== 3.0) {
+      return res.status(400).json({ message: 'Credit must be 1.0 or 3.0' });
+    }
+
+    const planner = await StudyPlanner.findOne({ userId: req.user.id });
+    if (!planner) return res.status(404).json({ message: 'Planner not found.' });
+    if (planner.courses.length >= 7) {
+      return res.status(400).json({ message: 'Maximum 7 courses allowed.' });
+    }
+
+    planner.courses.push({
+      courseCode: String(courseCode).trim(),
+      courseName: String(courseName).trim(),
+      credit,
+      outlinePdfUrl: null,
+      weeks: [],
+      outlineUploaded: false,
+      weeksGenerated: false
+    });
+
+    await planner.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('planner_updated', { userId: req.user.id });
+    }
+
+    res.json(planner);
+  } catch (error) {
+    console.error('Add course error:', error);
+    res.status(500).json({ message: 'Failed to add course', error: error.message });
+  }
+};
+
+// @desc    Delete a course from the planner
+// @route   DELETE /api/study-planner/courses/:courseId
+exports.deleteCourse = async (req, res) => {
+  try {
+    const planner = await StudyPlanner.findOne({ userId: req.user.id });
+    if (!planner) return res.status(404).json({ message: 'Planner not found.' });
+
+    const courseIndex = planner.courses.findIndex(c => c._id.toString() === req.params.courseId);
+    if (courseIndex === -1) return res.status(404).json({ message: 'Course not found.' });
+
+    const [removed] = planner.courses.splice(courseIndex, 1);
+    await planner.save();
+
+    if (removed.outlinePdfUrl) {
+      try { await deleteFromCloudinary(removed.outlinePdfUrl); } catch (e) {}
+    }
+    for (const week of removed.weeks) {
+      if (week.notePdfUrl) {
+        try { await deleteFromCloudinary(week.notePdfUrl); } catch (e) {}
+      }
+    }
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('planner_updated', { userId: req.user.id });
+    }
+
+    res.json(planner);
+  } catch (error) {
+    console.error('Delete course error:', error);
+    res.status(500).json({ message: 'Failed to delete course', error: error.message });
+  }
 };
 
 // @desc    Upload course outline PDF and extract weeks via Gemini, auto-map to calendar

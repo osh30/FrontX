@@ -38,6 +38,9 @@ import AdminDashboard from './component/dashboard/AdminDashboard';
 import AdminCommunity from './component/dashboard/AdminCommunity';
 import AdminUsers from './component/dashboard/AdminUsers';
 import AdminBlogs from './component/dashboard/AdminBlogs';
+import AdminBlogEditor from './component/dashboard/AdminBlogEditor';
+import Blog from './pages/Blog';
+import BlogDetails from './pages/BlogDetails';
 import AdminResources from './component/dashboard/AdminResources';
 import AdminCreateResourcePage from './component/dashboard/AdminCreateResourcePage';
 import AdminEditResourcePage from './component/dashboard/AdminEditResourcePage';
@@ -55,7 +58,6 @@ import AdminCompanyReviews from './component/dashboard/AdminCompanyReviews';
 import Interviews from './component/dashboard/recruiter/Interviews';
 
 const Jobs = () => <div className="min-h-screen flex items-center justify-center text-2xl font-bold">Jobs Page (Coming Soon)</div>;
-const Blog = () => <div className="min-h-screen flex items-center justify-center text-2xl font-bold">Blog Page (Coming Soon)</div>;
 const More = () => <div className="min-h-screen flex items-center justify-center text-2xl font-bold">More (Coming Soon)</div>;
 
 function App() {
@@ -71,6 +73,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<BlogDetails />} />
         <Route path="/more" element={<More />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -113,6 +116,8 @@ function App() {
           <Route path="community" element={<AdminCommunity />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="blogs" element={<AdminBlogs />} />
+          <Route path="blogs/create" element={<AdminBlogEditor />} />
+          <Route path="blogs/edit/:id" element={<AdminBlogEditor />} />
           <Route path="resources" element={<AdminResources />} />
           <Route path="resources/create" element={<AdminCreateResourcePage />} />
           <Route path="resources/edit/:id" element={<AdminEditResourcePage />} />

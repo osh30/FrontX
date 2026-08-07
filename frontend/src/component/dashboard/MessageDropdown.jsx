@@ -46,7 +46,7 @@ export const MessageDropdown = ({ isOpen, onClose, onOpenFullChat }) => {
   };
 
   const getOtherUser = (conv) => {
-    return conv.participants.find(p => p._id !== user?.id) || conv.participants[0];
+    return conv.otherParticipant || conv.participants?.find(p => p._id !== user?.id) || conv.participants?.[0];
   };
 
   return (

@@ -11,7 +11,7 @@ router.get('/', protect, async (req, res) => {
       return res.json({ students: [], alumni: [], resources: [] });
     }
 
-    const searchRegex = new RegExp(q.trim(), 'i');
+    const searchRegex = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 
     const [students, alumni, resources] = await Promise.all([
       User.find({

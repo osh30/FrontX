@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
-import { Bell, Search, MessageCircle, ChevronDown, ChevronLeft, ChevronRight, Activity, Clock, Users, ArrowRight, X, Loader2, SlidersHorizontal, Calendar, Briefcase, GraduationCap, FileText } from 'lucide-react';
+import { Bell, Search, MessageCircle, ChevronDown, ChevronLeft, ChevronRight, Activity, Clock, Users, ArrowRight, X, Loader2, SlidersHorizontal, Calendar, Briefcase, GraduationCap, FileText, BookOpen } from 'lucide-react';
 import DashboardSidebar from './DashboardSidebar';
 import {
   WelcomeSection, RecommendedMentors, UpcomingSessions,
@@ -62,6 +62,13 @@ const StudentDashboard = ({ user }) => {
   const [viewedUserId, setViewedUserId] = useState(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ students: [], alumni: [], resources: [] });
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchRef = useRef(null);
+  const searchDebounceRef = useRef(null);
   const [rightCollapsed, setRightCollapsed] = useState(() => {
     try { return localStorage.getItem(RIGHT_SIDEBAR_KEY) === '1'; } catch { return false; }
   });
@@ -93,8 +100,59 @@ const StudentDashboard = ({ user }) => {
   const handleViewProfile = (userId) => {
     setViewedUserId(userId);
     setIsProfileEditable(false);
-    navigate('/dashboard/profile');
+    navigate(`/dashboard/profile/${userId}`);
   };
+
+  const handleSearch = useCallback(async (query) => {
+    if (!query || query.trim().length < 1) {
+      setSearchResults({ students: [], alumni: [], resources: [] });
+      setShowSearchDropdown(false);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query.trim())}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSearchResults(data);
+        setShowSearchDropdown(true);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
+  const onSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      handleSearch(value);
+    }, 300);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults({ students: [], alumni: [], resources: [] });
+    setShowSearchDropdown(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const totalSearchResults = searchResults.students.length + searchResults.alumni.length + searchResults.resources.length;
 
   const SectionHeader = ({ title, viewAllPath }) => {
     const navigate = useNavigate();
@@ -221,8 +279,10 @@ const StudentDashboard = ({ user }) => {
         return <NotificationsPage />;
       case 'settings':
         return <SettingsPage user={user} />;
-      case 'profile':
-        return <ProfilePage user={user} isEditable={isProfileEditable && !viewedUserId} viewedUserId={viewedUserId} />;
+      case 'profile': {
+        const profileUserId = pathParts.length > 3 && pathParts[3] ? pathParts[3] : viewedUserId;
+        return <ProfilePage user={user} isEditable={isProfileEditable && !profileUserId} viewedUserId={profileUserId} />;
+      }
       default:
         return (
           <div className="flex items-center justify-center h-64 bg-white/40 backdrop-blur-xl rounded-3xl border border-white/50">
@@ -264,13 +324,106 @@ const StudentDashboard = ({ user }) => {
             <h1 className="text-2xl font-bold text-gray-800 hidden md:block capitalize">
               {activeTab.replace('-', ' ')}
             </h1>
-            <div className="relative group ml-10 lg:ml-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
+            <div className="relative ml-10 lg:ml-0" ref={searchRef}>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input 
-                type="text" 
-                placeholder="Search mentors, jobs..." 
-                className="pl-10 pr-4 py-2.5 w-48 md:w-64 xl:w-80 bg-white/80 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all shadow-sm"
+                type="text"
+                value={searchQuery}
+                onChange={onSearchChange}
+                onFocus={() => { if (totalSearchResults > 0) setShowSearchDropdown(true); }}
+                placeholder="Search students, alumni, resources..."
+                className="pl-10 pr-10 py-2.5 w-48 md:w-64 xl:w-80 bg-white/80 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all shadow-sm"
               />
+              {searchQuery && (
+                <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Search Dropdown */}
+              <AnimatePresence>
+                {showSearchDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full mt-2 left-0 right-0 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-2xl shadow-xl z-50 max-h-96 overflow-y-auto"
+                  >
+                    {isSearching ? (
+                      <div className="flex justify-center py-8">
+                        <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ) : totalSearchResults === 0 ? (
+                      <div className="py-8 px-4 text-center">
+                        <Search className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">No matching students, alumni, or resources found.</p>
+                      </div>
+                    ) : (
+                      <div className="py-2">
+                        {searchResults.students.length > 0 && (
+                          <div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Students</div>
+                            {searchResults.students.map((s) => (
+                              <button
+                                key={s._id}
+                                onClick={() => { clearSearch(); handleViewProfile(s._id); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-purple-50 transition-colors text-left"
+                              >
+                                <Avatar src={s.profilePicture} alt="Student" size={32} className="border border-gray-200" />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-gray-900 truncate">{s.name}</p>
+                                  <p className="text-xs text-gray-500 truncate">{s.department || 'Student'}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {searchResults.alumni.length > 0 && (
+                          <div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Alumni</div>
+                            {searchResults.alumni.map((a) => (
+                              <button
+                                key={a._id}
+                                onClick={() => { clearSearch(); handleViewProfile(a._id); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-purple-50 transition-colors text-left"
+                              >
+                                <Avatar src={a.profilePicture} alt="Alumni" size={32} className="border border-gray-200" />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-gray-900 truncate">{a.name}</p>
+                                  <p className="text-xs text-gray-500 truncate">{a.careerInterest || a.department || 'Alumni'}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {searchResults.resources.length > 0 && (
+                          <div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Resources</div>
+                            {searchResults.resources.map((r) => (
+                              <button
+                                key={r._id}
+                                onClick={() => { clearSearch(); navigate(`/dashboard/resources/${r._id}`, { state: { resource: r } }); }}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-purple-50 transition-colors text-left"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center shrink-0">
+                                  <BookOpen className="w-4 h-4 text-emerald-500" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold text-gray-900 truncate">{r.title}</p>
+                                  <p className="text-xs text-gray-500 truncate">{r.category} — {r.alumniId?.name || 'Alumni'}</p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 

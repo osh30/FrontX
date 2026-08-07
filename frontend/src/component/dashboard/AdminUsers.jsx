@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import {
@@ -36,6 +36,7 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const searchDebounceRef = useRef(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -52,6 +53,16 @@ const AdminUsers = () => {
   }, [page, search, roleFilter]);
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    setPage(1);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      fetchUsers();
+    }, 350);
+  };
 
   const handleDelete = async () => {
     if (!deleteModal) return;
@@ -100,7 +111,7 @@ const AdminUsers = () => {
               type="text"
               placeholder="Search by name or email..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={handleSearchChange}
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 shadow-sm transition-all"
             />
           </div>

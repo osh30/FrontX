@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Bookmark, ArrowLeft, Clock, Eye, Heart, MessageCircle, Loader2, BookOpen
+  Bookmark, ArrowLeft, Clock, Heart, MessageCircle, Loader2, BookOpen
 } from 'lucide-react';
 import Avatar from './Avatar';
 import axios from 'axios';
@@ -150,7 +150,6 @@ const SavedBlogsPage = () => {
                 </div>
 
                 <div className="flex items-center gap-3 text-[10px] text-gray-400">
-                  <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {blog.views || 0}</span>
                   <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {blog.likeCount || 0}</span>
                   <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {blog.commentCount || 0}</span>
                 </div>

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import StudyPlannerAISection from './StudyPlannerAISection';
 
 const API = 'http://localhost:5000';
 
@@ -58,6 +59,7 @@ const StudyPlannerPage = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [stats, setStats] = useState(null);
   const [generatingReminders, setGeneratingReminders] = useState(false);
+  const [addingCourse, setAddingCourse] = useState(false);
 
   useEffect(() => {
     fetchPlanner();
@@ -109,6 +111,41 @@ const StudyPlannerPage = () => {
     }
   };
 
+  const handleAddCourse = async (courseData) => {
+    setAddingCourse(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/api/study-planner/courses`, courseData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPlanner(res.data);
+      fetchStats();
+      toast.success('Course added successfully!');
+      return true;
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to add course');
+      return false;
+    } finally {
+      setAddingCourse(false);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId) => {
+    if (!window.confirm('Delete this course? This will remove all its weeks and uploaded files.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.delete(`${API}/api/study-planner/courses/${courseId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPlanner(res.data);
+      if (selectedCourse && selectedCourse._id === courseId) setSelectedCourse(null);
+      fetchStats();
+      toast.success('Course deleted successfully!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete course');
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-8 max-w-7xl mx-auto w-full flex justify-center py-20">
@@ -129,6 +166,7 @@ const StudyPlannerPage = () => {
           planner={planner}
           onBack={() => setSelectedCourse(null)}
           onRefresh={() => { fetchPlanner(); fetchStats(); }}
+          onDeleteCourse={handleDeleteCourse}
         />
       ) : (
         <DashboardView
@@ -138,6 +176,9 @@ const StudyPlannerPage = () => {
           onRefresh={() => { fetchPlanner(); fetchStats(); }}
           onGenerateReminders={handleGenerateReminders}
           generatingReminders={generatingReminders}
+          onAddCourse={handleAddCourse}
+          addingCourse={addingCourse}
+          onDeleteCourse={handleDeleteCourse}
         />
       )}
     </div>
@@ -308,7 +349,10 @@ const SetupView = ({ onComplete }) => {
 };
 
 /* ───────────────── DASHBOARD VIEW ───────────────── */
-const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateReminders, generatingReminders }) => {
+const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateReminders, generatingReminders, onAddCourse, addingCourse, onDeleteCourse }) => {
+  const [showAddCourse, setShowAddCourse] = useState(false);
+  const canAddCourse = planner.courses.length < 7;
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {/* Hero */}
@@ -387,11 +431,24 @@ const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateRe
       )}
 
       {/* Mark Distribution + Grade Tables */}
-      <MarkDistributionSection courses={planner.courses} />
+      <MarkDistributionSection />
 
       {/* Course Cards */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Courses</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Your Courses</h2>
+          <button onClick={() => setShowAddCourse(true)} disabled={!canAddCourse || addingCourse}
+            className={`px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-md ${
+              canAddCourse
+                ? 'bg-gray-900 text-white hover:bg-indigo-600'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}>
+            <Plus className="w-4 h-4" /> {addingCourse ? 'Adding...' : 'Add Course'}
+          </button>
+        </div>
+        {!canAddCourse && (
+          <p className="text-xs text-gray-400 mb-4">Maximum 7 courses allowed.</p>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {planner.courses.map((course, i) => {
             const completedWeeks = course.weeks.filter(w => w.status === 'completed').length;
@@ -409,8 +466,17 @@ const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateRe
                     <GraduationCap className="w-8 h-8 text-white/80 mx-auto mb-1" />
                     <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider">{course.courseCode}</p>
                   </div>
-                  <div className="absolute top-3 right-3 px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-[10px] font-bold text-white">
-                    {course.credit} CR
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onDeleteCourse(course._id); }}
+                      title="Delete course"
+                      className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-red-500/80 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-[10px] font-bold text-white">
+                      {course.credit} CR
+                    </div>
                   </div>
                 </div>
                 <div className="p-5">
@@ -430,30 +496,135 @@ const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateRe
           })}
         </div>
       </div>
+
+      <AnimatePresence>
+        {showAddCourse && (
+          <AddCourseModal
+            onClose={() => setShowAddCourse(false)}
+            onAddCourse={onAddCourse}
+            addingCourse={addingCourse}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+/* ───────────────── ADD COURSE MODAL ───────────────── */
+const AddCourseModal = ({ onClose, onAddCourse, addingCourse }) => {
+  const [courseCode, setCourseCode] = useState('');
+  const [courseName, setCourseName] = useState('');
+  const [credit, setCredit] = useState(3.0);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!courseCode.trim() || !courseName.trim()) {
+      return toast.error('Course code and name are required');
+    }
+    const ok = await onAddCourse({
+      courseCode: courseCode.trim(),
+      courseName: courseName.trim(),
+      credit
+    });
+    if (ok) {
+      setCourseCode('');
+      setCourseName('');
+      setCredit(3.0);
+      onClose();
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl"
+      >
+        <div className="p-6 bg-gradient-to-br from-[#0F172A] to-[#1E3A8A] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white">Add Course</h3>
+              <p className="text-blue-100/60 text-xs">Add a course for self-development</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 text-blue-100/60 hover:text-white hover:bg-white/10 rounded-xl transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Course Code</label>
+            <input type="text" placeholder="e.g. CSE-301" value={courseCode}
+              onChange={(e) => setCourseCode(e.target.value)}
+              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200" />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Course Name</label>
+            <input type="text" placeholder="e.g. Database Systems" value={courseName}
+              onChange={(e) => setCourseName(e.target.value)}
+              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200" />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Credit</label>
+            <select value={credit} onChange={(e) => setCredit(parseFloat(e.target.value))}
+              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200">
+              <option value={1.0}>1.0 Credit</option>
+              <option value={3.0}>3.0 Credits</option>
+            </select>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors">
+              Cancel
+            </button>
+            <button type="submit" disabled={addingCourse}
+              className="flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-semibold hover:bg-indigo-600 transition-colors shadow-md flex items-center justify-center gap-2 disabled:opacity-50">
+              {addingCourse ? <Loader className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4" /> Add Course</>}
+            </button>
+          </div>
+        </form>
+      </motion.div>
     </motion.div>
   );
 };
 
 /* ───────────────── MARK DISTRIBUTION + GRADES ───────────────── */
-const MarkDistributionSection = ({ courses }) => {
+const MarkDistributionSection = () => {
+  const creditRows = [
+    { credit: 3.0, marks: MARK_DIST['3.0'], total: 300 },
+    { credit: 1.0, marks: MARK_DIST['1.0'], total: 100 }
+  ];
+
   return (
     <div className="mb-8 space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Mark Distribution & Grades</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {courses.map(course => {
-          const creditKey = course.credit.toString();
-          const marks = MARK_DIST[creditKey] || MARK_DIST['3.0'];
-          const gradeTable = getGradeTable(course.credit);
-          const total = course.credit === 3.0 ? 300 : 100;
+        {creditRows.map(({ credit, marks, total }) => {
+          const gradeTable = getGradeTable(credit);
 
           return (
-            <div key={course._id} className="space-y-4">
+            <div key={credit} className="space-y-4">
               <div className="bg-gradient-to-br from-[#0F172A] to-[#1E3A8A] rounded-2xl p-6 shadow-xl shadow-blue-900/20 text-white">
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-blue-300" />
-                  <h3 className="font-bold text-sm">{course.courseCode} — Mark Distribution</h3>
+                  <h3 className="font-bold text-sm">{credit} Credit — Mark Distribution</h3>
                   <span className="ml-auto text-[10px] font-bold bg-white/10 px-2 py-0.5 rounded-md">
-                    {course.credit} Credit = {total} Marks
+                    {credit} Credit = {total} Marks
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -501,7 +672,7 @@ const MarkDistributionSection = ({ courses }) => {
 };
 
 /* ───────────────── COURSE DETAIL VIEW ───────────────── */
-const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh }) => {
+const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, onDeleteCourse }) => {
   const [course, setCourse] = useState(initialCourse);
   const [uploadingOutline, setUploadingOutline] = useState(false);
   const [uploadingWeekId, setUploadingWeekId] = useState(null);
@@ -594,9 +765,13 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh })
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">{course.courseName}</h1>
             </div>
-            <div className="text-right">
+            <div className="flex flex-col items-end gap-2">
               <p className="text-3xl font-bold text-white">{progress}%</p>
               <p className="text-blue-100/60 text-xs">{completedWeeks}/{totalWeeks} weeks</p>
+              <button onClick={() => onDeleteCourse(course._id)}
+                className="px-3 py-2 bg-red-500/20 backdrop-blur-md border border-red-300/30 text-red-100 rounded-xl text-xs font-semibold hover:bg-red-500/40 transition-all flex items-center gap-1.5">
+                <Trash2 className="w-3.5 h-3.5" /> Delete Course
+              </button>
             </div>
           </div>
           <div className="mt-4 w-full h-2 bg-white/10 rounded-full overflow-hidden">
@@ -663,6 +838,9 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh })
           </div>
         )}
       </div>
+
+      {/* AI Learning Resources */}
+      <StudyPlannerAISection course={course} />
     </motion.div>
   );
 };

@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { Sparkles, Users, GraduationCap, Briefcase, BookOpen, Brain, Plus, Star } from 'lucide-react';
 
 const StoryBlock = ({ title, subtitle, description, icon: Icon, color, bg, imageContent, reversed, lead, actions, centered, descriptionClassName, descriptionColor }) => {
@@ -222,7 +224,7 @@ export const FindAlumniMentorStory = () => {
   return (
     <StoryBlock
       title={<span>Connect with alumni who have walked your path</span>}
-      description="Don't guess what it takes. Browse verified alumni profiles from your university working at top tech companies. Send connection requests tailored to your career goals."
+      description="Don't guess what it takes. Browse verified alumni profiles from your university. Send connection requests tailored to your career goals."
       icon={Users}
       color="text-purple-700"
       bg="bg-purple-100"
@@ -300,6 +302,17 @@ export const FindAlumniMentorStory = () => {
 };
 
 export const AttendMentorshipSessionStory = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleRecruiterAction = (tab) => {
+    if (user?.role === 'recruiter') {
+      navigate(`/dashboard/${tab}`);
+    } else {
+      navigate('/register?role=recruiter');
+    }
+  };
+
   return (
     <section className="py-20 md:py-28 relative">
       <div className="mx-auto w-[92%] max-w-[1400px] relative rounded-[28px] bg-[#08152F] overflow-hidden border border-blue-400/10 shadow-[0_40px_100px_-30px_rgba(8,21,47,0.7)]">
@@ -343,13 +356,13 @@ export const AttendMentorshipSessionStory = () => {
 
           {/* Buttons */}
           <div className="flex flex-wrap gap-4 pt-4 justify-center">
-            <button className="px-8 py-4 rounded-xl font-semibold text-[15px] cursor-pointer transition-all duration-[350ms] ease-in-out bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[0_10px_35px_-5px_rgba(59,130,246,0.6)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_-5px_rgba(59,130,246,0.75)] hover:scale-[1.02]">
+            <button onClick={() => handleRecruiterAction('post-opportunity')} className="px-8 py-4 rounded-xl font-semibold text-[15px] cursor-pointer transition-all duration-[350ms] ease-in-out bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-[0_10px_35px_-5px_rgba(59,130,246,0.6)] hover:-translate-y-[3px] hover:shadow-[0_18px_45px_-5px_rgba(59,130,246,0.75)] hover:scale-[1.02]">
               <span className="flex items-center gap-2">
                 <Plus className="w-[18px] h-[18px]" />
                 Post Opportunity
               </span>
             </button>
-            <button className="px-8 py-4 rounded-xl font-semibold text-[15px] cursor-pointer transition-all duration-[350ms] ease-in-out bg-transparent border border-white/25 text-white hover:border-blue-400/70 hover:text-blue-100 hover:bg-white/[0.06] hover:shadow-[0_0_25px_rgba(96,165,250,0.25)]">
+            <button onClick={() => handleRecruiterAction('interviews')} className="px-8 py-4 rounded-xl font-semibold text-[15px] cursor-pointer transition-all duration-[350ms] ease-in-out bg-transparent border border-white/25 text-white hover:border-blue-400/70 hover:text-blue-100 hover:bg-white/[0.06] hover:shadow-[0_0_25px_rgba(96,165,250,0.25)]">
               <span className="flex items-center gap-2">
                 Interview Candidates
               </span>

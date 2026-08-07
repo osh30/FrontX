@@ -132,6 +132,9 @@ const createResource = async (req, res) => {
       uploadedByRole: isAlumni ? 'alumni' : 'admin'
     });
 
+    const io = req.app.get('io');
+    if (io) io.emit('new_resource', { resourceId: resource._id });
+
     res.status(201).json({ success: true, resource });
   } catch (error) {
     console.error('Create admin resource error:', error);
@@ -167,6 +170,9 @@ const updateResource = async (req, res) => {
 
     await resource.save();
 
+    const io = req.app.get('io');
+    if (io) io.emit('resource:updated', { resourceId: resource._id });
+
     res.json({ success: true, resource });
   } catch (error) {
     console.error('Update admin resource error:', error);
@@ -193,6 +199,9 @@ const deleteResource = async (req, res) => {
     ]);
 
     await AdminResource.findByIdAndDelete(req.params.id);
+
+    const io = req.app.get('io');
+    if (io) io.emit('resource:deleted', { resourceId: req.params.id });
 
     res.json({ success: true, message: 'Resource deleted successfully' });
   } catch (error) {

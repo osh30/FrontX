@@ -1262,7 +1262,7 @@ export const AnonymousSharing = () => {
 };
 
 // SECTION 10 — STUDENT NETWORK
-export const StudentNetwork = () => {
+export const StudentNetwork = ({ onViewProfile }) => {
   const [students, setStudents] = React.useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -1340,7 +1340,7 @@ export const StudentNetwork = () => {
             </p>
             <div className="w-full flex mt-auto">
               <button 
-                onClick={() => navigate(`/dashboard/profile/${student._id}`)}
+                onClick={() => onViewProfile ? onViewProfile(student._id) : navigate(`/dashboard/profile/${student._id}`)}
                 className="w-full py-1.5 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors"
               >
                 View Profile

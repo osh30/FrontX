@@ -11,13 +11,29 @@ const Notification = require('../models/Notification');
 const MentorshipRequest = require('../models/MentorshipRequest');
 const CollaborationApplication = require('../models/CollaborationApplication');
 
+// Build the conversation preview for the OTHER participant (never the logged-in user)
+function buildOtherParticipant(reqUser, participants) {
+  const myId = String(reqUser);
+  const otherUser = (participants || []).find(p => String(p._id) !== myId) || (participants || [])[0] || null;
+  if (!otherUser) return null;
+  return {
+    _id: otherUser._id,
+    fullName: otherUser.name,
+    profilePhoto: otherUser.profilePicture,
+    department: otherUser.department,
+    role: otherUser.role,
+    session: otherUser.session,
+    graduationYear: otherUser.graduationYear
+  };
+}
+
 // GET /api/chat/conversations
 exports.getConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
       participants: req.user.id
     })
-      .populate('participants', 'name role profilePicture department')
+      .populate('participants', 'name role profilePicture department session graduationYear')
       .sort({ lastMessageTime: -1, updatedAt: -1 });
 
     const pinnedChats = await PinnedChat.find({ user: req.user.id }).lean();
@@ -25,7 +41,7 @@ exports.getConversations = async (req, res) => {
 
     const enriched = await Promise.all(conversations.map(async (conv) => {
       const obj = conv.toObject();
-      const other = obj.participants.find(p => p._id.toString() !== req.user.id);
+      const otherParticipant = buildOtherParticipant(req.user.id, obj.participants);
       const unreadCount = await Message.countDocuments({
         conversation: conv._id,
         receiver: req.user.id,
@@ -38,7 +54,7 @@ exports.getConversations = async (req, res) => {
         user: req.user.id,
         conversation: conv._id
       }).lean();
-      return { ...obj, other, unreadCount, isPinned, label: label?.label || '' };
+      return { ...obj, other: otherParticipant, otherParticipant, unreadCount, isPinned, label: label?.label || '' };
     }));
 
     enriched.sort((a, b) => {
@@ -69,8 +85,10 @@ exports.createConversation = async (req, res) => {
         participants: [req.user.id, participantId]
       });
     }
-    const populated = await conv.populate('participants', 'name role profilePicture department');
-    res.json(populated);
+    const populated = await conv.populate('participants', 'name role profilePicture department session graduationYear');
+    const obj = populated.toObject();
+    const otherParticipant = buildOtherParticipant(req.user.id, obj.participants);
+    res.json({ ...obj, other: otherParticipant, otherParticipant });
   } catch (error) {
     console.error('Error creating conversation:', error);
     res.status(500).json({ message: 'Server error' });
@@ -82,11 +100,11 @@ exports.getMessages = async (req, res) => {
   try {
     const { id } = req.params;
     const conv = await Conversation.findById(id);
-    if (!conv || !conv.participants.map(p => p.toString()).includes(req.user.id)) {
+    if (!conv || !conv.participants.map(p => p.toString()).includes(String(req.user.id))) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const otherParticipant = conv.participants.find(p => p.toString() !== req.user.id);
+    const otherParticipant = conv.participants.find(p => p.toString() !== String(req.user.id));
 
     await Message.updateMany(
       { conversation: id, receiver: req.user.id, isRead: false },
@@ -156,11 +174,11 @@ exports.sendMessage = async (req, res) => {
     const { content, messageType, fileUrl, fileName, fileSize } = req.body;
 
     const conv = await Conversation.findById(id);
-    if (!conv || !conv.participants.map(p => p.toString()).includes(req.user.id)) {
+    if (!conv || !conv.participants.map(p => p.toString()).includes(String(req.user.id))) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const receiver = conv.participants.find(p => p.toString() !== req.user.id);
+    const receiver = conv.participants.find(p => p.toString() !== String(req.user.id));
 
     const msg = await Message.create({
       conversation: id,
@@ -438,7 +456,7 @@ exports.createNote = async (req, res) => {
     const { title, content } = req.body;
     const conv = await Conversation.findById(req.params.id);
     if (!conv) return res.status(404).json({ message: 'Conversation not found' });
-    const studentId = conv.participants.find(p => p.toString() !== req.user.id);
+    const studentId = conv.participants.find(p => p.toString() !== String(req.user.id));
     const note = await PrivateNote.create({
       alumniId: req.user.id,
       studentId,
@@ -514,7 +532,7 @@ exports.createGoal = async (req, res) => {
     const { title, progress, deadline } = req.body;
     const conv = await Conversation.findById(req.params.id);
     if (!conv) return res.status(404).json({ message: 'Conversation not found' });
-    const studentId = conv.participants.find(p => p.toString() !== req.user.id);
+    const studentId = conv.participants.find(p => p.toString() !== String(req.user.id));
     const goal = await MentorshipGoal.create({
       alumniId: req.user.id,
       studentId,
@@ -600,7 +618,7 @@ exports.createReminder = async (req, res) => {
     const { title, reminderDate, reminderTime } = req.body;
     const conv = await Conversation.findById(req.params.id);
     if (!conv) return res.status(404).json({ message: 'Conversation not found' });
-    const studentId = conv.participants.find(p => p.toString() !== req.user.id);
+    const studentId = conv.participants.find(p => p.toString() !== String(req.user.id));
     const reminder = await FollowUpReminder.create({
       alumniId: req.user.id,
       studentId,
@@ -657,12 +675,13 @@ exports.searchConversations = async (req, res) => {
 
     const conversations = await Conversation.find({
       participants: req.user.id
-    }).populate('participants', 'name department profilePicture');
+    }).populate('participants', 'name department profilePicture session graduationYear');
 
     const results = [];
     for (const conv of conversations) {
-      const other = conv.participants.find(p => p._id.toString() !== req.user.id);
+      const other = conv.participants.find(p => String(p._id) !== String(req.user.id));
       if (!other) continue;
+      const otherParticipant = buildOtherParticipant(req.user.id, conv.participants);
       const nameMatch = other.name?.toLowerCase().includes(q.toLowerCase());
       const deptMatch = other.department?.toLowerCase().includes(q.toLowerCase());
       const lastMsgMatch = conv.lastMessage?.toLowerCase().includes(q.toLowerCase());
@@ -674,7 +693,7 @@ exports.searchConversations = async (req, res) => {
           isDeletedForReceiver: false,
           isDeletedForEveryone: false
         });
-        results.push({ ...conv.toObject(), other, unreadCount });
+        results.push({ ...conv.toObject(), otherParticipant, unreadCount });
       }
     }
 

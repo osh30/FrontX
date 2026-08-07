@@ -32,7 +32,7 @@ const AdminSidebar = ({ collapsed, setCollapsed }) => {
     <motion.aside
       animate={{ width: collapsed ? 76 : 280 }}
       transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="relative h-screen flex flex-col overflow-hidden shrink-0 border-r border-white/[0.04] z-50"
+      className="sticky top-0 h-screen flex flex-col overflow-hidden shrink-0 border-r border-white/[0.04] z-50"
       style={{
         background: 'linear-gradient(170deg, #0B1120 0%, #0F1B2D 25%, #111D33 50%, #0D1625 75%, #0A0F1E 100%)',
       }}

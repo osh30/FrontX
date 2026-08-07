@@ -77,6 +77,12 @@ const registerUser = async (req, res) => {
       return res.status(403).json({ message: 'Registration is only available for Students, Alumni, and Recruiters.' });
     }
 
+    if (role === 'student' || role === 'alumni') {
+      if (!email || !email.toLowerCase().endsWith('@std.uftb.ac.bd')) {
+        return res.status(400).json({ message: 'Please use your official UFTB student email address (@std.uftb.ac.bd).' });
+      }
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists with this email' });

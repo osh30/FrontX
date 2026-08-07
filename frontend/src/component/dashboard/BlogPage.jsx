@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  PenTool, Search, SlidersHorizontal, ChevronDown, X, Clock, Eye,
-  Heart, MessageCircle, Bookmark, Share2, ArrowUpDown, Tag, User,
+  PenTool, Search, SlidersHorizontal, ChevronDown, X, Clock,
+  Heart, MessageCircle, Bookmark, ArrowUpDown, Tag, User,
   Loader2, BookOpen, Star, ChevronRight, Flame
 } from 'lucide-react';
 import Avatar from './Avatar';
@@ -357,7 +357,6 @@ const BlogPage = () => {
 
 const BlogCard = ({ blog, index, navigate }) => {
   const [isBookmarked, setIsBookmarked] = useState(blog.isBookmarked);
-  const [likeCount, setLikeCount] = useState(blog.likeCount);
   const [isLiked, setIsLiked] = useState(blog.isLiked);
 
   const handleBookmark = async (e) => {
@@ -381,21 +380,8 @@ const BlogCard = ({ blog, index, navigate }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsLiked(res.data.liked);
-      setLikeCount(res.data.likeCount);
     } catch (err) {
       console.error('Like failed', err);
-    }
-  };
-
-  const handleShare = async (e) => {
-    e.stopPropagation();
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API}/api/blogs/${blog._id}/share`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } catch (err) {
-      console.error('Share failed', err);
     }
   };
 
@@ -467,8 +453,7 @@ const BlogCard = ({ blog, index, navigate }) => {
         {/* Stats */}
         <div className="flex items-center justify-between text-[10px] text-gray-400 mb-3">
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {blog.views || 0}</span>
-            <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {likeCount || 0}</span>
+            <span className="flex items-center gap-1"><Heart className="w-3 h-3" /></span>
             <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {blog.commentCount || 0}</span>
           </div>
         </div>
@@ -492,13 +477,6 @@ const BlogCard = ({ blog, index, navigate }) => {
             }`}
           >
             <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-current' : ''}`} />
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={handleShare}
-            className="p-2 rounded-xl text-xs bg-gray-50 text-gray-400 border border-gray-100 hover:bg-blue-50 hover:text-blue-500 transition-all"
-          >
-            <Share2 className="w-3.5 h-3.5" />
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.9 }}
