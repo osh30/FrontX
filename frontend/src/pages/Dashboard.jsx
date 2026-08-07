@@ -1,4 +1,4 @@
-import DashboardRouter from '../component/Dashboard/DashboardRouter';
+import DashboardRouter from '../component/dashboard/DashboardRouter';
 
 const Dashboard = () => {
   return <DashboardRouter />;
