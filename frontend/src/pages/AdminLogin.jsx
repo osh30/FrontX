@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -33,6 +33,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,6 +56,8 @@ const AdminLogin = () => {
       navigate('/admin/dashboard');
     } else {
       setErrors({ submit: result.error || 'Login failed. Please try again.' });
+      setTurnstileToken('');
+      setTurnstileResetKey(prev => prev + 1);
     }
     setIsLoading(false);
   };
@@ -167,7 +170,7 @@ const AdminLogin = () => {
 
                   <motion.div variants={fadeUp} custom={3}>
                     <div className="flex justify-center min-h-[65px]">
-                      <TurnstileWidget onChange={setTurnstileToken} />
+                      <TurnstileWidget key={turnstileResetKey} onChange={setTurnstileToken} />
                     </div>
                     {errors.turnstile && <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-red-400 text-xs mt-1.5 text-center">{errors.turnstile}</motion.p>}
                   </motion.div>
