@@ -94,6 +94,10 @@ export const GlobalChat = ({ user }) => {
 
   const isAlumni = user?.role === 'alumni';
 
+  // Normalize current user id (login returns `id`, /auth/me returns `_id`)
+  const currentUserId = String(user?._id || user?.id || '');
+  const isSenderMe = (sender) => !!currentUserId && !!sender && String(sender?._id || sender) === currentUserId;
+
   // Socket setup
   useEffect(() => {
     if (!user) return;
@@ -129,7 +133,7 @@ export const GlobalChat = ({ user }) => {
 
     socket.on('message:seen', ({ conversationId }) => {
       setMessages(prev => prev.map(m => {
-        if (m.conversation === conversationId && m.sender !== user._id) {
+        if (m.conversation === conversationId && !isSenderMe(m.sender)) {
           return { ...m, isRead: true, readAt: new Date() };
         }
         return m;
@@ -137,7 +141,7 @@ export const GlobalChat = ({ user }) => {
     });
 
     socket.on('message:typing', ({ conversationId, userId, isTyping: typing }) => {
-      if (conversationId === activeConvId && userId !== user._id) {
+      if (conversationId === activeConvId && String(userId) !== currentUserId) {
         setIsTyping(typing);
         setTypingUser(userId);
       }
@@ -306,10 +310,10 @@ export const GlobalChat = ({ user }) => {
       handleSend();
     }
     if (socketRef.current && activeConvId && otherUser?._id) {
-      socketRef.current.emit('message:typing', { conversationId: activeConvId, userId: user._id, isTyping: true, receiverId: otherUser._id });
+      socketRef.current.emit('message:typing', { conversationId: activeConvId, userId: currentUserId, isTyping: true, receiverId: otherUser._id });
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
-        socketRef.current.emit('message:typing', { conversationId: activeConvId, userId: user._id, isTyping: false, receiverId: otherUser._id });
+        socketRef.current.emit('message:typing', { conversationId: activeConvId, userId: currentUserId, isTyping: false, receiverId: otherUser._id });
       }, 1500);
     }
   };
@@ -563,7 +567,7 @@ export const GlobalChat = ({ user }) => {
   });
 
   const renderMessage = (msg) => {
-    const isMe = msg.sender?._id === user._id || msg.sender === user._id;
+    const isMe = isSenderMe(msg.sender);
     const reactions = msg.reactions || [];
     const reactionSummary = reactions.reduce((acc, r) => {
       acc[r.emoji] = (acc[r.emoji] || 0) + 1;
