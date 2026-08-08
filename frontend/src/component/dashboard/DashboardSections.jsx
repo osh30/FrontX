@@ -957,53 +957,44 @@ export const ResourceHub = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [resources, setResources] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
 
-  const CATEGORIES = ["All", "📚 Book / eBook", "📄 Research Paper", "🎓 Course Material", "📝 Academic Notes", "💼 Career Guide", "🎤 Interview Preparation", "🔬 Research Guide", "🧑‍💻 Project Resource", "📊 Industry Report", "🎥 Video Resource", "🔗 Useful Website", "📁 Other"];
+  // Same data source as the full Resources page (PremiumAdminResourceHub)
+  const fetchResources = React.useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/admin-resources/public`);
+      setResources(res.data?.resources || []);
+    } catch (err) {
+      console.error("Failed to fetch resources", err);
+    }
+  }, []);
 
   useEffect(() => {
     fetchResources();
     const socket = io(SOCKET_URL);
-    socket.on('new_resource', (newResource) => {
-      setResources(prev => [newResource, ...prev]);
-    });
-    socket.on('resource:updated', (updated) => {
-      setResources(prev => prev.map(r => r._id === updated._id ? updated : r));
-    });
-    socket.on('resource:deleted', ({ _id }) => {
-      setResources(prev => prev.filter(r => r._id !== _id));
-    });
+    socket.on('new_resource', fetchResources);
+    socket.on('resource:updated', fetchResources);
+    socket.on('resource:deleted', fetchResources);
     return () => socket.disconnect();
-  }, [activeCategory, searchTerm]);
-
-  const fetchResources = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      
-      let url = `${API_BASE}/resources?category=${encodeURIComponent(activeCategory)}`;
-      if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
-
-      const res = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setResources(Array.isArray(res.data) ? res.data : (res.data?.resources || []));
-    } catch (err) {
-      console.error("Failed to fetch resources", err);
-    }
-  };
+  }, [fetchResources]);
 
   const formatDate = (d) => {
     if (!d) return '';
     return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const getFileIcon = (res) => {
-    if (res.uploadType === 'ExternalLink') return ExternalLink;
-    if (res.fileType?.includes('pdf')) return FileText;
-    if (res.fileType?.includes('video') || res.fileType?.includes('mp4')) return PlayCircle;
-    return BookOpen;
+  const handleViewPdf = (pdfUrl) => {
+    if (!pdfUrl) return;
+    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleDownload = async (res) => {
+    try {
+      const { data } = await axios.get(`${API_BASE}/admin-resources/${res._id}/download`);
+      setResources(prev => prev.map(r => r._id === res._id ? { ...r, downloadsCount: data.downloadsCount } : r));
+      window.open(data.downloadUrl || data.pdfUrl, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      console.error('Download failed', err);
+    }
   };
 
   return (
@@ -1013,7 +1004,7 @@ export const ResourceHub = () => {
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <BookOpen className="w-8 h-8 text-gray-500" />
           </div>
-          <p className="text-gray-500 font-medium">No resources found matching your criteria.</p>
+          <p className="text-gray-500 font-medium">No resources available at the moment.</p>
           {user?.role === 'alumni' && (
             <button 
               onClick={() => navigate('/alumni/resources/upload')}
@@ -1023,85 +1014,87 @@ export const ResourceHub = () => {
             </button>
           )}
         </div>
-      ) : resources.slice(0, 4).map((res) => {
-        const FileIcon = getFileIcon(res);
-        return (
-          <motion.div
-            key={res._id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-sm hover:shadow-lg transition-all overflow-hidden group"
-          >
-            {res.isFeatured && (
-              <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 p-1.5 rounded-full shadow-sm" title="Featured Resource">
-                <Sparkles className="w-3.5 h-3.5" />
+      ) : resources.slice(0, 4).map((res) => (
+        <motion.div
+          key={res._id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-sm hover:shadow-lg transition-all overflow-hidden group"
+        >
+          <div className="w-20 min-h-full shrink-0 relative">
+            {res.coverImage ? (
+              <img src={res.coverImage} alt={res.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-white/70 backdrop-blur flex items-center justify-center text-purple-600 shadow-sm">
+                  <FileText className="w-5 h-5" />
+                </div>
               </div>
             )}
+          </div>
 
-            <div className="w-20 min-h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center shrink-0">
-              <div className="w-10 h-10 rounded-xl bg-white/70 backdrop-blur flex items-center justify-center text-purple-600 shadow-sm">
-                <FileIcon className="w-5 h-5" />
+          <div className="flex-1 p-4 flex flex-col sm:flex-row gap-4 min-w-0">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-gray-900 text-base group-hover:text-purple-600 transition-colors truncate">
+                  {res.title}
+                </h3>
+                <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+                  {res.category}
+                </span>
               </div>
-            </div>
 
-            <div className="flex-1 p-4 flex flex-col sm:flex-row gap-4 min-w-0">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold text-gray-900 text-base group-hover:text-purple-600 transition-colors truncate">
-                    {res.title}
-                  </h3>
-                  <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
-                    {res.category.replace(/[\u{1F300}-\u{1F6FF}]/gu, '').trim()}
-                  </span>
-                </div>
+              <p className="text-sm text-gray-500 line-clamp-2 mt-1.5 leading-relaxed">
+                {res.shortDescription || res.description}
+              </p>
 
-                <p className="text-sm text-gray-500 line-clamp-2 mt-1.5 leading-relaxed">
-                  {res.description}
-                </p>
-
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3">
-                  <div className="flex items-center gap-2">
-                    <Avatar src={res.alumniId?.profilePicture} alt="Alumni" size={24} className="border border-gray-200 shrink-0" />
-                    <span className="text-xs font-medium text-gray-600 truncate max-w-[120px]">{res.alumniId?.name || 'Alumni'}</span>
-                  </div>
-                  {res.alumniId?.department && (
-                    <span className="text-xs text-gray-500 hidden sm:inline">• {res.alumniId.department}</span>
-                  )}
-                  <span className="text-xs text-gray-500">• {formatDate(res.createdAt)}</span>
-                </div>
-
-                {res.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {res.tags.slice(0, 3).map((tag, i) => (
-                      <span key={i} className="text-[10px] font-medium px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
-                        {tag}
-                      </span>
-                    ))}
-                    {res.tags.length > 3 && (
-                      <span className="text-[10px] font-medium px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
-                        +{res.tags.length - 3}
-                      </span>
-                    )}
-                  </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3">
+                <span className="text-xs font-medium text-gray-600 truncate max-w-[120px]">
+                  {res.uploadedByRole === 'alumni' ? 'Alumni' : 'Admin'}
+                </span>
+                {res.department && (
+                  <span className="text-xs text-gray-500 hidden sm:inline">• {res.department}</span>
                 )}
+                <span className="text-xs text-gray-500">• {formatDate(res.createdAt)}</span>
               </div>
 
-              <div className="flex sm:flex-col items-center sm:justify-center gap-2 shrink-0">
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/resources/${res._id}`, { state: { resource: res } }); }}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
-                >
-                  View Details
-                </button>
-                <div className="flex items-center gap-3 text-gray-500">
-                  <Download className="w-4 h-4" />
-                  <span className="text-xs font-bold text-gray-500">{res.downloads}</span>
+              {res.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {res.tags.slice(0, 3).map((tag, i) => (
+                    <span key={i} className="text-[10px] font-medium px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                  {res.tags.length > 3 && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
+                      +{res.tags.length - 3}
+                    </span>
+                  )}
                 </div>
+              )}
+            </div>
+
+            <div className="flex sm:flex-col items-center sm:justify-center gap-2 shrink-0">
+              <button
+                onClick={() => handleViewPdf(res.pdfUrl)}
+                className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+              >
+                View PDF
+              </button>
+              <button
+                onClick={() => handleDownload(res)}
+                className="w-full px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-xs font-medium transition-colors shadow-sm whitespace-nowrap flex items-center justify-center gap-1"
+              >
+                <Download className="w-3.5 h-3.5" /> Download
+              </button>
+              <div className="flex items-center gap-1 justify-center text-gray-500">
+                <Download className="w-3.5 h-3.5" />
+                <span className="text-xs font-bold text-gray-500">{res.downloadsCount || 0}</span>
               </div>
             </div>
-          </motion.div>
-        );
-      })}
+          </div>
+        </motion.div>
+      ))}
     </div>
   );
 };
