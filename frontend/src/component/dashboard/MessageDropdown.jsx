@@ -84,7 +84,7 @@ export const MessageDropdown = ({ isOpen, onClose, onOpenFullChat }) => {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
                         <p className="text-sm font-semibold text-gray-900 truncate">{otherUser?.name}</p>
-                        <p className="text-xs text-gray-400">{conv.lastMessage ? formatTime(conv.lastMessage.createdAt) : ''}</p>
+                        <p className="text-xs text-gray-500">{conv.lastMessage ? formatTime(conv.lastMessage.createdAt) : ''}</p>
                       </div>
                       <p className={`text-sm truncate ${isUnread ? 'font-semibold text-gray-900' : 'text-gray-500'}`}>
                         {conv.lastMessage?.text || "Started a conversation"}

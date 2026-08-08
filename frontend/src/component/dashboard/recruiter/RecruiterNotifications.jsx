@@ -146,7 +146,7 @@ const RecruiterNotifications = () => {
             {unreadCount > 0
               ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
               : 'All caught up!'}
-            {total > 0 && <span className="text-gray-400"> &middot; {total} total</span>}
+            {total > 0 && <span className="text-gray-500"> &middot; {total} total</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -167,13 +167,13 @@ const RecruiterNotifications = () => {
 
       {/* Search */}
       <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
         <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search notifications..."
           className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
         {searchQuery && (
           <button type="button" onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600">
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-600">
             <X className="w-4 h-4" />
           </button>
         )}
@@ -213,7 +213,7 @@ const RecruiterNotifications = () => {
             <p className="text-gray-500 font-medium">
               {searchQuery ? 'No notifications match your search' : 'No notifications'}
             </p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 mt-1">
               {searchQuery ? 'Try a different search term' : 'You\'re all caught up!'}
             </p>
           </motion.div>
@@ -244,11 +244,11 @@ const RecruiterNotifications = () => {
                       <p className={`text-sm leading-snug ${n.isRead ? 'font-medium text-gray-700' : 'font-bold text-gray-900'}`}>
                         {n.title}
                       </p>
-                      <span className="text-[11px] text-gray-400 shrink-0 whitespace-nowrap">
+                      <span className="text-[11px] text-gray-500 shrink-0 whitespace-nowrap">
                         {formatDateTime(n.createdAt)}
                       </span>
                     </div>
-                    <p className={`text-xs mt-1 leading-relaxed ${n.isRead ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className={`text-xs mt-1 leading-relaxed ${n.isRead ? 'text-gray-500' : 'text-gray-600'}`}>
                       {n.message}
                     </p>
                     <div className="flex items-center gap-2 mt-1.5">

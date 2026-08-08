@@ -164,10 +164,10 @@ const BookCard = ({ book }) => (
         {book.averageRating ? (
           <>
             <span className="text-xs font-bold text-gray-800">{book.averageRating.toFixed(1)}</span>
-            {book.ratingCount > 0 && <span className="text-[10px] text-gray-400">({book.ratingCount} ratings)</span>}
+            {book.ratingCount > 0 && <span className="text-[10px] text-gray-500">({book.ratingCount} ratings)</span>}
           </>
         ) : (
-          <span className="text-[10px] text-gray-400 uppercase tracking-wide">No rating</span>
+          <span className="text-[10px] text-gray-500 uppercase tracking-wide">No rating</span>
         )}
       </div>
       <p className="text-xs text-gray-500 leading-relaxed mt-2 line-clamp-3">{stripHtml(book.description) || 'No description available.'}</p>
@@ -253,7 +253,7 @@ const VideosSection = ({ loading, videos, status }) => {
           <div className="p-4 flex-1 flex flex-col">
             <h4 className="font-bold text-sm text-gray-900 leading-snug line-clamp-2">{v.title}</h4>
             <p className="text-xs text-gray-500 mt-1.5 line-clamp-1">{v.channelTitle}</p>
-            <p className="text-[11px] text-gray-400 mt-1">Published {formatDate(v.publishedAt)}</p>
+            <p className="text-[11px] text-gray-500 mt-1">Published {formatDate(v.publishedAt)}</p>
             <a href={`https://www.youtube.com/watch?v=${v.videoId}`} target="_blank" rel="noopener noreferrer"
               className="mt-4 px-4 py-2 bg-gradient-to-r from-[#0F172A] to-[#1E3A8A] text-white rounded-xl text-[11px] font-semibold text-center hover:from-red-600 hover:to-rose-600 transition-all shadow-md">
               Watch on YouTube

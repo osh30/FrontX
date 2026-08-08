@@ -370,7 +370,7 @@ const Interviews = () => {
                           </div>
                         ))}
                         {dayInterviews.length > 3 && (
-                          <span className="text-[10px] text-gray-400 font-medium">+{dayInterviews.length - 3} more</span>
+                          <span className="text-[10px] text-gray-500 font-medium">+{dayInterviews.length - 3} more</span>
                         )}
                       </div>
                     </>
@@ -401,7 +401,7 @@ const Interviews = () => {
             <div className="p-12 text-center">
               <Calendar className="w-14 h-14 text-gray-200 mx-auto mb-4" />
               <p className="text-gray-500 font-semibold text-lg">No interviews found</p>
-              <p className="text-sm text-gray-400 mt-1">Schedule interviews from the Applicants tab or click "Schedule Interview" above.</p>
+              <p className="text-sm text-gray-500 mt-1">Schedule interviews from the Applicants tab or click "Schedule Interview" above.</p>
             </div>
           ) : interviews.map((int, idx) => (
             <motion.div
@@ -423,20 +423,20 @@ const Interviews = () => {
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">{int.student?.name || 'Student'}</p>
-                  <p className="text-xs text-gray-400 truncate">{int.student?.email || ''}</p>
+                  <p className="text-xs text-gray-500 truncate">{int.student?.email || ''}</p>
                 </div>
               </div>
 
               {/* Position */}
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">{int.opportunity?.title || int.title}</p>
-                <p className="text-xs text-gray-400">{int.companyName || ''}</p>
+                <p className="text-xs text-gray-500">{int.companyName || ''}</p>
               </div>
 
               {/* Date & Time */}
               <div>
                 <p className="text-sm font-medium text-gray-800">{new Date(int.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                <p className="text-xs text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" />{int.time}</p>
+                <p className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3" />{int.time}</p>
               </div>
 
               {/* Type */}
@@ -492,7 +492,7 @@ const Interviews = () => {
                   </>
                 )}
                 <button onClick={() => deleteInterview(int._id)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                  className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -570,7 +570,7 @@ const Interviews = () => {
                     <p className="font-bold text-gray-900">{selectedInterview.student?.name}</p>
                     <p className="text-sm text-gray-500">{selectedInterview.student?.email}</p>
                     {selectedInterview.student?.department && (
-                      <p className="text-xs text-gray-400">{selectedInterview.student.department} &middot; {selectedInterview.student.graduationYear || ''}</p>
+                      <p className="text-xs text-gray-500">{selectedInterview.student.department} &middot; {selectedInterview.student.graduationYear || ''}</p>
                     )}
                   </div>
                 </div>
@@ -1003,7 +1003,7 @@ const Interviews = () => {
 
 const DetailItem = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-2">
-    <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+    <Icon className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
     <div>
       <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">{label}</p>
       <p className="text-sm text-gray-800">{value || '-'}</p>

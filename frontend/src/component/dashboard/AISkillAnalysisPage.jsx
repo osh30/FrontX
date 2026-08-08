@@ -95,7 +95,7 @@ const AISkillAnalysisPage = () => {
               <p className="text-sm font-medium text-gray-500 mt-1">Target Career: <span className="text-purple-600 font-bold px-2 py-0.5 bg-purple-50 rounded-md">{analysis.careerInterest || 'Tech'}</span></p>
             </div>
           </div>
-          <div className="text-xs font-semibold text-gray-400 bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm">
+          <div className="text-xs font-semibold text-gray-500 bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm">
             Generated on: {new Date(analysis.generatedAt).toLocaleDateString()}
           </div>
         </div>

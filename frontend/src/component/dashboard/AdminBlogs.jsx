@@ -153,7 +153,7 @@ const AdminBlogs = () => {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input
             type="text"
             placeholder="Search by title, summary, or tag..."
@@ -163,7 +163,7 @@ const AdminBlogs = () => {
           />
         </div>
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <select
             value={category}
             onChange={e => setCategory(e.target.value)}
@@ -174,7 +174,7 @@ const AdminBlogs = () => {
           </select>
         </div>
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <select
             value={status}
             onChange={e => setStatus(e.target.value)}
@@ -204,7 +204,7 @@ const AdminBlogs = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
           <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 font-semibold">No blogs found</p>
-          <p className="text-gray-400 text-sm mt-1">No blogs match your current filters</p>
+          <p className="text-gray-500 text-sm mt-1">No blogs match your current filters</p>
         </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -251,13 +251,13 @@ const AdminBlogs = () => {
               <div className="p-5 flex-1 flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="px-2.5 py-0.5 bg-violet-50 text-violet-600 rounded-full text-[10px] font-bold">{blog.category}</span>
-                  <span className="flex items-center gap-1 text-[11px] text-gray-400"><Calendar className="w-3 h-3" /> {formatDate(blog.publishedAt || blog.createdAt)}</span>
+                  <span className="flex items-center gap-1 text-[11px] text-gray-500"><Calendar className="w-3 h-3" /> {formatDate(blog.publishedAt || blog.createdAt)}</span>
                 </div>
                 <h3 className="font-bold text-gray-900 leading-snug line-clamp-2 mb-1 group-hover:text-violet-600 transition-colors">{blog.title}</h3>
                 {blog.subtitle && <p className="text-xs text-gray-500 line-clamp-1 mb-2">{blog.subtitle}</p>}
                 <p className="text-xs text-gray-500 line-clamp-2 mb-3 flex-1 leading-relaxed">{blog.summary}</p>
 
-                <div className="flex items-center gap-3 text-[11px] text-gray-400 mb-3">
+                <div className="flex items-center gap-3 text-[11px] text-gray-500 mb-3">
                   <span className="flex items-center gap-1">{blog.views || 0}</span>
                   <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {blog.likeCount || 0}</span>
                   <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {blog.commentCount || 0}</span>
@@ -265,7 +265,7 @@ const AdminBlogs = () => {
                 </div>
 
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                  <span className="text-[11px] text-gray-400 truncate">by {blog.author?.name || 'Unknown'}</span>
+                  <span className="text-[11px] text-gray-500 truncate">by {blog.author?.name || 'Unknown'}</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => navigate(`/admin/blogs/edit/${blog._id}`)}

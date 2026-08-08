@@ -56,7 +56,7 @@ const ChartCard = ({ title, icon: Icon, children, className = '' }) => (
     className={`bg-white rounded-2xl border border-gray-100 p-6 ${className}`}
   >
     <div className="flex items-center gap-2 mb-5">
-      <Icon className="w-5 h-5 text-gray-400" />
+      <Icon className="w-5 h-5 text-gray-500" />
       <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">{title}</h3>
     </div>
     {children}
@@ -233,7 +233,7 @@ const AdminPlacementStatistics = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No department data available</div>
+            <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No department data available</div>
           )}
         </ChartCard>
 
@@ -250,7 +250,7 @@ const AdminPlacementStatistics = () => {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No monthly data available</div>
+            <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No monthly data available</div>
           )}
         </ChartCard>
       </div>
@@ -282,7 +282,7 @@ const AdminPlacementStatistics = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No opportunity data available</div>
+            <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No opportunity data available</div>
           )}
         </ChartCard>
 
@@ -299,7 +299,7 @@ const AdminPlacementStatistics = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No company data available</div>
+            <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No company data available</div>
           )}
         </ChartCard>
       </div>
@@ -319,7 +319,7 @@ const AdminPlacementStatistics = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No recruiter activity data</div>
+            <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No recruiter activity data</div>
           )}
         </ChartCard>
 
@@ -339,7 +339,7 @@ const AdminPlacementStatistics = () => {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No trend data available</div>
+            <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No trend data available</div>
           )}
         </ChartCard>
       </div>
@@ -359,7 +359,7 @@ const AdminPlacementStatistics = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No salary data available</div>
+              <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No salary data available</div>
             )}
           </ChartCard>
 
@@ -375,7 +375,7 @@ const AdminPlacementStatistics = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No salary data available</div>
+              <div className="h-64 flex items-center justify-center text-gray-500 text-sm">No salary data available</div>
             )}
           </ChartCard>
         </div>
@@ -389,7 +389,7 @@ const AdminPlacementStatistics = () => {
           className="bg-white rounded-2xl border border-gray-100 p-6"
         >
           <div className="flex items-center gap-2 mb-5">
-            <DollarSign className="w-5 h-5 text-gray-400" />
+            <DollarSign className="w-5 h-5 text-gray-500" />
             <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Overall Salary Summary</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

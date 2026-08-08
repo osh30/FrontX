@@ -160,13 +160,13 @@ const RecruiterHome = ({ user }) => {
           className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900">Recent Applications</h3>
-            <FileText className="w-4 h-4 text-gray-400" />
+            <FileText className="w-4 h-4 text-gray-500" />
           </div>
           <div className="divide-y divide-gray-50">
             {recentApps.length === 0 ? (
               <div className="p-8 text-center">
                 <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-400">No applications yet</p>
+                <p className="text-sm text-gray-500">No applications yet</p>
                 <p className="text-xs text-gray-300 mt-1">Applications will appear here when students apply</p>
               </div>
             ) : (
@@ -179,7 +179,7 @@ const RecruiterHome = ({ user }) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800 truncate">{app.student?.name || 'Student'}</p>
-                    <p className="text-xs text-gray-400 truncate">{app.opportunity?.title || 'Opportunity'}</p>
+                    <p className="text-xs text-gray-500 truncate">{app.opportunity?.title || 'Opportunity'}</p>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                     app.status === 'shortlisted' ? 'bg-amber-50 text-amber-600' :
@@ -202,13 +202,13 @@ const RecruiterHome = ({ user }) => {
           className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900">Upcoming Interviews</h3>
-            <Calendar className="w-4 h-4 text-gray-400" />
+            <Calendar className="w-4 h-4 text-gray-500" />
           </div>
           <div className="divide-y divide-gray-50">
             {upcomingInterviews.length === 0 ? (
               <div className="p-8 text-center">
                 <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-400">No upcoming interviews</p>
+                <p className="text-sm text-gray-500">No upcoming interviews</p>
                 <p className="text-xs text-gray-300 mt-1">Scheduled interviews will appear here</p>
               </div>
             ) : (
@@ -219,7 +219,7 @@ const RecruiterHome = ({ user }) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800 truncate">{int.title}</p>
-                    <p className="text-xs text-gray-400">{int.student?.name || 'Student'} &middot; {new Date(int.date).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-500">{int.student?.name || 'Student'} &middot; {new Date(int.date).toLocaleDateString()}</p>
                   </div>
                   <span className="text-xs text-gray-500 font-medium">{int.time}</span>
                 </div>
@@ -236,13 +236,13 @@ const RecruiterHome = ({ user }) => {
           className="bg-white rounded-2xl border border-gray-200 overflow-hidden lg:col-span-2">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-sm font-bold text-gray-900">Latest Notifications</h3>
-            <Bell className="w-4 h-4 text-gray-400" />
+            <Bell className="w-4 h-4 text-gray-500" />
           </div>
           <div className="divide-y divide-gray-50">
             {notifications.length === 0 ? (
               <div className="p-8 text-center">
                 <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-400">No notifications</p>
+                <p className="text-sm text-gray-500">No notifications</p>
                 <p className="text-xs text-gray-300 mt-1">You're all caught up!</p>
               </div>
             ) : (
@@ -251,9 +251,9 @@ const RecruiterHome = ({ user }) => {
                   <div className={`w-2 h-2 rounded-full shrink-0 ${n.isRead ? 'bg-gray-300' : 'bg-blue-500'}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800">{n.title}</p>
-                    <p className="text-xs text-gray-400 truncate">{n.message}</p>
+                    <p className="text-xs text-gray-500 truncate">{n.message}</p>
                   </div>
-                  <span className="text-[10px] text-gray-400 shrink-0">
+                  <span className="text-[10px] text-gray-500 shrink-0">
                     {new Date(n.createdAt).toLocaleDateString()}
                   </span>
                 </div>

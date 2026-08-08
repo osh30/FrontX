@@ -75,7 +75,7 @@ export const RecommendedMentors = ({ onViewProfile, limit = 2 }) => {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Recommended Mentors</h2>
         <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-gray-400" />
+            <Users className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-lg font-medium text-gray-900 mb-1">No alumni available at the moment.</p>
           <p className="text-sm text-gray-500">Check back later as new mentors join the platform.</p>
@@ -118,7 +118,7 @@ export const RecommendedMentors = ({ onViewProfile, limit = 2 }) => {
                   <span key={i} className="text-xs bg-white text-gray-600 px-2 py-1 rounded-md border border-gray-100 shadow-sm">{skill}</span>
                 ))}
                 {(!mentor.interests || mentor.interests.length === 0) && (
-                  <span className="text-xs text-gray-400 italic">No interests listed</span>
+                  <span className="text-xs text-gray-500 italic">No interests listed</span>
                 )}
               </div>
               <motion.button
@@ -582,7 +582,7 @@ export const AISkillAnalysis = () => {
           <div className="text-left">
             <h3 className="text-xl font-bold text-gray-900">Analysis Complete</h3>
             <p className="text-sm text-gray-500 font-medium">Target: {analysis.careerInterest}</p>
-            <p className="text-xs text-gray-400 mt-1">Generated: {new Date(analysis.generatedAt).toLocaleDateString()}</p>
+            <p className="text-xs text-gray-500 mt-1">Generated: {new Date(analysis.generatedAt).toLocaleDateString()}</p>
           </div>
         </div>
         <button 
@@ -684,7 +684,7 @@ export const ProgressTrackerPreview = ({ setActiveTab }) => {
           <h4 className="text-2xl font-black text-gray-900">{progressData.streak} <span className="text-lg">🔥</span></h4>
           <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Day Streak</p>
           <div className="absolute top-2 right-2 flex flex-col items-end">
-             <span className="text-[9px] font-bold text-gray-400 uppercase">Longest</span>
+             <span className="text-[9px] font-bold text-gray-500 uppercase">Longest</span>
              <span className="text-xs font-black text-gray-600">{progressData.longestStreak}</span>
           </div>
         </div>
@@ -912,7 +912,7 @@ export const ProgressAnalyticsPage = ({ setActiveTab }) => {
               
               return (
                 <div key={idx} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${item.unlocked ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50/50 border-dashed border-gray-200 opacity-60'}`}>
-                  <div className={`p-3 rounded-xl shrink-0 ${item.unlocked ? item.bg + ' ' + item.color : 'bg-gray-200 text-gray-400'}`}>
+                  <div className={`p-3 rounded-xl shrink-0 ${item.unlocked ? item.bg + ' ' + item.color : 'bg-gray-200 text-gray-500'}`}>
                     <IconComp className="w-5 h-5" />
                   </div>
                   <div>
@@ -988,7 +988,7 @@ export const ResourceHub = () => {
       {resources.length === 0 ? (
         <div className="py-16 flex flex-col items-center justify-center bg-white/50 rounded-3xl border border-dashed border-gray-300">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <BookOpen className="w-8 h-8 text-gray-400" />
+            <BookOpen className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-gray-500 font-medium">No resources found matching your criteria.</p>
           {user?.role === 'alumni' && (
@@ -1042,9 +1042,9 @@ export const ResourceHub = () => {
                     <span className="text-xs font-medium text-gray-600 truncate max-w-[120px]">{res.alumniId?.name || 'Alumni'}</span>
                   </div>
                   {res.alumniId?.department && (
-                    <span className="text-xs text-gray-400 hidden sm:inline">• {res.alumniId.department}</span>
+                    <span className="text-xs text-gray-500 hidden sm:inline">• {res.alumniId.department}</span>
                   )}
-                  <span className="text-xs text-gray-400">• {formatDate(res.createdAt)}</span>
+                  <span className="text-xs text-gray-500">• {formatDate(res.createdAt)}</span>
                 </div>
 
                 {res.tags?.length > 0 && (
@@ -1070,7 +1070,7 @@ export const ResourceHub = () => {
                 >
                   View Details
                 </button>
-                <div className="flex items-center gap-3 text-gray-400">
+                <div className="flex items-center gap-3 text-gray-500">
                   <Download className="w-4 h-4" />
                   <span className="text-xs font-bold text-gray-500">{res.downloads}</span>
                 </div>
@@ -1123,7 +1123,7 @@ export const RecommendedLearning = ({ limit = 3 }) => {
       {notes.length === 0 ? (
         <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="w-8 h-8 text-gray-400" />
+            <BookOpen className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-lg font-medium text-gray-900 mb-1">No study notes uploaded yet.</p>
           <p className="text-sm text-gray-500">Be the first to share notes with your peers!</p>
@@ -1173,7 +1173,7 @@ export const RecommendedLearning = ({ limit = 3 }) => {
                       <Avatar src={uploader?.profilePicture} alt={uploader?.name} size={20} className="border-2 border-white shadow-sm" />
                       <span className="text-[11px] text-gray-500 truncate">{uploader?.name || 'Student'}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-[11px] text-gray-400 shrink-0">
+                    <div className="flex items-center gap-1 text-[11px] text-gray-500 shrink-0">
                       <Calendar className="w-3 h-3" />
                       {new Date(note.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </div>

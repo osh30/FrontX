@@ -433,7 +433,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
                 <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm inline-flex">
                   <Avatar src={resource.alumniId?.profilePicture} alt={resource.alumniId?.name} size={48} className="border-2 border-white shadow-sm" />
                   <div>
-                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-0.5">Shared By</p>
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-0.5">Shared By</p>
                     <div className="flex items-center gap-1.5">
                       <h3 className="font-bold text-gray-900">{resource.alumniId?.name || 'Unknown'}</h3>
                       <ShieldCheck className="w-4 h-4 text-blue-500" />
@@ -442,7 +442,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
                       <p className="text-xs text-gray-500 mt-0.5">{resource.alumniId.department}</p>
                     )}
                     {resource.alumniId?.careerInterest && (
-                      <p className="text-xs text-gray-400 mt-0.5">{resource.alumniId.careerInterest}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{resource.alumniId.careerInterest}</p>
                     )}
                   </div>
                 </div>
@@ -528,7 +528,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
                     {showPreview && canPreview && (
                       <div className="bg-white">
                         {previewError ? (
-                          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                          <div className="flex flex-col items-center justify-center py-16 text-gray-500">
                             <FileImage className="w-12 h-12 mb-3" />
                             <p className="text-sm">Preview could not be loaded</p>
                             <button onClick={() => { setPreviewError(false); window.open(resource.fileUrl, '_blank'); }}
@@ -549,7 +549,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
                               onError={() => setPreviewError(true)} />
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                          <div className="flex flex-col items-center justify-center py-16 text-gray-500">
                             <FileText className="w-12 h-12 mb-3" />
                             <p className="text-sm">Preview not available for this file type</p>
                           </div>
@@ -559,7 +559,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
                     {!showPreview && resource.fileUrl && (
                       <div className="p-4 text-center text-sm text-gray-500">
                         <p className="mb-2">Click "Open Preview" to view this resource in your browser</p>
-                        <p className="text-xs text-gray-400">or use the buttons below to download or preview in a new tab</p>
+                        <p className="text-xs text-gray-500">or use the buttons below to download or preview in a new tab</p>
                       </div>
                     )}
                     {!showPreview && resource.uploadType === 'ExternalLink' && resource.externalLink && (

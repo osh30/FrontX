@@ -130,7 +130,7 @@ export const CollaborationPage = ({ onViewProfile }) => {
         {/* Search */}
         <motion.div variants={fadeInUp}>
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
             <input
               type="text"
               value={searchQuery}
@@ -221,7 +221,7 @@ export const CollaborationPage = ({ onViewProfile }) => {
                       </span>
                     )}
                     <span className="flex items-center gap-1.5 font-medium ml-auto">
-                      <BookOpen className="w-4 h-4 text-gray-400" />
+                      <BookOpen className="w-4 h-4 text-gray-500" />
                       <span>{post.applicantCount || 0} applicant{(post.applicantCount || 0) !== 1 ? 's' : ''}</span>
                     </span>
                   </div>

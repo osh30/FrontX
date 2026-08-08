@@ -65,7 +65,7 @@ const ImagePicker = ({ value, onChange, label }) => {
             </>
           ) : (
             <>
-              <ImageIcon className="w-6 h-6 text-gray-400" />
+              <ImageIcon className="w-6 h-6 text-gray-500" />
               <span className="text-xs font-medium text-gray-500">Upload {label.toLowerCase()} (jpg, png, webp)</span>
             </>
           )}
@@ -587,7 +587,7 @@ const AdminBlogEditor = () => {
             <div className="bg-white dark:bg-[#0B1220] rounded-2xl border border-gray-200 dark:border-white/10 p-6">
               <h2 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">Hero Image</h2>
               <ImagePicker value={heroImage} onChange={setHeroImage} label="Hero image" />
-              <p className="text-[11px] text-gray-400 mt-2">Falls back to the cover image when empty.</p>
+              <p className="text-[11px] text-gray-500 mt-2">Falls back to the cover image when empty.</p>
             </div>
           </div>
 
@@ -595,7 +595,7 @@ const AdminBlogEditor = () => {
           <div className="bg-white dark:bg-[#0B1220] rounded-2xl border border-gray-200 dark:border-white/10 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 dark:border-white/10">
               <h2 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Article Body</h2>
-              <span className="text-xs text-gray-400">Rich text — headings, lists, tables, images & more</span>
+              <span className="text-xs text-gray-500">Rich text — headings, lists, tables, images & more</span>
             </div>
 
             {editor && (
@@ -647,7 +647,7 @@ const AdminBlogEditor = () => {
                       placeholder="Image caption (optional)"
                       className="flex-1 px-3 py-1.5 text-sm bg-white dark:bg-[#0B1220] border border-gray-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500/30"
                     />
-                    <span className="text-[11px] text-gray-400">Click an image to edit its caption</span>
+                    <span className="text-[11px] text-gray-500">Click an image to edit its caption</span>
                   </div>
                 )}
               </>
@@ -663,7 +663,7 @@ const AdminBlogEditor = () => {
             <div className="w-full max-w-3xl bg-white dark:bg-[#0B1220] rounded-2xl shadow-2xl overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10 sticky top-0 bg-white dark:bg-[#0B1220] z-10">
                 <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100">Article Preview</h3>
-                <button onClick={() => setShowPreview(false)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all">
+                <button onClick={() => setShowPreview(false)} className="p-2 text-gray-500 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-all">
                   <X className="w-5 h-5" />
                 </button>
               </div>

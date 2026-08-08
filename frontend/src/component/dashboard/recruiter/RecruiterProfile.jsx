@@ -44,7 +44,7 @@ const RecruiterProfile = ({ user }) => {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400";
+  const inputClass = "w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400";
 
   const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'R';
 
@@ -154,10 +154,10 @@ const RecruiterProfile = ({ user }) => {
 const InfoRow = ({ icon, label, value }) => (
   <div className="flex items-start gap-3">
     <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
-      <span className="text-gray-400">{icon}</span>
+      <span className="text-gray-500">{icon}</span>
     </div>
     <div>
-      <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wide">{label}</p>
+      <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">{label}</p>
       <p className="text-sm text-gray-800 font-medium">{value}</p>
     </div>
   </div>

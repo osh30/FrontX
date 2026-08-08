@@ -267,7 +267,7 @@ const Applicants = () => {
         className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <form onSubmit={handleSearch} className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or email..."
               className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
           </form>
@@ -370,7 +370,7 @@ const Applicants = () => {
           <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
             <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">No applicants found</p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 mt-1">
               {hasActiveFilters ? 'Try adjusting your filters' : 'Applications will appear when students apply'}
             </p>
           </div>
@@ -392,12 +392,12 @@ const Applicants = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{app.student?.name || 'Student'}</p>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-xs text-gray-400">{app.student?.email}</p>
+                  <p className="text-xs text-gray-500">{app.student?.email}</p>
                   {app.student?.department && (
-                    <span className="text-xs text-gray-400">&middot; {app.student.department}</span>
+                    <span className="text-xs text-gray-500">&middot; {app.student.department}</span>
                   )}
                   {app.student?.graduationYear && (
-                    <span className="text-xs text-gray-400">&middot; Batch {app.student.graduationYear}</span>
+                    <span className="text-xs text-gray-500">&middot; Batch {app.student.graduationYear}</span>
                   )}
                 </div>
                 <p className="text-xs text-blue-500 font-medium mt-0.5">{app.opportunity?.title || 'Opportunity'}</p>
@@ -407,7 +407,7 @@ const Applicants = () => {
                   <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOTS[app.status] || STATUS_DOTS.pending}`} />
                   {STATUS_OPTIONS.find(s => s.value === app.status)?.label || app.status}
                 </span>
-                <span className="text-xs text-gray-400">{new Date(app.createdAt).toLocaleDateString()}</span>
+                <span className="text-xs text-gray-500">{new Date(app.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
             <div className="sm:hidden flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
@@ -415,7 +415,7 @@ const Applicants = () => {
                 <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOTS[app.status] || STATUS_DOTS.pending}`} />
                 {STATUS_OPTIONS.find(s => s.value === app.status)?.label || app.status}
               </span>
-              <span className="text-xs text-gray-400">{new Date(app.createdAt).toLocaleDateString()}</span>
+              <span className="text-xs text-gray-500">{new Date(app.createdAt).toLocaleDateString()}</span>
             </div>
           </motion.div>
         ))}
@@ -495,11 +495,11 @@ const Applicants = () => {
                       <User className="w-4 h-4 text-blue-600" /> Personal Information
                     </h3>
                     <div className="bg-gray-50 rounded-xl p-4 grid grid-cols-2 gap-4">
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Department</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.department || profileData.applicantDepartment || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Session</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.session || profileData.applicantSession || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Graduation Year</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.graduationYear || profileData.applicantGraduationYear || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Student ID</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.studentId || profileData.applicantStudentId || 'N/A'}</p></div>
-                      <div className="col-span-2"><p className="text-[10px] text-gray-400 uppercase tracking-wider">Email</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.email || profileData.applicantEmail}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Department</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.department || profileData.applicantDepartment || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Session</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.session || profileData.applicantSession || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Graduation Year</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.graduationYear || profileData.applicantGraduationYear || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Student ID</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.studentId || profileData.applicantStudentId || 'N/A'}</p></div>
+                      <div className="col-span-2"><p className="text-[10px] text-gray-500 uppercase tracking-wider">Email</p><p className="text-sm font-semibold text-gray-800">{profileData.student?.email || profileData.applicantEmail}</p></div>
                     </div>
                   </div>
 
@@ -516,7 +516,7 @@ const Applicants = () => {
                             <FileText className="w-5 h-5 text-blue-500" />
                             <div>
                               <p className="text-sm font-semibold text-gray-800">Resume</p>
-                              <p className="text-xs text-gray-400">PDF Document</p>
+                              <p className="text-xs text-gray-500">PDF Document</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -533,7 +533,7 @@ const Applicants = () => {
                       ) : (
                         <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
                           <FileText className="w-5 h-5 text-gray-300" />
-                          <p className="text-sm text-gray-400">No resume uploaded</p>
+                          <p className="text-sm text-gray-500">No resume uploaded</p>
                         </div>
                       )}
 
@@ -641,7 +641,7 @@ const Applicants = () => {
                               <FileText className="w-5 h-5 text-blue-500" />
                               <div>
                                 <p className="text-sm font-semibold text-gray-800">Resume / CV</p>
-                                <p className="text-xs text-gray-400">Uploaded with application</p>
+                                <p className="text-xs text-gray-500">Uploaded with application</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -662,7 +662,7 @@ const Applicants = () => {
                               <FileText className="w-5 h-5 text-emerald-500" />
                               <div>
                                 <p className="text-sm font-semibold text-gray-800">Transcript</p>
-                                <p className="text-xs text-gray-400">Uploaded with application</p>
+                                <p className="text-xs text-gray-500">Uploaded with application</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -683,7 +683,7 @@ const Applicants = () => {
                               <Globe className="w-5 h-5 text-purple-500" />
                               <div>
                                 <p className="text-sm font-semibold text-gray-800">Portfolio PDF</p>
-                                <p className="text-xs text-gray-400">Uploaded with application</p>
+                                <p className="text-xs text-gray-500">Uploaded with application</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -725,7 +725,7 @@ const Applicants = () => {
                               <LinkedinIcon className="w-5 h-5 text-blue-600" />
                               <div>
                                 <p className="text-sm font-semibold text-gray-800">LinkedIn Profile</p>
-                                <p className="text-xs text-gray-400">Provided in application</p>
+                                <p className="text-xs text-gray-500">Provided in application</p>
                               </div>
                             </div>
                             <a href={profileData.linkedinUrl} target="_blank" rel="noopener noreferrer"
@@ -744,10 +744,10 @@ const Applicants = () => {
                       <Briefcase className="w-4 h-4 text-blue-600" /> Application Details
                     </h3>
                     <div className="bg-gray-50 rounded-xl p-4 grid grid-cols-2 gap-4">
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Position</p><p className="text-sm font-semibold text-gray-800">{profileData.opportunity?.title}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Type</p><p className="text-sm font-semibold text-gray-800">{profileData.opportunity?.opportunityType}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Company</p><p className="text-sm font-semibold text-gray-800">{profileData.opportunity?.companyName}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Applied On</p><p className="text-sm font-semibold text-gray-800">{new Date(profileData.createdAt).toLocaleDateString()}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Position</p><p className="text-sm font-semibold text-gray-800">{profileData.opportunity?.title}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Type</p><p className="text-sm font-semibold text-gray-800">{profileData.opportunity?.opportunityType}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Company</p><p className="text-sm font-semibold text-gray-800">{profileData.opportunity?.companyName}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Applied On</p><p className="text-sm font-semibold text-gray-800">{new Date(profileData.createdAt).toLocaleDateString()}</p></div>
                     </div>
                   </div>
 
@@ -832,7 +832,7 @@ const Applicants = () => {
                   <p className="text-sm text-gray-500 mt-0.5">for {interviewTarget?.student?.name || 'Applicant'}</p>
                 </div>
                 <button onClick={() => setShowInterviewModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  className="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>

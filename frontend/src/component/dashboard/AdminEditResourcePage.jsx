@@ -161,7 +161,7 @@ export default function AdminEditResourcePage() {
               <input type="text" value={tagInput} onChange={e => setTagInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                 placeholder="Add a tag and press Enter"
-                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
+                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
               <button type="button" onClick={addTag} className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors">
                 <Plus className="w-4 h-4" />
               </button>

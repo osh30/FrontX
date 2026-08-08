@@ -450,7 +450,7 @@ const StudentSessionDetailsPage = () => {
 
         {/* Back Button */}
         <button onClick={() => navigate('/dashboard/sessions')}
-          className="group flex items-center gap-2 text-gray-400 hover:text-purple-600 font-medium transition-all mb-6">
+          className="group flex items-center gap-2 text-gray-500 hover:text-purple-600 font-medium transition-all mb-6">
           <div className="p-1.5 rounded-lg bg-white border border-gray-200 shadow-sm group-hover:border-purple-200 group-hover:bg-purple-50 transition-all">
             <ArrowLeft className="w-4 h-4" />
           </div>
@@ -618,7 +618,7 @@ const StudentSessionDetailsPage = () => {
                             <span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-lg border text-xs font-medium text-gray-700">
                               {att.type === 'link' ? <Link2 className="w-3 h-3 text-blue-500" /> : <Paperclip className="w-3 h-3 text-gray-500" />}
                               {att.name || att.url}
-                              <button onClick={() => removeAttachment(i)} className="ml-1 text-gray-400 hover:text-red-500"><X className="w-3 h-3" /></button>
+                              <button onClick={() => removeAttachment(i)} className="ml-1 text-gray-500 hover:text-red-500"><X className="w-3 h-3" /></button>
                             </span>
                           ))}
                         </div>
@@ -643,7 +643,7 @@ const StudentSessionDetailsPage = () => {
                 <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                   <Megaphone className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                   <p className="text-sm font-medium text-gray-500">No announcements yet</p>
-                  <p className="text-xs text-gray-400 mt-1">{isAlumni ? 'Create an announcement to share resources with students.' : 'Check back later for updates from your mentor.'}</p>
+                  <p className="text-xs text-gray-500 mt-1">{isAlumni ? 'Create an announcement to share resources with students.' : 'Check back later for updates from your mentor.'}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -671,7 +671,7 @@ const StudentSessionDetailsPage = () => {
                               ))}
                             </div>
                           )}
-                          <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+                          <div className="flex items-center gap-3 mt-3 text-xs text-gray-500">
                             <span className="flex items-center gap-1">
                               <Avatar src={ann.postedBy?.profilePicture} alt="Announcer" size={16} className="" />
                               {ann.postedBy?.name || 'Alumni'}
@@ -681,11 +681,11 @@ const StudentSessionDetailsPage = () => {
                         </div>
                         {isAlumni && (
                           <div className="flex items-center gap-1 shrink-0">
-                            <button onClick={() => handlePinAnnouncement(ann._id)} className="p-2 rounded-lg hover:bg-amber-100 text-gray-400 hover:text-amber-600 transition-all" title={ann.isPinned ? 'Unpin' : 'Pin'}>
+                            <button onClick={() => handlePinAnnouncement(ann._id)} className="p-2 rounded-lg hover:bg-amber-100 text-gray-500 hover:text-amber-600 transition-all" title={ann.isPinned ? 'Unpin' : 'Pin'}>
                               {ann.isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
                             </button>
-                            <button onClick={() => startEditAnnounce(ann)} className="p-2 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-all"><Edit3 className="w-4 h-4" /></button>
-                            <button onClick={() => handleDeleteAnnouncement(ann._id)} className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-all"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => startEditAnnounce(ann)} className="p-2 rounded-lg hover:bg-blue-50 text-gray-500 hover:text-blue-600 transition-all"><Edit3 className="w-4 h-4" /></button>
+                            <button onClick={() => handleDeleteAnnouncement(ann._id)} className="p-2 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-all"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         )}
                       </div>
@@ -701,7 +701,7 @@ const StudentSessionDetailsPage = () => {
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2.5">
                   <div className="p-2 rounded-xl bg-rose-50"><MessageCircle className="w-5 h-5 text-rose-600" /></div>
                   Discussion & Q&A
-                  <span className="text-sm font-normal text-gray-400">({questions.length})</span>
+                  <span className="text-sm font-normal text-gray-500">({questions.length})</span>
                 </h2>
                 <button onClick={() => { setEditingQuestion(null); setQuestionContent(''); setShowQuestionForm(!showQuestionForm); }}
                   className="flex items-center gap-1.5 px-4 py-2 bg-rose-50 text-rose-700 rounded-xl text-sm font-bold hover:bg-rose-100 transition-all">
@@ -712,7 +712,7 @@ const StudentSessionDetailsPage = () => {
               {/* Search & Filters */}
               <div className="flex flex-col sm:flex-row gap-3 mb-5">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                   <input type="text" placeholder="Search questions..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500" />
                 </div>
@@ -756,7 +756,7 @@ const StudentSessionDetailsPage = () => {
                   <p className="text-sm font-medium text-gray-500">
                     {searchQuery ? 'No questions match your search.' : 'No questions yet'}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">{!searchQuery && 'Be the first to ask a question about this session.'}</p>
+                  <p className="text-xs text-gray-500 mt-1">{!searchQuery && 'Be the first to ask a question about this session.'}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -775,11 +775,11 @@ const StudentSessionDetailsPage = () => {
                                   {q.isResolved ? 'Resolved' : 'Open'}
                                 </span>
                                 {qReplies.length > 0 && (
-                                  <span className="text-xs text-gray-400">{qReplies.length} {qReplies.length === 1 ? 'reply' : 'replies'}</span>
+                                  <span className="text-xs text-gray-500">{qReplies.length} {qReplies.length === 1 ? 'reply' : 'replies'}</span>
                                 )}
                               </div>
                               <p className="font-semibold text-gray-900 text-sm sm:text-base">{q.content}</p>
-                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                              <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                                 <span className="flex items-center gap-1">
                                   <Avatar src={q.author?.profilePicture} alt={q.author?.name} size={16} className="" />
                                   {q.author?.name || 'Student'}
@@ -790,19 +790,19 @@ const StudentSessionDetailsPage = () => {
                             <div className="flex items-center gap-1 shrink-0">
                               {isAlumni && !q.isResolved && (
                                 <button onClick={(e) => { e.stopPropagation(); handleResolveQuestion(q._id); }}
-                                  className="p-2 rounded-lg hover:bg-green-50 text-gray-400 hover:text-green-600 transition-all" title="Mark as resolved">
+                                  className="p-2 rounded-lg hover:bg-green-50 text-gray-500 hover:text-green-600 transition-all" title="Mark as resolved">
                                   <CheckCircle2 className="w-4 h-4" />
                                 </button>
                               )}
                               {currentUser && q.author?._id === currentUser._id && (
                                 <>
                                   <button onClick={(e) => { e.stopPropagation(); setEditingQuestion(q._id); setQuestionContent(q.content); setShowQuestionForm(true); }}
-                                    className="p-2 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-all"><Edit3 className="w-4 h-4" /></button>
+                                    className="p-2 rounded-lg hover:bg-blue-50 text-gray-500 hover:text-blue-600 transition-all"><Edit3 className="w-4 h-4" /></button>
                                   <button onClick={(e) => { e.stopPropagation(); handleDeleteQuestion(q._id); }}
-                                    className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                    className="p-2 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-all"><Trash2 className="w-4 h-4" /></button>
                                 </>
                               )}
-                              <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${expandedQuestion === q._id ? 'rotate-90' : ''}`} />
+                              <ChevronRight className={`w-5 h-5 text-gray-500 transition-transform ${expandedQuestion === q._id ? 'rotate-90' : ''}`} />
                             </div>
                           </div>
                           {pinnedReply && !expandedQuestion && (
@@ -821,7 +821,7 @@ const StudentSessionDetailsPage = () => {
                           <div className="border-t border-gray-100 bg-gray-50/50">
                             <div className="p-4 sm:p-5 space-y-4">
                               {qReplies.length === 0 ? (
-                                <p className="text-sm text-gray-400 text-center py-4">No replies yet. Be the first to reply.</p>
+                                <p className="text-sm text-gray-500 text-center py-4">No replies yet. Be the first to reply.</p>
                               ) : (
                                 qReplies.map(reply => (
                                   <div key={reply._id} className={`p-4 rounded-2xl border ${reply.isPinned ? 'bg-amber-50/80 border-amber-200' : 'bg-white border-gray-100'} transition-all`}>
@@ -829,7 +829,7 @@ const StudentSessionDetailsPage = () => {
                                       <div className="flex-1 min-w-0">
                                         {reply.isPinned && <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wider mb-2"><Pin className="w-3 h-3" /> Pinned</span>}
                                         <p className="text-sm text-gray-700">{reply.content}</p>
-                                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                                           <span className="flex items-center gap-1">
                                             <Avatar src={reply.author?.profilePicture} alt={reply.author?.name} size={16} className="" />
                                             {reply.author?.name || 'Student'}
@@ -840,13 +840,13 @@ const StudentSessionDetailsPage = () => {
                                       <div className="flex items-center gap-1 shrink-0">
                                         {isAlumni && (
                                           <button onClick={() => handlePinReply(q._id, reply._id)}
-                                            className="p-1.5 rounded-lg hover:bg-amber-100 text-gray-400 hover:text-amber-600 transition-all" title={reply.isPinned ? 'Unpin' : 'Pin'}>
+                                            className="p-1.5 rounded-lg hover:bg-amber-100 text-gray-500 hover:text-amber-600 transition-all" title={reply.isPinned ? 'Unpin' : 'Pin'}>
                                             {reply.isPinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
                                           </button>
                                         )}
                                         {currentUser && reply.author?._id === currentUser._id && (
                                           <button onClick={() => handleDeleteReply(q._id, reply._id)}
-                                            className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                                         )}
                                       </div>
                                     </div>
@@ -895,11 +895,11 @@ const StudentSessionDetailsPage = () => {
                     const Icon = item.icon;
                     return (
                       <div key={i} className="relative flex items-start gap-4 pl-10">
-                        <div className={`absolute left-0 w-[38px] h-[38px] rounded-full flex items-center justify-center z-10 border-2 transition-all ${item.active ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : item.done ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>
+                        <div className={`absolute left-0 w-[38px] h-[38px] rounded-full flex items-center justify-center z-10 border-2 transition-all ${item.active ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' : item.done ? 'bg-purple-600 border-purple-600 text-white' : 'bg-white border-gray-300 text-gray-500'}`}>
                           <Icon className="w-4 h-4" />
                         </div>
                         <div className="pt-1.5">
-                          <p className={`text-sm font-bold ${item.done ? 'text-gray-900' : 'text-gray-400'}`}>{item.label}</p>
+                          <p className={`text-sm font-bold ${item.done ? 'text-gray-900' : 'text-gray-500'}`}>{item.label}</p>
                           {item.time && <p className="text-xs text-gray-500 mt-0.5">{new Date(item.time).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</p>}
                         </div>
                       </div>
@@ -918,7 +918,7 @@ const StudentSessionDetailsPage = () => {
               <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                 <Download className="w-10 h-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-sm font-medium text-gray-500">No resources attached yet</p>
-                <p className="text-xs text-gray-400 mt-1">Alumni can attach files, links, and resources here.</p>
+                <p className="text-xs text-gray-500 mt-1">Alumni can attach files, links, and resources here.</p>
               </div>
             </div>
 

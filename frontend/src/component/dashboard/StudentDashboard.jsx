@@ -326,7 +326,7 @@ const StudentDashboard = ({ user }) => {
               {activeTab.replace('-', ' ')}
             </h1>
             <div className="relative ml-10 lg:ml-0" ref={searchRef}>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input 
                 type="text"
                 value={searchQuery}
@@ -336,7 +336,7 @@ const StudentDashboard = ({ user }) => {
                 className="pl-10 pr-10 py-2.5 w-48 md:w-64 xl:w-80 bg-white/80 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all shadow-sm"
               />
               {searchQuery && (
-                <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
                   <X className="w-4 h-4" />
                 </button>
               )}
@@ -364,7 +364,7 @@ const StudentDashboard = ({ user }) => {
                       <div className="py-2">
                         {searchResults.students.length > 0 && (
                           <div>
-                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Students</div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-500">Students</div>
                             {searchResults.students.map((s) => (
                               <button
                                 key={s._id}
@@ -383,7 +383,7 @@ const StudentDashboard = ({ user }) => {
 
                         {searchResults.alumni.length > 0 && (
                           <div>
-                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Alumni</div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-500">Alumni</div>
                             {searchResults.alumni.map((a) => (
                               <button
                                 key={a._id}
@@ -402,7 +402,7 @@ const StudentDashboard = ({ user }) => {
 
                         {searchResults.resources.length > 0 && (
                           <div>
-                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Resources</div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-500">Resources</div>
                             {searchResults.resources.map((r) => (
                               <button
                                 key={r._id}
@@ -664,24 +664,24 @@ const MentorshipPage = ({ onViewProfile }) => {
       {/* Search & Filter */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-8">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search by name, department, or interest..."
             className="w-full pl-10 pr-9 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all" />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
         <div className="relative">
-          <SlidersHorizontal className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <SlidersHorizontal className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           <select value={department} onChange={e => setDepartment(e.target.value)}
             className="pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all appearance-none cursor-pointer min-w-[180px]">
             <option value="">All Departments</option>
             {departments.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
         </div>
         {hasActiveFilters && (
           <button onClick={clearFilters}
@@ -706,7 +706,7 @@ const MentorshipPage = ({ onViewProfile }) => {
       ) : alumni.length === 0 ? (
         <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-gray-400" />
+            <Users className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-lg font-medium text-gray-900 mb-1">No alumni available at the moment.</p>
           <p className="text-sm text-gray-500">Check back later as new mentors join the platform.</p>
@@ -726,7 +726,7 @@ const MentorshipPage = ({ onViewProfile }) => {
                     <h3 className="font-bold text-lg text-gray-900">{person.name}</h3>
                     <p className="text-sm text-gray-500 mb-1">{person.department || 'Alumni'}</p>
                     {person.graduationYear && (
-                      <p className="text-xs text-gray-400 mb-1">Graduated: {person.graduationYear}</p>
+                      <p className="text-xs text-gray-500 mb-1">Graduated: {person.graduationYear}</p>
                     )}
                     <p className="text-sm font-medium text-purple-600 mb-4">
                       {person.careerInterest || person.bio?.split('.')[0] || 'Alumni Mentor'}
@@ -924,7 +924,7 @@ function RightSidebar({ onToggle }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-800 line-clamp-1">{n.message || n.title}</p>
-                  <p className="text-xs text-gray-400">{formatRelTime(n.createdAt)}</p>
+                  <p className="text-xs text-gray-500">{formatRelTime(n.createdAt)}</p>
                 </div>
               </div>
             );

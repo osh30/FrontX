@@ -153,11 +153,11 @@ const RecruiterCompanyReviews = () => {
         </div>
 
         <form onSubmit={handleSearch} className="relative mb-4">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reviews..." 
             className="w-full pl-10 pr-10 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" />
           {search && (
-            <button type="button" onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <button type="button" onClick={() => { setSearch(''); setPage(1); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -167,7 +167,7 @@ const RecruiterCompanyReviews = () => {
           <div className="py-12 text-center">
             <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 font-semibold">No reviews found</p>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-gray-500 text-sm mt-1">
               {search || ratingFilter !== 'all' ? 'Try adjusting your filters' : 'Reviews submitted by students will appear here'}
             </p>
           </div>
@@ -184,7 +184,7 @@ const RecruiterCompanyReviews = () => {
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${review.reviewerRole === 'alumni' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700'}`}>
                         {review.reviewerRole === 'alumni' ? 'Alumni' : 'Student'}
                       </span>
-                      {review.isEdited && <span className="text-[11px] text-gray-400 font-medium">(Edited)</span>}
+                      {review.isEdited && <span className="text-[11px] text-gray-500 font-medium">(Edited)</span>}
                     </div>
                     <p className="text-xs text-gray-500">
                       {review.reviewer?.department || ''} {review.reviewer?.graduationYear ? `· ${review.reviewer.graduationYear}` : ''}
@@ -206,7 +206,7 @@ const RecruiterCompanyReviews = () => {
                       <ThumbsUp className="w-3 h-3" /> Would Recommend
                     </span>
                   )}
-                  <span className="text-gray-400">{new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  <span className="text-gray-500">{new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
               </motion.div>
             ))}

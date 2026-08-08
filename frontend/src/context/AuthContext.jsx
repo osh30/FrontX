@@ -34,7 +34,14 @@ const getStoredToken = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const stored = getStoredToken();
   const [token, setToken] = useState(stored?.token || null);
@@ -218,7 +225,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    const currentTheme = user?.themePreference || 'system';
+    const currentTheme = user?.themePreference || localStorage.getItem('landing-theme') || 'light';
     applyTheme(currentTheme);
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

@@ -63,7 +63,7 @@ const SettingsPage = ({ user }) => {
                     : 'text-gray-600 hover:bg-white/50 border border-transparent'
                 }`}
               >
-                <section.icon className={`w-5 h-5 ${isActive ? 'text-purple-600' : 'text-gray-400'}`} />
+                <section.icon className={`w-5 h-5 ${isActive ? 'text-purple-600' : 'text-gray-500'}`} />
                 {section.label}
               </button>
             );
@@ -82,7 +82,7 @@ const SettingsPage = ({ user }) => {
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wider">Registered Email</label>
                   <input type="email" disabled defaultValue={user?.email || "student@university.edu"} className="w-full px-4 py-3 bg-gray-100 border border-transparent rounded-xl text-gray-500 cursor-not-allowed" />
-                  <p className="text-xs text-gray-400 mt-1">University email cannot be changed.</p>
+                  <p className="text-xs text-gray-500 mt-1">University email cannot be changed.</p>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wider">Phone Number</label>
@@ -181,7 +181,7 @@ const SettingsPage = ({ user }) => {
                           : 'border-gray-100 bg-white hover:border-gray-300'
                       }`}
                     >
-                      <theme.icon className={`w-6 h-6 ${isActive ? 'text-purple-600' : 'text-gray-400'}`} />
+                      <theme.icon className={`w-6 h-6 ${isActive ? 'text-purple-600' : 'text-gray-500'}`} />
                       <span className={`text-sm font-medium ${isActive ? 'text-purple-700' : 'text-gray-600'}`}>{theme.label}</span>
                     </button>
                   );

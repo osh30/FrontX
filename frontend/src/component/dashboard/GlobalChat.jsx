@@ -599,7 +599,7 @@ export const GlobalChat = ({ user }) => {
               </div>
             )}
             {msg.content && <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>}
-            {msg.isEdited && <span className={`text-[10px] ${isMe ? 'text-purple-200' : 'text-gray-400'} italic`}>Edited</span>}
+            {msg.isEdited && <span className={`text-[10px] ${isMe ? 'text-purple-200' : 'text-gray-500'} italic`}>Edited</span>}
 
             {/* Reactions */}
             {Object.keys(reactionSummary).length > 0 && (
@@ -613,32 +613,32 @@ export const GlobalChat = ({ user }) => {
 
           {/* Time + Status + Reaction button */}
           <div className={`flex items-center gap-1.5 mt-0.5 px-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
-            <span className="text-[10px] text-gray-400">{formatTime(msg.createdAt)}</span>
+            <span className="text-[10px] text-gray-500">{formatTime(msg.createdAt)}</span>
             {isMe && (
               msg.isRead
                 ? <CheckCheck className="w-3 h-3 text-blue-500" />
-                : <Check className="w-3 h-3 text-gray-400" />
+                : <Check className="w-3 h-3 text-gray-500" />
             )}
             {/* Copy button */}
             {msg.content && (
-              <button onClick={() => handleCopyMessage(msg.content)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600">
+              <button onClick={() => handleCopyMessage(msg.content)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-gray-600">
                 <Copy className="w-3 h-3" />
               </button>
             )}
             {/* Star button */}
-            <button onClick={() => { handleToggleStar(msg._id); setMessages(prev => prev.map(m => m._id === msg._id ? { ...m, isStarred: !m.isStarred } : m)); }} className={`opacity-0 group-hover:opacity-100 transition-opacity ${msg.isStarred ? 'text-amber-500 opacity-100' : 'text-gray-400 hover:text-amber-500'}`}>
+            <button onClick={() => { handleToggleStar(msg._id); setMessages(prev => prev.map(m => m._id === msg._id ? { ...m, isStarred: !m.isStarred } : m)); }} className={`opacity-0 group-hover:opacity-100 transition-opacity ${msg.isStarred ? 'text-amber-500 opacity-100' : 'text-gray-500 hover:text-amber-500'}`}>
               <Star className="w-3 h-3" />
             </button>
-            <button onClick={() => setShowReactionPicker(showReactionPicker === msg._id ? null : msg._id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-purple-500">
+            <button onClick={() => setShowReactionPicker(showReactionPicker === msg._id ? null : msg._id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-purple-500">
               <Smile className="w-3.5 h-3.5" />
             </button>
             {isMe && (
               <>
-                <button onClick={() => { setEditingMsg(msg); setEditText(msg.content); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500">
+                <button onClick={() => { setEditingMsg(msg); setEditText(msg.content); }} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-blue-500">
                   <Edit3 className="w-3 h-3" />
                 </button>
                 <div className="relative">
-                  <button onClick={() => setShowDeleteMsgMenu(showDeleteMsgMenu === msg._id ? null : msg._id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500">
+                  <button onClick={() => setShowDeleteMsgMenu(showDeleteMsgMenu === msg._id ? null : msg._id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 hover:text-red-500">
                     <Trash2 className="w-3 h-3" />
                   </button>
                   <AnimatePresence>
@@ -691,7 +691,7 @@ export const GlobalChat = ({ user }) => {
       <div className={`${showMobileList || !activeConvId ? 'flex' : 'hidden'} md:flex w-full md:w-80 bg-white/50 border-r border-gray-100 flex-col shrink-0 ${activeConvId ? 'md:flex' : ''}`}>
         <div className="p-4 border-b border-gray-100">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
               value={searchQuery}
@@ -729,7 +729,7 @@ export const GlobalChat = ({ user }) => {
                       {conv.isPinned && <Pin className="w-3 h-3 text-purple-500" />}
                       {conv.label && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">{conv.label}</span>}
                     </h4>
-                    <span className="text-[10px] text-gray-400 shrink-0 ml-2">{formatTime(conv.lastMessageTime)}</span>
+                    <span className="text-[10px] text-gray-500 shrink-0 ml-2">{formatTime(conv.lastMessageTime)}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 truncate">
                     <span className={`shrink-0 px-1.5 py-px rounded-full text-[9px] font-semibold uppercase ${conv.otherParticipant?.role === 'alumni' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
@@ -777,31 +777,31 @@ export const GlobalChat = ({ user }) => {
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2">
-                <button onClick={() => handleTogglePin(activeConvId)} className={`p-2 rounded-xl transition-colors ${activeConv?.isPinned ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`} title="Pin conversation">
+                <button onClick={() => handleTogglePin(activeConvId)} className={`p-2 rounded-xl transition-colors ${activeConv?.isPinned ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-600 hover:bg-gray-50'}`} title="Pin conversation">
                   <Pin className="w-4 h-4" />
                 </button>
                 {isAlumni && (
-                  <button onClick={() => { setShowRightPanel(showRightPanel === 'notes' ? null : 'notes'); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'notes' ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`} title="Private Notes">
+                  <button onClick={() => { setShowRightPanel(showRightPanel === 'notes' ? null : 'notes'); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'notes' ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-600 hover:bg-gray-50'}`} title="Private Notes">
                     <Bookmark className="w-4 h-4" />
                   </button>
                 )}
                 {isAlumni && (
-                  <button onClick={() => { setShowRightPanel(showRightPanel === 'goals' ? null : 'goals'); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'goals' ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`} title="Mentorship Goals">
+                  <button onClick={() => { setShowRightPanel(showRightPanel === 'goals' ? null : 'goals'); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'goals' ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-600 hover:bg-gray-50'}`} title="Mentorship Goals">
                     <Flag className="w-4 h-4" />
                   </button>
                 )}
                 {isAlumni && (
-                  <button onClick={() => { setShowRightPanel(showRightPanel === 'reminders' ? null : 'reminders'); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'reminders' ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`} title="Follow-up Reminders">
+                  <button onClick={() => { setShowRightPanel(showRightPanel === 'reminders' ? null : 'reminders'); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'reminders' ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-600 hover:bg-gray-50'}`} title="Follow-up Reminders">
                     <Bell className="w-4 h-4" />
                   </button>
                 )}
-                <button onClick={() => { setShowRightPanel(showRightPanel === 'files' ? null : 'files'); fetchSharedFiles(); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'files' ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`} title="Shared Files">
+                <button onClick={() => { setShowRightPanel(showRightPanel === 'files' ? null : 'files'); fetchSharedFiles(); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'files' ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-600 hover:bg-gray-50'}`} title="Shared Files">
                   <Share2 className="w-4 h-4" />
                 </button>
-                <button onClick={() => { setShowRightPanel(showRightPanel === 'starred' ? null : 'starred'); fetchStarred(); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'starred' ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`} title="Starred Messages">
+                <button onClick={() => { setShowRightPanel(showRightPanel === 'starred' ? null : 'starred'); fetchStarred(); }} className={`p-2 rounded-xl transition-colors ${showRightPanel === 'starred' ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-600 hover:bg-gray-50'}`} title="Starred Messages">
                   <Star className="w-4 h-4" />
                 </button>
-                <button onClick={() => navigate(`/dashboard/profile?userId=${otherUser?._id}`)} className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors" title="View Profile">
+                <button onClick={() => navigate(`/dashboard/profile?userId=${otherUser?._id}`)} className="p-2 rounded-xl text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-colors" title="View Profile">
                   <User className="w-4 h-4" />
                 </button>
               </div>
@@ -812,7 +812,7 @@ export const GlobalChat = ({ user }) => {
               <div className="flex-1 flex flex-col min-w-0">
                 <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-1 scrollbar-hide">
                   {messages.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-gray-400 text-sm">No messages yet. Start a conversation!</div>
+                    <div className="flex items-center justify-center h-full text-gray-500 text-sm">No messages yet. Start a conversation!</div>
                   ) : (
                     <>
                       {messages.map((msg, idx) => {
@@ -884,7 +884,7 @@ export const GlobalChat = ({ user }) => {
                             <p className="text-sm font-bold text-gray-900 truncate">{selectedFile.name}</p>
                             <p className="text-xs text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
                           </div>
-                          <button onClick={() => setSelectedFile(null)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors shrink-0">
+                          <button onClick={() => setSelectedFile(null)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors shrink-0">
                             <X className="w-4 h-4" />
                           </button>
                         </motion.div>
@@ -892,7 +892,7 @@ export const GlobalChat = ({ user }) => {
                     </AnimatePresence>
 
                     <div className="flex items-end gap-2 p-2">
-                      <button onClick={() => setShowAttachMenu(!showAttachMenu)} className={`p-2 rounded-xl transition-colors ${showAttachMenu ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}>
+                      <button onClick={() => setShowAttachMenu(!showAttachMenu)} className={`p-2 rounded-xl transition-colors ${showAttachMenu ? 'bg-purple-100 text-purple-600' : 'text-gray-500 hover:text-gray-600 hover:bg-gray-50'}`}>
                         <Paperclip className="w-5 h-5" />
                       </button>
                       <textarea
@@ -909,7 +909,7 @@ export const GlobalChat = ({ user }) => {
                         className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                           (messageText.trim() || selectedFile)
                             ? 'bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-md hover:shadow-lg'
-                            : 'bg-gray-100 text-gray-400'
+                            : 'bg-gray-100 text-gray-500'
                         }`}
                       >
                         <Send className="w-4 h-4 ml-0.5" />
@@ -934,7 +934,7 @@ export const GlobalChat = ({ user }) => {
                         <h3 className="font-bold text-gray-900 text-sm">
                           {showRightPanel === 'notes' ? 'Private Notes' : showRightPanel === 'goals' ? 'Mentorship Goals' : showRightPanel === 'reminders' ? 'Follow-up Reminders' : showRightPanel === 'files' ? 'Shared Files' : 'Starred Messages'}
                         </h3>
-                        <button onClick={() => setShowRightPanel(null)} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+                        <button onClick={() => setShowRightPanel(null)} className="text-gray-500 hover:text-gray-600"><X className="w-4 h-4" /></button>
                       </div>
                       <div className="flex-1 overflow-y-auto p-4">
                         {/* ===== PRIVATE NOTES TIMELINE ===== */}
@@ -967,7 +967,7 @@ export const GlobalChat = ({ user }) => {
                             </div>
                             <div className="space-y-3">
                               {notes.length === 0 ? (
-                                <p className="text-xs text-gray-400 text-center py-6">No notes yet</p>
+                                <p className="text-xs text-gray-500 text-center py-6">No notes yet</p>
                               ) : (
                                 notes.map(note => (
                                   <div key={note._id} className="relative pl-4 border-l-2 border-purple-200 group">
@@ -979,11 +979,11 @@ export const GlobalChat = ({ user }) => {
                                           <p className="text-xs text-gray-700 mt-0.5 whitespace-pre-wrap">{note.content}</p>
                                         </div>
                                         <div className="flex gap-1 shrink-0">
-                                          <button onClick={() => { setEditNoteId(note._id); setEditNoteTitle(note.title || ''); setEditNoteContent(note.content); }} className="text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"><Edit3 className="w-3 h-3" /></button>
-                                          <button onClick={() => deleteNote(note._id)} className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+                                          <button onClick={() => { setEditNoteId(note._id); setEditNoteTitle(note.title || ''); setEditNoteContent(note.content); }} className="text-gray-500 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"><Edit3 className="w-3 h-3" /></button>
+                                          <button onClick={() => deleteNote(note._id)} className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-3 h-3" /></button>
                                         </div>
                                       </div>
-                                      <span className="text-[9px] text-gray-400 mt-1 block">{formatDate(note.createdAt)}</span>
+                                      <span className="text-[9px] text-gray-500 mt-1 block">{formatDate(note.createdAt)}</span>
                                       <span className="text-[9px] text-purple-400 mt-0.5 block">Only visible to you</span>
                                     </div>
                                   </div>
@@ -1025,7 +1025,7 @@ export const GlobalChat = ({ user }) => {
                             )}
                             <div className="space-y-3">
                               {goals.length === 0 ? (
-                                <p className="text-xs text-gray-400 text-center py-6">No goals set</p>
+                                <p className="text-xs text-gray-500 text-center py-6">No goals set</p>
                               ) : (
                                 goals.map(goal => (
                                   <div key={goal._id} className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -1105,7 +1105,7 @@ export const GlobalChat = ({ user }) => {
                             )}
                             <div className="space-y-2">
                               {reminders.length === 0 ? (
-                                <p className="text-xs text-gray-400 text-center py-6">No reminders set</p>
+                                <p className="text-xs text-gray-500 text-center py-6">No reminders set</p>
                               ) : (
                                 reminders.map(rem => (
                                   <div key={rem._id} className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm flex items-start justify-between gap-2">
@@ -1118,7 +1118,7 @@ export const GlobalChat = ({ user }) => {
                                       </p>
                                     </div>
                                     {isAlumni && (
-                                      <button onClick={() => handleDeleteReminder(rem._id)} className="text-gray-400 hover:text-red-500 shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+                                      <button onClick={() => handleDeleteReminder(rem._id)} className="text-gray-500 hover:text-red-500 shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
                                     )}
                                   </div>
                                 ))
@@ -1188,7 +1188,7 @@ export const GlobalChat = ({ user }) => {
                             )}
                             {/* File search */}
                             <div className="relative mb-3">
-                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
                               <input
                                 type="text"
                                 value={filesSearch}
@@ -1199,7 +1199,7 @@ export const GlobalChat = ({ user }) => {
                             </div>
                             <div className="space-y-2">
                               {sharedFiles.length === 0 ? (
-                                <p className="text-xs text-gray-400 text-center py-8">No files shared yet</p>
+                                <p className="text-xs text-gray-500 text-center py-8">No files shared yet</p>
                               ) : (
                                 sharedFiles.filter(f => !filesSearch || (f.fileName || '').toLowerCase().includes(filesSearch.toLowerCase())).map(f => (
                                   <div key={f._id} className="flex items-center gap-2 p-2 bg-gray-50 rounded-xl border border-gray-100">
@@ -1210,7 +1210,7 @@ export const GlobalChat = ({ user }) => {
                                       <p className="text-xs font-semibold text-gray-900 truncate">{f.fileName || 'File'}</p>
                                       <p className="text-[10px] text-gray-500">{formatDate(f.createdAt)}</p>
                                     </div>
-                                    <a href={f.fileUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-400 hover:text-purple-600"><Download className="w-3.5 h-3.5" /></a>
+                                    <a href={f.fileUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-500 hover:text-purple-600"><Download className="w-3.5 h-3.5" /></a>
                                   </div>
                                 ))
                               )}
@@ -1222,7 +1222,7 @@ export const GlobalChat = ({ user }) => {
                         {showRightPanel === 'starred' && (
                           <div>
                             <div className="relative mb-3">
-                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
                               <input
                                 type="text"
                                 value={starredSearch}
@@ -1233,7 +1233,7 @@ export const GlobalChat = ({ user }) => {
                             </div>
                             <div className="space-y-2">
                               {starredMsgs.length === 0 ? (
-                                <p className="text-xs text-gray-400 text-center py-8">No starred messages</p>
+                                <p className="text-xs text-gray-500 text-center py-8">No starred messages</p>
                               ) : (
                                 starredMsgs.filter(s => !starredSearch || (s.message?.content || '').toLowerCase().includes(starredSearch.toLowerCase())).map(s => (
                                   <div key={s._id} className="p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -1253,7 +1253,7 @@ export const GlobalChat = ({ user }) => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
+          <div className="flex-1 flex items-center justify-center text-gray-500">
             <div className="text-center">
               <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
               <p className="text-lg font-medium">Select a conversation</p>

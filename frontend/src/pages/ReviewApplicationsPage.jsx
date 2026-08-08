@@ -99,11 +99,11 @@ const ReviewApplicationsPage = () => {
                       <div>
                         <h3 className="font-bold text-gray-900">{app.student?.name || 'Unknown Student'}</h3>
                         <p className="text-xs text-gray-500 font-medium">{app.student?.department}</p>
-                        <p className="text-[10px] text-gray-400">Current Year: {app.student?.session || 'N/A'}</p>
+                        <p className="text-[10px] text-gray-500">Current Year: {app.student?.session || 'N/A'}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[10px] text-gray-400 mb-3">
+                    <div className="flex items-center gap-2 text-[10px] text-gray-500 mb-3">
                       <Clock className="w-3 h-3" /> Applied {new Date(app.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </div>
 
@@ -203,8 +203,8 @@ const ReviewApplicationsPage = () => {
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                   <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center gap-1"><Briefcase className="w-3 h-3" /> External Links</h4>
                   <div className="flex flex-col gap-1 mt-1 text-sm">
-                    {selectedApp.githubLink ? <a href={selectedApp.githubLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">GitHub Profile</a> : <span className="text-gray-400">No GitHub provided</span>}
-                    {selectedApp.portfolioLink ? <a href={selectedApp.portfolioLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Portfolio Link</a> : <span className="text-gray-400">No Portfolio provided</span>}
+                    {selectedApp.githubLink ? <a href={selectedApp.githubLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">GitHub Profile</a> : <span className="text-gray-500">No GitHub provided</span>}
+                    {selectedApp.portfolioLink ? <a href={selectedApp.portfolioLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Portfolio Link</a> : <span className="text-gray-500">No Portfolio provided</span>}
                   </div>
                 </div>
               </div>

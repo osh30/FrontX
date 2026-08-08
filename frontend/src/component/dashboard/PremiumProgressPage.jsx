@@ -107,7 +107,7 @@ const AchievementIcon = ({ type, unlocked }) => {
 };
 
 const MilestoneIcon = ({ type, completed }) => {
-  const color = completed ? 'text-emerald-400' : 'text-gray-400';
+  const color = completed ? 'text-emerald-400' : 'text-gray-500';
   const icons = {
     user: <Users className={`w-8 h-8 ${color}`} />,
     briefcase: <Briefcase className={`w-8 h-8 ${color}`} />,
@@ -198,7 +198,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
     }
     return (
       <div>
-        <div className="flex justify-between text-[10px] text-gray-400 font-medium mb-2">
+        <div className="flex justify-between text-[10px] text-gray-500 font-medium mb-2">
           <span>90 days ago</span>
           <span>Today</span>
         </div>
@@ -214,7 +214,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
     const blanks = Array(firstDay).fill(null);
     return (
       <div className="grid grid-cols-7 gap-1 text-center">
-        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d} className="text-[10px] text-gray-400 font-medium h-5">{d}</div>)}
+        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d} className="text-[10px] text-gray-500 font-medium h-5">{d}</div>)}
         {blanks.map((_, i) => <div key={`b${i}`} className="h-8" />)}
         {days.map(d => {
           let color = 'bg-gray-50';
@@ -317,10 +317,10 @@ const PremiumProgressPage = ({ setActiveTab }) => {
                 <div className="p-1.5 rounded-lg bg-purple-50"><TrendingUp className="w-4 h-4 text-purple-600" /></div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-sm">Career Growth Over Time</h3>
-                  <p className="text-[10px] text-gray-400 font-medium">Monthly activity trend</p>
+                  <p className="text-[10px] text-gray-500 font-medium">Monthly activity trend</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-[10px] text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">
+              <div className="flex items-center gap-2 text-[10px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg">
                 <div className="w-2 h-2 rounded-full bg-purple-500" />
                 Total Activities
               </div>
@@ -394,7 +394,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
               </div>
               <div className="flex flex-wrap gap-3 mt-2 justify-center">
                 {['Projects','Sessions','Research','Resources','Apps','Certs'].map((l, i) => (
-                  <span key={i} className="flex items-center gap-1 text-[9px] font-medium text-gray-400">
+                  <span key={i} className="flex items-center gap-1 text-[9px] font-medium text-gray-500">
                     <span className={`w-2 h-2 rounded-full ${['bg-purple-500','bg-blue-500','bg-amber-500','bg-emerald-500','bg-pink-500','bg-cyan-500'][i]}`} />
                     {l}
                   </span>
@@ -431,7 +431,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-700 truncate">{item.name}</p>
-                      <p className="text-[10px] text-gray-400">{item.value} pts &middot; {item.percentage}%</p>
+                      <p className="text-[10px] text-gray-500">{item.value} pts &middot; {item.percentage}%</p>
                     </div>
                   </div>
                 ))}
@@ -449,7 +449,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
               <h3 className="font-bold text-gray-900 text-xs">Daily Activity</h3>
             </div>
             {renderHeatmap()}
-            <div className="flex items-center gap-1.5 mt-2.5 justify-end text-[9px] text-gray-400">
+            <div className="flex items-center gap-1.5 mt-2.5 justify-end text-[9px] text-gray-500">
               <span>Less</span>
               <div className="w-2.5 h-2.5 rounded-sm bg-gray-100" />
               <div className="w-2.5 h-2.5 rounded-sm bg-emerald-200" />
@@ -576,7 +576,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
                   </div>
                   <div>
                     <h4 className={`font-bold text-sm ${m.unlocked ? 'text-white' : 'text-gray-900'}`}>{m.title}</h4>
-                    <p className={`text-[10px] font-semibold mt-0.5 ${m.unlocked ? 'text-emerald-300' : 'text-gray-400'}`}>{m.status}</p>
+                    <p className={`text-[10px] font-semibold mt-0.5 ${m.unlocked ? 'text-emerald-300' : 'text-gray-500'}`}>{m.status}</p>
                   </div>
                 </div>
               </motion.div>
@@ -611,10 +611,10 @@ const PremiumProgressPage = ({ setActiveTab }) => {
                     {completed && !isCurrent && <CheckCircle className="w-3.5 h-3.5 text-purple-500" />}
                   </div>
                   <div className={`flex-1 ${completed ? 'opacity-100' : 'opacity-40'}`}>
-                    <p className={`text-sm font-bold ${isCurrent ? 'text-purple-700' : completed ? 'text-gray-900' : 'text-gray-400'}`}>
+                    <p className={`text-sm font-bold ${isCurrent ? 'text-purple-700' : completed ? 'text-gray-900' : 'text-gray-500'}`}>
                       {lvl.level} {isCurrent && <span className="text-[10px] font-normal text-purple-500">(Current)</span>}
                     </p>
-                    <p className="text-[10px] text-gray-400">{lvl.min.toLocaleString()} XP</p>
+                    <p className="text-[10px] text-gray-500">{lvl.min.toLocaleString()} XP</p>
                   </div>
                   {isCurrent && <div className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[9px] font-bold rounded-full">Active</div>}
                 </div>
@@ -649,8 +649,8 @@ const PremiumProgressPage = ({ setActiveTab }) => {
                   <AchievementIcon type={ach.icon} unlocked={false} />
                 )}
               </div>
-              <h4 className={`text-xs font-bold mt-1 ${ach.unlocked ? 'text-gray-900' : 'text-gray-400'}`}>{ach.title}</h4>
-              <p className="text-[9px] text-gray-400 mt-0.5 leading-tight">{ach.desc}</p>
+              <h4 className={`text-xs font-bold mt-1 ${ach.unlocked ? 'text-gray-900' : 'text-gray-500'}`}>{ach.title}</h4>
+              <p className="text-[9px] text-gray-500 mt-0.5 leading-tight">{ach.desc}</p>
               {ach.unlocked && ach.date && <p className="text-[8px] text-gray-300 mt-1">{new Date(ach.date).toLocaleDateString()}</p>}
             </motion.div>
           ))}
@@ -682,7 +682,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
           <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><Calendar className="w-4 h-4 text-purple-600" /> This Month Calendar</h3>
           {renderCalendar()}
-          <div className="flex items-center gap-3 mt-3 text-[10px] text-gray-400 justify-end">
+          <div className="flex items-center gap-3 mt-3 text-[10px] text-gray-500 justify-end">
             <span>Less</span>
             <div className="w-3 h-3 rounded bg-gray-50" />
             <div className="w-3 h-3 rounded bg-purple-200" />

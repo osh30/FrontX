@@ -122,10 +122,10 @@ const AdminOpportunityRequests = () => {
         {/* Search */}
         <form onSubmit={handleSearch} className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by job title, company name, or recruiter name..."
-              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
+              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
           </div>
           <button type="submit"
             className="px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20">
@@ -140,7 +140,7 @@ const AdminOpportunityRequests = () => {
           <div className="text-center py-20 bg-white border border-gray-200 rounded-2xl">
             <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">No opportunity requests found</p>
-            <p className="text-sm text-gray-400 mt-1">Recruiter submissions will appear here</p>
+            <p className="text-sm text-gray-500 mt-1">Recruiter submissions will appear here</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -172,15 +172,15 @@ const AdminOpportunityRequests = () => {
 
                       <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-gray-600">
                         <span className="flex items-center gap-1.5">
-                          <Building2 className="w-4 h-4 text-gray-400" />
+                          <Building2 className="w-4 h-4 text-gray-500" />
                           {opp.companyName}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <User className="w-4 h-4 text-gray-400" />
+                          <User className="w-4 h-4 text-gray-500" />
                           {opp.recruiter?.name || 'Unknown'}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <Briefcase className="w-4 h-4 text-gray-400" />
+                          <Briefcase className="w-4 h-4 text-gray-500" />
                           {opp.opportunityType}
                         </span>
                       </div>
@@ -200,12 +200,12 @@ const AdminOpportunityRequests = () => {
                         )}
                         {opp.deadline && (
                           <span className="flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                            <Calendar className="w-3.5 h-3.5 text-gray-500" />
                             Due {new Date(opp.deadline).toLocaleDateString()}
                           </span>
                         )}
                         <span className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                          <Clock className="w-3.5 h-3.5 text-gray-500" />
                           Submitted {new Date(opp.submittedAt || opp.createdAt).toLocaleDateString()}
                         </span>
                       </div>
@@ -308,7 +308,7 @@ const AdminOpportunityRequests = () => {
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">Rejection Reason *</label>
                       <textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)}
                         rows={4} placeholder="Provide feedback to the recruiter about why this opportunity is being rejected..."
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 resize-none transition-all" />
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 resize-none transition-all" />
                     </div>
                     <div className="flex justify-end gap-3">
                       <button onClick={() => { setRejectModal(null); setRejectionReason(''); }}

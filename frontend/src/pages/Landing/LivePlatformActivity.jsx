@@ -106,7 +106,7 @@ const LivePlatformActivity = () => {
           >
             <AnimatePresence>
               {activities.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-gray-400">Waiting for activities...</div>
+                <div className="h-full flex items-center justify-center text-gray-500">Waiting for activities...</div>
               ) : (
                 activities.map((activity) => (
                   <motion.div
@@ -131,7 +131,7 @@ const LivePlatformActivity = () => {
                           {activity.title}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
                         <Clock className="w-3.5 h-3.5" />
                         {timeAgo(activity.createdAt)}
                       </div>

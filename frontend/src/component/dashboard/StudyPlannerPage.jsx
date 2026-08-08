@@ -311,19 +311,19 @@ const SetupView = ({ onComplete }) => {
               <motion.div key={idx} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                 className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col md:flex-row gap-3 items-start md:items-end">
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Course Code</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Course Code</label>
                   <input type="text" placeholder="e.g. CSE-301" value={course.courseCode}
                     onChange={(e) => updateCourse(idx, 'courseCode', e.target.value)}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200" />
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Course Name</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Course Name</label>
                   <input type="text" placeholder="e.g. Database Systems" value={course.courseName}
                     onChange={(e) => updateCourse(idx, 'courseName', e.target.value)}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200" />
                 </div>
                 <div className="w-full md:w-36">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Credit</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Credit</label>
                   <select value={course.credit} onChange={(e) => updateCourse(idx, 'credit', parseFloat(e.target.value))}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200">
                     <option value={1.0}>1.0 Credit</option>
@@ -442,13 +442,13 @@ const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateRe
             className={`px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-md ${
               canAddCourse
                 ? 'bg-gray-900 text-white hover:bg-indigo-600'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-100 text-gray-500 cursor-not-allowed'
             }`}>
             <Plus className="w-4 h-4" /> {addingCourse ? 'Adding...' : 'Add Course'}
           </button>
         </div>
         {!canAddCourse && (
-          <p className="text-xs text-gray-400 mb-4">Maximum 7 courses allowed.</p>
+          <p className="text-xs text-gray-500 mb-4">Maximum 7 courses allowed.</p>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {planner.courses.map((course, i) => {
@@ -489,7 +489,7 @@ const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateRe
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-indigo-600">{progress}% complete</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                    <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               </motion.div>
@@ -568,19 +568,19 @@ const AddCourseModal = ({ onClose, onAddCourse, addingCourse }) => {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Course Code</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Course Code</label>
             <input type="text" placeholder="e.g. CSE-301" value={courseCode}
               onChange={(e) => setCourseCode(e.target.value)}
               className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200" />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Course Name</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Course Name</label>
             <input type="text" placeholder="e.g. Database Systems" value={courseName}
               onChange={(e) => setCourseName(e.target.value)}
               className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200" />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Credit</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Credit</label>
             <select value={credit} onChange={(e) => setCredit(parseFloat(e.target.value))}
               className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200">
               <option value={1.0}>1.0 Credit</option>
@@ -887,7 +887,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
             isCompleted ? 'bg-emerald-100 text-emerald-600' :
             isActive ? 'bg-indigo-100 text-indigo-600' :
-            isLocked ? 'bg-gray-100 text-gray-400' :
+            isLocked ? 'bg-gray-100 text-gray-500' :
             'bg-amber-100 text-amber-600'
           }`}>
             {isLocked ? <Lock className="w-5 h-5" /> : <span className="text-lg font-bold">{week.weekNumber}</span>}
@@ -911,12 +911,12 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
             {/* Date range */}
             {week.startDate && week.endDate && (
               <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                <span className="flex items-center gap-1 text-[11px] text-gray-500">
                   <Calendar className="w-3 h-3" />
                   {fmtDate(week.startDate)} — {fmtDate(week.endDate)}
                 </span>
                 {week.endDate && !isCompleted && !hasNote && (
-                  <span className="flex items-center gap-1 text-[11px] text-gray-400">
+                  <span className="flex items-center gap-1 text-[11px] text-gray-500">
                     <Clock className="w-3 h-3" />
                     Deadline: {fmtDate(week.endDate)}
                   </span>
@@ -940,7 +940,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
 
             {/* Locked message */}
             {isLocked && week.startDate && (
-              <p className="text-[11px] text-gray-400 mt-1.5 italic">
+              <p className="text-[11px] text-gray-500 mt-1.5 italic">
                 <Lock className="w-3 h-3 inline mr-1" />
                 Unlocks on {fmtDateLong(week.startDate)}
               </p>

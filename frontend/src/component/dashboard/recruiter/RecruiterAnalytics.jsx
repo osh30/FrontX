@@ -70,10 +70,10 @@ const RecruiterAnalytics = () => {
           <div className="space-y-3">
             {analytics.topOpportunities.map((opp, idx) => (
               <div key={opp._id} className="flex items-center gap-3">
-                <span className="text-xs font-bold text-gray-400 w-5">#{idx + 1}</span>
+                <span className="text-xs font-bold text-gray-500 w-5">#{idx + 1}</span>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-gray-800">{opp.title}</p>
-                  <p className="text-xs text-gray-400">{opp.applicationCount || 0} applications</p>
+                  <p className="text-xs text-gray-500">{opp.applicationCount || 0} applications</p>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${opp.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                   {opp.status}

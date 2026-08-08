@@ -221,7 +221,7 @@ const StudentInterviews = () => {
                           </div>
                         ))}
                         {dayInterviews.length > 3 && (
-                          <span className="text-[10px] text-gray-400 font-medium">+{dayInterviews.length - 3} more</span>
+                          <span className="text-[10px] text-gray-500 font-medium">+{dayInterviews.length - 3} more</span>
                         )}
                       </div>
                     </>
@@ -251,7 +251,7 @@ const StudentInterviews = () => {
             <div className="p-12 text-center">
               <Calendar className="w-14 h-14 text-gray-200 mx-auto mb-4" />
               <p className="text-gray-500 font-semibold text-lg">No interviews found</p>
-              <p className="text-sm text-gray-400 mt-1">Your interviews will appear here once a recruiter schedules one.</p>
+              <p className="text-sm text-gray-500 mt-1">Your interviews will appear here once a recruiter schedules one.</p>
             </div>
           ) : interviews.map((int, idx) => (
             <motion.div
@@ -264,7 +264,7 @@ const StudentInterviews = () => {
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">{int.opportunity?.title || int.title}</p>
-                <p className="text-xs text-gray-400">{int.recruiter?.name || ''}</p>
+                <p className="text-xs text-gray-500">{int.recruiter?.name || ''}</p>
               </div>
 
               <div className="flex items-center gap-2 min-w-0">
@@ -280,7 +280,7 @@ const StudentInterviews = () => {
 
               <div>
                 <p className="text-sm font-medium text-gray-800">{new Date(int.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                <p className="text-xs text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" />{int.time}</p>
+                <p className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3" />{int.time}</p>
               </div>
 
               <div>
@@ -448,7 +448,7 @@ const StudentInterviews = () => {
 
 const DetailItem = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-2">
-    <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+    <Icon className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
     <div>
       <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">{label}</p>
       <p className="text-sm text-gray-800">{value || '-'}</p>

@@ -260,7 +260,7 @@ const SearchCandidates = () => {
         className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <form onSubmit={handleSearch} className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, email, department, or skill..."
               className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
@@ -411,7 +411,7 @@ const SearchCandidates = () => {
           <div className="col-span-full bg-white rounded-2xl border border-gray-200 p-12 text-center">
             <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">No candidates found</p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-gray-500 mt-1">
               {hasActiveFilters ? 'Try adjusting your filters' : 'Start searching for talent'}
             </p>
           </div>
@@ -432,10 +432,10 @@ const SearchCandidates = () => {
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors truncate">{c.name}</p>
-                <p className="text-xs text-gray-400 truncate">{c.email}</p>
+                <p className="text-xs text-gray-500 truncate">{c.email}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  {c.department && <span className="text-[10px] text-gray-400">{c.department}</span>}
-                  {c.graduationYear && <span className="text-[10px] text-gray-400">&middot; {c.graduationYear}</span>}
+                  {c.department && <span className="text-[10px] text-gray-500">{c.department}</span>}
+                  {c.graduationYear && <span className="text-[10px] text-gray-500">&middot; {c.graduationYear}</span>}
                 </div>
               </div>
             </div>
@@ -568,12 +568,12 @@ const SearchCandidates = () => {
                       <GraduationCap className="w-4 h-4 text-blue-600" /> Academic Information
                     </h3>
                     <div className="bg-gray-50 rounded-xl p-4 grid grid-cols-2 gap-4">
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Department</p><p className="text-sm font-semibold text-gray-800">{candidateData.department || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Session</p><p className="text-sm font-semibold text-gray-800">{candidateData.session || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Graduation Year</p><p className="text-sm font-semibold text-gray-800">{candidateData.graduationYear || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">CGPA</p><p className="text-sm font-semibold text-gray-800">{candidateData.academicInfo?.cgpa || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Student ID</p><p className="text-sm font-semibold text-gray-800">{candidateData.studentId || 'N/A'}</p></div>
-                      <div><p className="text-[10px] text-gray-400 uppercase tracking-wider">Profile Views</p><p className="text-sm font-semibold text-gray-800">{candidateData.profileViews || 0}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Department</p><p className="text-sm font-semibold text-gray-800">{candidateData.department || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Session</p><p className="text-sm font-semibold text-gray-800">{candidateData.session || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Graduation Year</p><p className="text-sm font-semibold text-gray-800">{candidateData.graduationYear || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">CGPA</p><p className="text-sm font-semibold text-gray-800">{candidateData.academicInfo?.cgpa || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Student ID</p><p className="text-sm font-semibold text-gray-800">{candidateData.studentId || 'N/A'}</p></div>
+                      <div><p className="text-[10px] text-gray-500 uppercase tracking-wider">Profile Views</p><p className="text-sm font-semibold text-gray-800">{candidateData.profileViews || 0}</p></div>
                     </div>
                   </div>
 
@@ -589,7 +589,7 @@ const SearchCandidates = () => {
                             <FileText className="w-5 h-5 text-blue-500" />
                             <div>
                               <p className="text-sm font-semibold text-gray-800">Resume</p>
-                              <p className="text-xs text-gray-400">PDF Document</p>
+                              <p className="text-xs text-gray-500">PDF Document</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -602,7 +602,7 @@ const SearchCandidates = () => {
                       ) : (
                         <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
                           <FileText className="w-5 h-5 text-gray-300" />
-                          <p className="text-sm text-gray-400">No resume uploaded</p>
+                          <p className="text-sm text-gray-500">No resume uploaded</p>
                         </div>
                       )}
 
@@ -754,7 +754,7 @@ const SearchCandidates = () => {
                   <p className="text-sm text-gray-500 mt-0.5">Invite {inviteTarget?.name} to apply</p>
                 </div>
                 <button onClick={() => setShowInviteModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  className="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -803,7 +803,7 @@ const SearchCandidates = () => {
                   <p className="text-sm text-gray-500 mt-0.5">Message {messageTarget?.name}</p>
                 </div>
                 <button onClick={() => setShowMessageModal(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  className="p-2 text-gray-500 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>

@@ -236,7 +236,7 @@ const TermsPage = () => {
           {/* Sidebar TOC */}
           <aside className="hidden lg:block sticky top-[140px] self-start">
             <nav className="space-y-0.5">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Contents</p>
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Contents</p>
               {SECTIONS.map((s) => {
                 const isActive = activeSection === s.id;
                 return (

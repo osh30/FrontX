@@ -245,7 +245,7 @@ export const AlumniAnalyticsPage = () => {
           <h3 className="font-bold text-gray-900 mb-6">Recent Activity</h3>
           <div className="flex-1 overflow-y-auto pr-2 space-y-6">
             {data.timeline.length === 0 ? (
-              <div className="text-gray-400 text-sm text-center mt-10">No recent activity.</div>
+              <div className="text-gray-500 text-sm text-center mt-10">No recent activity.</div>
             ) : (
               data.timeline.map((item, idx) => (
                 <div key={idx} className="flex gap-4 relative">
@@ -258,7 +258,7 @@ export const AlumniAnalyticsPage = () => {
                   </div>
                   <div className="pt-2">
                     <p className="text-sm font-semibold text-gray-800 leading-tight">{item.title}</p>
-                    <p className="text-xs text-gray-400 mt-1">{new Date(item.date).toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">{new Date(item.date).toLocaleString()}</p>
                   </div>
                 </div>
               ))

@@ -162,7 +162,7 @@ export default function AlumniCreateResourcePage() {
           <Field label="Resource Title" required>
             <input type="text" value={form.title} onChange={e => updateField('title', e.target.value)}
               placeholder="e.g. Complete Resume Writing Guide 2026"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
           </Field>
 
           <Field label="Category" required>
@@ -176,13 +176,13 @@ export default function AlumniCreateResourcePage() {
           <Field label="Short Description" required>
             <input type="text" value={form.shortDescription} onChange={e => updateField('shortDescription', e.target.value)}
               placeholder="Brief description (max 300 chars)" maxLength={300}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
           </Field>
 
           <Field label="Detailed Description" required>
             <textarea rows={5} value={form.description} onChange={e => updateField('description', e.target.value)}
               placeholder="Full description of the resource..."
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all resize-none" />
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all resize-none" />
           </Field>
 
           <Field label="Department">
@@ -216,7 +216,7 @@ export default function AlumniCreateResourcePage() {
                 ) : (
                   <>
                     <span className="text-sm font-medium text-gray-700">Click to select a PDF file</span>
-                    <span className="text-xs text-gray-400">Only .pdf files accepted</span>
+                    <span className="text-xs text-gray-500">Only .pdf files accepted</span>
                   </>
                 )}
               </div>
@@ -268,7 +268,7 @@ export default function AlumniCreateResourcePage() {
                     <Image className="w-5 h-5 text-purple-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">Click to select a cover image</span>
-                  <span className="text-xs text-gray-400">Accepts .jpg, .jpeg, .png, .webp</span>
+                  <span className="text-xs text-gray-500">Accepts .jpg, .jpeg, .png, .webp</span>
                 </div>
               )}
               <input ref={coverInputRef} type="file" accept=".jpg,.jpeg,.png,.webp" onChange={handleCoverChange} className="hidden" />
@@ -280,7 +280,7 @@ export default function AlumniCreateResourcePage() {
               <input type="text" value={tagInput} onChange={e => setTagInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                 placeholder="Add a tag and press Enter"
-                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
+                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 transition-all" />
               <button type="button" onClick={addTag}
                 className="px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-700 transition-colors">
                 <Plus className="w-4 h-4" />

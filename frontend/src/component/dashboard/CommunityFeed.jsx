@@ -229,7 +229,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
           <div className="flex items-center gap-1.5 shrink-0">
             {post.isCreator && !isResolved && (
               <button onClick={handleResolve}
-                className="text-[11px] font-semibold text-gray-400 hover:text-green-600 border border-gray-200 hover:border-green-300 px-2.5 py-1.5 rounded-lg transition-all bg-white hover:bg-green-50 shadow-sm"
+                className="text-[11px] font-semibold text-gray-500 hover:text-green-600 border border-gray-200 hover:border-green-300 px-2.5 py-1.5 rounded-lg transition-all bg-white hover:bg-green-50 shadow-sm"
               >
                 Mark Resolved
               </button>
@@ -237,7 +237,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
             {post.isCreator && (
               <div className="relative" ref={menuRef}>
                 <motion.button whileTap={{ scale: 0.85 }} onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 rounded-xl transition-all border text-gray-400 hover:text-gray-700 bg-white border-gray-200 hover:border-gray-300"
+                  className="p-2 rounded-xl transition-all border text-gray-500 hover:text-gray-700 bg-white border-gray-200 hover:border-gray-300"
                   title="More actions"
                 >
                   <MoreVertical className="w-4 h-4" />
@@ -260,7 +260,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
             )}
             <motion.button whileTap={{ scale: 0.85 }}
               onClick={handleSave}
-              className={`p-2 rounded-xl transition-all border ${isSaved ? 'text-blue-600 bg-blue-50 border-blue-200 shadow-sm' : 'text-gray-400 hover:text-blue-500 bg-white border-gray-200 hover:border-blue-200'}`}
+              className={`p-2 rounded-xl transition-all border ${isSaved ? 'text-blue-600 bg-blue-50 border-blue-200 shadow-sm' : 'text-gray-500 hover:text-blue-500 bg-white border-gray-200 hover:border-blue-200'}`}
               title="Save Post"
             >
               <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-blue-600' : ''}`} />
@@ -273,7 +273,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
         {post.imageUrl && (
           <div className="mb-4 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
             {imgError ? (
-              <div className="w-full h-48 bg-gray-50 flex items-center justify-center text-gray-400 text-sm">Image unavailable</div>
+              <div className="w-full h-48 bg-gray-50 flex items-center justify-center text-gray-500 text-sm">Image unavailable</div>
             ) : (
               <img src={post.imageUrl} alt="" className="w-full max-h-96 object-cover" onError={() => setImgError(true)} />
             )}
@@ -304,7 +304,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
             <div className="relative">
               <motion.button whileTap={{ scale: 0.85 }}
                 onClick={() => setShowReactionPicker(!showReactionPicker)}
-                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200 text-xs"
+                className="p-1.5 text-gray-500 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200 text-xs"
               >
                 +
               </motion.button>
@@ -373,7 +373,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
             <div className="p-5 md:p-6 bg-gray-50/50">
               <div className="space-y-4 mb-5 max-h-72 overflow-y-auto scrollbar-hide pr-2">
                 {comments.length === 0 ? (
-                  <div className="text-center py-4 text-sm text-gray-400">No comments yet. Be the first!</div>
+                  <div className="text-center py-4 text-sm text-gray-500">No comments yet. Be the first!</div>
                 ) : (
                   comments.map((comment) => {
                     const cAuthor = renderAuthorInfo(comment.isAnonymous, comment.role, comment.originalAuthor);
@@ -389,7 +389,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
                                   <ShieldCheck className="w-2.5 h-2.5" /> Alumni
                                 </span>
                               )}
-                              <span className="text-[10px] text-gray-400 ml-auto">{formatTimeAgo(comment.createdAt)}</span>
+                              <span className="text-[10px] text-gray-500 ml-auto">{formatTimeAgo(comment.createdAt)}</span>
                             </div>
                             <p className="text-gray-700 text-sm leading-relaxed">{comment.content}</p>
                           </div>
@@ -407,7 +407,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
                   />
                   {currentUserRole !== 'alumni' && (
                     <button type="button" onClick={() => setIsAnonymousComment(!isAnonymousComment)}
-                      className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all ${isAnonymousComment ? 'text-purple-600 bg-purple-50' : 'text-gray-400 hover:text-gray-600'}`}
+                      className={`absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all ${isAnonymousComment ? 'text-purple-600 bg-purple-50' : 'text-gray-500 hover:text-gray-600'}`}
                       title="Comment anonymously"
                     >
                       <EyeOff className="w-3.5 h-3.5" />
@@ -669,7 +669,7 @@ const CommunityFeed = () => {
                   <MessageCircle className="w-8 h-8 text-purple-400" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-600 mb-1">No discussions yet</h3>
-                <p className="text-sm text-gray-400 mb-6">Be the first to start a conversation.</p>
+                <p className="text-sm text-gray-500 mb-6">Be the first to start a conversation.</p>
                 <button onClick={() => navigate('/dashboard/community/create-post')}
                   className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"
                 >

@@ -33,7 +33,7 @@ const Shortlisted = () => {
             <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
               <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500 font-medium">No shortlisted candidates yet</p>
-              <p className="text-sm text-gray-400 mt-1">Shortlist applicants from the Applicants tab</p>
+              <p className="text-sm text-gray-500 mt-1">Shortlist applicants from the Applicants tab</p>
             </div>
           ) : candidates.map((app, idx) => (
             <motion.div key={app._id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
@@ -46,14 +46,14 @@ const Shortlisted = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-gray-900">{app.student?.name}</p>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                     <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {app.student?.email}</span>
                     {app.student?.department && <span className="flex items-center gap-1"><GraduationCap className="w-3 h-3" /> {app.student?.department}</span>}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-xs font-semibold text-amber-600">{app.opportunity?.title}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Shortlisted {new Date(app.updatedAt).toLocaleDateString()}</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">Shortlisted {new Date(app.updatedAt).toLocaleDateString()}</p>
                 </div>
               </div>
             </motion.div>

@@ -211,7 +211,7 @@ const PostOpportunity = () => {
   };
 
   const inputClass = (err) =>
-    `w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+    `w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
       err ? 'border-red-400' : 'border-gray-200 focus:border-blue-400'
     }`;
 
@@ -296,7 +296,7 @@ const PostOpportunity = () => {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Opportunity Title *</label>
             <div className="relative">
-              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input name="title" value={form.title} onChange={handleChange}
                 placeholder="e.g. Frontend Developer, Marketing Intern" className={inputClass(errors.title)} />
             </div>
@@ -307,7 +307,7 @@ const PostOpportunity = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Department / Eligible Programs</label>
               <div className="relative">
-                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <select name="department" value={form.department} onChange={handleChange}
                   className={`${inputClass(false)} appearance-none cursor-pointer`}>
                   <option value="">Select department</option>
@@ -318,7 +318,7 @@ const PostOpportunity = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Location</label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input name="location" value={form.location} onChange={handleChange}
                   placeholder="Dhaka, Bangladesh" className={inputClass(false)} />
               </div>
@@ -329,7 +329,7 @@ const PostOpportunity = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Employment Mode</label>
               <div className="relative">
-                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <select name="employmentMode" value={form.employmentMode} onChange={handleChange}
                   className={`${inputClass(false)} appearance-none cursor-pointer`}>
                   {EMPLOYMENT_MODES.map(m => <option key={m} value={m}>{m}</option>)}
@@ -339,7 +339,7 @@ const PostOpportunity = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Number of Vacancies</label>
               <div className="relative">
-                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input type="number" name="vacancies" value={form.vacancies} onChange={handleChange}
                   placeholder="1" min="1" className={inputClass(false)} />
               </div>
@@ -348,14 +348,14 @@ const PostOpportunity = () => {
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Salary / Stipend (BDT)</label>
               <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400">৳</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500">৳</span>
                     <input type="number" name="salaryMin" value={form.salaryMin} onChange={handleChange}
-                      placeholder="Min" className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                      placeholder="Min" className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                   </div>
                   <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400">৳</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500">৳</span>
                     <input type="number" name="salaryMax" value={form.salaryMax} onChange={handleChange}
-                      placeholder="Max" className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                      placeholder="Max" className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                 </div>
               </div>
             </div>
@@ -365,7 +365,7 @@ const PostOpportunity = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Application Deadline</label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input type="date" name="deadline" value={form.deadline} onChange={handleChange}
                   className={inputClass(false)} />
               </div>
@@ -373,7 +373,7 @@ const PostOpportunity = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Joining Date (Optional)</label>
               <div className="relative">
-                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input type="date" name="joiningDate" value={form.joiningDate} onChange={handleChange}
                   className={inputClass(false)} />
               </div>
@@ -395,7 +395,7 @@ const PostOpportunity = () => {
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">{field.label}</label>
               <textarea name={field.name} value={form[field.name]} onChange={handleChange}
                 rows={field.rows} placeholder={field.placeholder}
-                className={`w-full px-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 resize-none ${
+                className={`w-full px-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 resize-none ${
                   errors[field.name] ? 'border-red-400' : 'border-gray-200 focus:border-blue-400'
                 }`} />
               {errors[field.name] && <p className="text-xs text-red-500 mt-1">{errors[field.name]}</p>}
@@ -411,12 +411,12 @@ const PostOpportunity = () => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Minimum CGPA</label>
               <input name="minCgpa" value={form.minCgpa} onChange={handleChange}
-                placeholder="e.g. 3.00" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                placeholder="e.g. 3.00" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Experience Required</label>
               <input name="experienceRequired" value={form.experienceRequired} onChange={handleChange}
-                placeholder="e.g. 1-2 years" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                placeholder="e.g. 1-2 years" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
             </div>
           </div>
 
@@ -441,7 +441,7 @@ const PostOpportunity = () => {
             <div className="flex gap-2">
               <input value={gradYearInput} onChange={(e) => setGradYearInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGradYear(); } }}
-                placeholder="Type year and press Enter" className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                placeholder="Type year and press Enter" className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
               <button type="button" onClick={addGradYear}
                 className="px-3 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-colors">
                 <Plus className="w-4 h-4" />
@@ -462,7 +462,7 @@ const PostOpportunity = () => {
             <div className="flex gap-2">
               <input value={skillInput} onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-                placeholder="Type skill and press Enter" className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                placeholder="Type skill and press Enter" className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
               <button type="button" onClick={addSkill}
                 className="px-3 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-semibold hover:bg-blue-100 transition-colors">
                 <Plus className="w-4 h-4" />
@@ -511,11 +511,11 @@ const PostOpportunity = () => {
               {documents.map((doc, idx) => (
                 <div key={idx} className="flex items-center justify-between px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-100">
                   <div className="flex items-center gap-3 min-w-0">
-                    <File className="w-4 h-4 text-gray-400 shrink-0" />
+                    <File className="w-4 h-4 text-gray-500 shrink-0" />
                     <span className="text-sm text-gray-700 truncate">{doc.name}</span>
                   </div>
                   <button type="button" onClick={() => removeDoc(idx)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0">
+                    className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -662,7 +662,7 @@ const PostOpportunity = () => {
                     <div className="space-y-2">
                       {documents.map((doc, i) => (
                         <div key={i} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-                          <File className="w-4 h-4 text-gray-400" />
+                          <File className="w-4 h-4 text-gray-500" />
                           <span className="text-sm text-gray-700">{doc.name}</span>
                         </div>
                       ))}

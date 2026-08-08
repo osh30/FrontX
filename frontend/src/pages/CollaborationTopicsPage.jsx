@@ -68,7 +68,7 @@ const CollaborationTopicsPage = () => {
           <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"></div></div>
         ) : topics.length === 0 ? (
           <div className="text-center py-20 bg-white/40 rounded-3xl border border-white/50 max-w-2xl mx-auto shadow-sm">
-            <Microscope className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Microscope className="w-12 h-12 text-gray-500 mx-auto mb-4" />
             <p className="text-xl font-medium text-gray-900 mb-2">No collaboration opportunities available yet.</p>
             <p className="text-sm text-gray-500">Collaboration opportunities posted by alumni will appear here.</p>
           </div>
@@ -91,7 +91,7 @@ const CollaborationTopicsPage = () => {
                       {topic.type || 'Research'}
                     </div>
                     {topic.createdAt && (
-                      <span className="text-[10px] text-gray-400 font-medium">
+                      <span className="text-[10px] text-gray-500 font-medium">
                         {new Date(topic.createdAt).toLocaleDateString()}
                       </span>
                     )}

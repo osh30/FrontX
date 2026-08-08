@@ -75,16 +75,16 @@ const Blog = () => {
 
           {/* Search */}
           <div className="max-w-xl mx-auto relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
               placeholder="Search articles by title, tag, or topic..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-12 pr-12 py-4 bg-white dark:bg-[#0d1526] border border-white/10 dark:border-white/10 rounded-2xl text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 shadow-xl shadow-black/20"
+              className="w-full pl-12 pr-12 py-4 bg-white dark:bg-[#0d1526] border border-white/10 dark:border-white/10 rounded-2xl text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 shadow-xl shadow-black/20"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600 dark:hover:text-gray-200">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -121,13 +121,13 @@ const Blog = () => {
                   <option value="">More...</option>
                   {categories.slice(8).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
               </div>
             )}
           </div>
 
           <div className="relative">
-            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
@@ -139,7 +139,7 @@ const Blog = () => {
               <option value="most-viewed">Most Viewed</option>
               <option value="oldest">Oldest</option>
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
           </div>
         </div>
 
@@ -196,7 +196,7 @@ const Blog = () => {
                               {featuredBlog.authorRole || 'author'}
                             </span>
                           </div>
-                          <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {featuredBlog.readingTime}
                           </span>
                         </div>
@@ -242,7 +242,7 @@ const Blog = () => {
               </div>
             )}
 
-            <p className="text-center text-sm text-gray-400 mt-6">
+            <p className="text-center text-sm text-gray-500 mt-6">
               {blogs.length} of {total} articles
             </p>
           </>
@@ -291,9 +291,9 @@ const BlogCard = ({ blog, index }) => {
           <div className="flex items-center gap-2 pt-3 border-t border-gray-50 dark:border-white/5">
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-200 truncate">{blog.author?.name || 'FrontX'}</p>
-              <p className="text-[10px] text-gray-400">{formatDate(blog.publishedAt || blog.createdAt)}</p>
+              <p className="text-[10px] text-gray-500">{formatDate(blog.publishedAt || blog.createdAt)}</p>
             </div>
-            <div className="flex items-center gap-2.5 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2.5 text-[10px] text-gray-500">
               <span className="flex items-center gap-0.5"><Clock className="w-3 h-3" /> {blog.readingTime}</span>
               <span className="flex items-center gap-0.5">{blog.views || 0}</span>
               <span className="flex items-center gap-0.5"><Heart className="w-3 h-3" /> {blog.likeCount || 0}</span>

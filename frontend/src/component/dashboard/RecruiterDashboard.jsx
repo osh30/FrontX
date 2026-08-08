@@ -117,7 +117,7 @@ const RecruiterDashboard = ({ user }) => {
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-500 hidden sm:block">{user?.companyName || 'Recruiter'}</span>
               <button onClick={() => handleTabChange('notifications')}
-                className="relative p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                className="relative p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
                 <Bell className="w-5 h-5" />
                 {notifUnreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[9px] font-bold text-white bg-red-500 rounded-full ring-2 ring-white shadow-[0_2px_6px_rgba(239,68,68,0.4)]">

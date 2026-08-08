@@ -297,7 +297,7 @@ const BlogDetailsPage = () => {
           <span className={`px-3 py-1 rounded-lg text-xs font-bold ${CATEGORY_COLORS[blog.category] || 'bg-gray-100 text-gray-700'}`}>
             {blog.category}
           </span>
-          <span className="text-xs text-gray-400 flex items-center gap-1">
+          <span className="text-xs text-gray-500 flex items-center gap-1">
             <Eye className="w-3 h-3" /> {blog.views} views
           </span>
         </div>
@@ -314,7 +314,7 @@ const BlogDetailsPage = () => {
                 {blog.authorRole}
               </span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-gray-400">
+            <div className="flex items-center gap-3 text-xs text-gray-500">
               {blog.author?.department && <span>{blog.author.department}</span>}
               <span>{formatDate(blog.createdAt)}</span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {blogReadingTime(blog)}</span>
@@ -421,7 +421,7 @@ const BlogDetailsPage = () => {
               />
             ))}
             {comments.length === 0 && (
-              <div className="text-center py-10 text-gray-400 text-sm">
+              <div className="text-center py-10 text-gray-500 text-sm">
                 No comments yet. Be the first to share your thoughts!
               </div>
             )}
@@ -450,7 +450,7 @@ const BlogDetailsPage = () => {
                       {rec.category}
                     </span>
                     <h3 className="font-bold text-sm text-gray-900 line-clamp-2 mb-2">{rec.title}</h3>
-                    <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                    <div className="flex items-center gap-2 text-[11px] text-gray-500">
                       <span>{rec.author?.name}</span>
                       <span>&middot;</span>
                       <span>{formatDate(rec.createdAt)}</span>
@@ -483,7 +483,7 @@ const CommentItem = ({
             <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${ROLE_BADGES[comment.authorRole]}`}>
               {comment.authorRole}
             </span>
-            <span className="text-[11px] text-gray-400">{formatTimeAgo(comment.createdAt)}</span>
+            <span className="text-[11px] text-gray-500">{formatTimeAgo(comment.createdAt)}</span>
           </div>
 
           {editingComment === comment._id ? (
@@ -508,14 +508,14 @@ const CommentItem = ({
             <button
               onClick={() => handleCommentLike(comment._id)}
               className={`text-[11px] font-medium flex items-center gap-1 transition-colors ${
-                comment.liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+                comment.liked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'
               }`}
             >
               <Heart className={`w-3 h-3 ${comment.liked ? 'fill-current' : ''}`} /> {comment.likeCount || 0}
             </button>
             <button
               onClick={() => { setReplyTo(replyTo === comment._id ? null : comment._id); setReplyText(''); }}
-              className="text-[11px] font-medium text-gray-400 hover:text-purple-500 flex items-center gap-1 transition-colors"
+              className="text-[11px] font-medium text-gray-500 hover:text-purple-500 flex items-center gap-1 transition-colors"
             >
               <Reply className="w-3 h-3" /> Reply
             </button>
@@ -523,13 +523,13 @@ const CommentItem = ({
               <>
                 <button
                   onClick={() => { setEditingComment(comment._id); setEditText(comment.content); }}
-                  className="text-[11px] font-medium text-gray-400 hover:text-blue-500 flex items-center gap-1 transition-colors"
+                  className="text-[11px] font-medium text-gray-500 hover:text-blue-500 flex items-center gap-1 transition-colors"
                 >
                   <Edit3 className="w-3 h-3" /> Edit
                 </button>
                 <button
                   onClick={() => handleDeleteComment(comment._id)}
-                  className="text-[11px] font-medium text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors"
+                  className="text-[11px] font-medium text-gray-500 hover:text-red-500 flex items-center gap-1 transition-colors"
                 >
                   <Trash2 className="w-3 h-3" /> Delete
                 </button>
@@ -574,7 +574,7 @@ const CommentItem = ({
                         <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider ${ROLE_BADGES[reply.authorRole]}`}>
                           {reply.authorRole}
                         </span>
-                        <span className="text-[10px] text-gray-400">{formatTimeAgo(reply.createdAt)}</span>
+                        <span className="text-[10px] text-gray-500">{formatTimeAgo(reply.createdAt)}</span>
                       </div>
                       {editingComment === reply._id ? (
                         <div className="mt-1">
@@ -592,13 +592,13 @@ const CommentItem = ({
                         <p className="text-xs text-gray-700">{reply.content}</p>
                       )}
                       <div className="flex items-center gap-3 mt-1">
-                        <button onClick={() => handleCommentLike(reply._id, comment._id)} className={`text-[10px] font-medium flex items-center gap-0.5 ${reply.liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+                        <button onClick={() => handleCommentLike(reply._id, comment._id)} className={`text-[10px] font-medium flex items-center gap-0.5 ${reply.liked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}>
                           <Heart className={`w-2.5 h-2.5 ${reply.liked ? 'fill-current' : ''}`} /> {reply.likeCount || 0}
                         </button>
                         {isReplyOwner && (
                           <>
-                            <button onClick={() => { setEditingComment(reply._id); setEditText(reply.content); }} className="text-[10px] text-gray-400 hover:text-blue-500">Edit</button>
-                            <button onClick={() => handleDeleteComment(reply._id, comment._id)} className="text-[10px] text-gray-400 hover:text-red-500">Delete</button>
+                            <button onClick={() => { setEditingComment(reply._id); setEditText(reply.content); }} className="text-[10px] text-gray-500 hover:text-blue-500">Edit</button>
+                            <button onClick={() => handleDeleteComment(reply._id, comment._id)} className="text-[10px] text-gray-500 hover:text-red-500">Delete</button>
                           </>
                         )}
                       </div>

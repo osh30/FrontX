@@ -156,7 +156,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onUnreadCount }) => {
             {loading ? (
               <div className="p-8 text-center">
                 <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p className="text-xs text-gray-400 mt-3">Loading notifications...</p>
+                <p className="text-xs text-gray-500 mt-3">Loading notifications...</p>
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-8 text-center">
@@ -164,7 +164,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onUnreadCount }) => {
                   <Bell className="w-5 h-5 text-gray-300" />
                 </div>
                 <p className="text-sm font-medium text-gray-500">No notifications yet.</p>
-                <p className="text-xs text-gray-400 mt-1">You're all caught up!</p>
+                <p className="text-xs text-gray-500 mt-1">You're all caught up!</p>
               </div>
             ) : (
               notifications.map(notif => {
@@ -193,7 +193,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onUnreadCount }) => {
                       <p className={`text-[13px] leading-snug ${!notif.isRead ? 'text-gray-800 font-medium' : 'text-gray-600'} line-clamp-2`}>
                         {notif.message}
                       </p>
-                      <p className="text-[11px] text-gray-400 mt-1.5 font-medium">{formatTime(notif.createdAt)}</p>
+                      <p className="text-[11px] text-gray-500 mt-1.5 font-medium">{formatTime(notif.createdAt)}</p>
                     </div>
                     {!notif.isRead && (
                       <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0 ring-2 ring-blue-100"></div>

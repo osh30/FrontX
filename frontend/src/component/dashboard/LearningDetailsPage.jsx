@@ -210,7 +210,7 @@ const LearningDetailsPage = () => {
                   <FileText className="w-4 h-4 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-gray-400">Type</p>
+                  <p className="text-[11px] text-gray-500">Type</p>
                   <p className="text-sm font-medium text-gray-900">Study Note (PDF)</p>
                 </div>
               </div>
@@ -220,7 +220,7 @@ const LearningDetailsPage = () => {
                     <Building2 className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-[11px] text-gray-400">Department</p>
+                    <p className="text-[11px] text-gray-500">Department</p>
                     <p className="text-sm font-medium text-gray-900">{note.department}</p>
                   </div>
                 </div>
@@ -231,7 +231,7 @@ const LearningDetailsPage = () => {
                     <GraduationCap className="w-4 h-4 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-[11px] text-gray-400">Course</p>
+                    <p className="text-[11px] text-gray-500">Course</p>
                     <p className="text-sm font-medium text-gray-900">{note.course}</p>
                   </div>
                 </div>
@@ -242,7 +242,7 @@ const LearningDetailsPage = () => {
                     <BookOpen className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-[11px] text-gray-400">Semester</p>
+                    <p className="text-[11px] text-gray-500">Semester</p>
                     <p className="text-sm font-medium text-gray-900">{note.semester}</p>
                   </div>
                 </div>
@@ -252,7 +252,7 @@ const LearningDetailsPage = () => {
                   <Calendar className="w-4 h-4 text-rose-600" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-gray-400">Uploaded On</p>
+                  <p className="text-[11px] text-gray-500">Uploaded On</p>
                   <p className="text-sm font-medium text-gray-900">{formatDate(note.createdAt)}</p>
                 </div>
               </div>
@@ -265,13 +265,13 @@ const LearningDetailsPage = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-sm text-gray-600">
-                  <Eye className="w-4 h-4 text-gray-400" /> Views
+                  <Eye className="w-4 h-4 text-gray-500" /> Views
                 </span>
                 <span className="text-sm font-bold text-gray-900">{note.views || 0}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-sm text-gray-600">
-                  <Download className="w-4 h-4 text-gray-400" /> Downloads
+                  <Download className="w-4 h-4 text-gray-500" /> Downloads
                 </span>
                 <span className="text-sm font-bold text-gray-900">{note.downloads || 0}</span>
               </div>

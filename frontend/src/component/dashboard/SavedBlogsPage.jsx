@@ -89,7 +89,7 @@ const SavedBlogsPage = () => {
       ) : blogs.length === 0 ? (
         <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Bookmark className="w-8 h-8 text-gray-400" />
+            <Bookmark className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-lg font-medium text-gray-900 mb-1">No saved blogs yet.</p>
           <p className="text-sm text-gray-500">Bookmark articles to read them later.</p>
@@ -143,14 +143,14 @@ const SavedBlogsPage = () => {
                         {blog.authorRole}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                    <div className="flex items-center gap-2 text-[10px] text-gray-500">
                       <span>{formatDate(blog.createdAt)}</span>
                       <span className="flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" /> {blog.readingTime}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-[10px] text-gray-400">
+                <div className="flex items-center gap-3 text-[10px] text-gray-500">
                   <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {blog.likeCount || 0}</span>
                   <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {blog.commentCount || 0}</span>
                 </div>

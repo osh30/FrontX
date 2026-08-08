@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowUp,
@@ -18,6 +18,7 @@ import {
   Phone,
 } from 'lucide-react';
 import logo from '../../assets/logo/frontx-logo.svg';
+import { useAuth } from '../../context/AuthContext';
 
 const quickLinks = [
   { label: 'Student Portal', to: '/register', icon: GraduationCap },
@@ -72,18 +73,11 @@ const socialLinks = [
 ];
 
 const LandingFooter = () => {
+  const { user, updateTheme } = useAuth();
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.document.documentElement.classList.contains('dark');
   });
-
-  useEffect(() => {
-    const stored = localStorage.getItem('landing-theme');
-    if (stored === 'dark') {
-      window.document.documentElement.classList.add('dark');
-      setIsDark(true);
-    }
-  }, []);
 
   const toggleTheme = () => {
     const root = window.document.documentElement;
@@ -92,6 +86,7 @@ const LandingFooter = () => {
     root.classList.toggle('dark', next);
     localStorage.setItem('landing-theme', next ? 'dark' : 'light');
     setIsDark(next);
+    if (user) updateTheme(next ? 'dark' : 'light');
     setTimeout(() => root.classList.remove('theme-transition'), 400);
   };
 

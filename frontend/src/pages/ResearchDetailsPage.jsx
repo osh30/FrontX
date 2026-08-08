@@ -369,7 +369,7 @@ const ResearchDetailsPage = () => {
                     {post.requiredSkills?.map((skill, i) => (
                       <span key={i} className="px-4 py-2 bg-purple-50 text-purple-700 font-semibold text-sm rounded-xl border border-purple-100">{skill}</span>
                     ))}
-                    {(!post.requiredSkills || post.requiredSkills.length === 0) && <span className="text-gray-400 text-sm">No specific skills required</span>}
+                    {(!post.requiredSkills || post.requiredSkills.length === 0) && <span className="text-gray-500 text-sm">No specific skills required</span>}
                   </div>
                 </section>
 
@@ -382,7 +382,7 @@ const ResearchDetailsPage = () => {
                           <div className="w-2 h-2 rounded-full bg-blue-500"></div> {out}
                         </div>
                       ))}
-                      {(!post.outcomes || post.outcomes.length === 0) && <span className="text-gray-400 text-sm">No outcomes specified</span>}
+                      {(!post.outcomes || post.outcomes.length === 0) && <span className="text-gray-500 text-sm">No outcomes specified</span>}
                     </div>
                   </section>
 
@@ -392,7 +392,7 @@ const ResearchDetailsPage = () => {
                       {post.benefits?.map((ben, i) => (
                         <span key={i} className="px-4 py-2 bg-green-50 text-green-700 font-semibold text-sm rounded-xl border border-green-100">{ben}</span>
                       ))}
-                      {(!post.benefits || post.benefits.length === 0) && <span className="text-gray-400 text-sm">No benefits specified</span>}
+                      {(!post.benefits || post.benefits.length === 0) && <span className="text-gray-500 text-sm">No benefits specified</span>}
                     </div>
                   </section>
                 </div>

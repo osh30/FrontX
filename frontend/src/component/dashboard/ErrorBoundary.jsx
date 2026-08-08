@@ -23,7 +23,7 @@ export default class ErrorBoundary extends Component {
               <span className="text-red-500 text-2xl font-bold">!</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-700 mb-1">Something went wrong</h3>
-            <p className="text-sm text-gray-400 mb-4">{this.state.error?.message || 'An unexpected error occurred'}</p>
+            <p className="text-sm text-gray-500 mb-4">{this.state.error?.message || 'An unexpected error occurred'}</p>
             <button onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload(); }}
               className="px-5 py-2.5 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-700 transition-all shadow-sm"
             >

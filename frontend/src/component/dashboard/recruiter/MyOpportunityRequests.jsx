@@ -161,7 +161,7 @@ const MyOpportunityRequests = () => {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button onClick={() => setSelected(selected?._id === opp._id ? null : opp)}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                      className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                       <Eye className="w-5 h-5" />
                     </button>
                     {opp.status === 'rejected' && (

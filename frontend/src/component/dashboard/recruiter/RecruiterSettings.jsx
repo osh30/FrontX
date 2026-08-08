@@ -24,13 +24,13 @@ const Field = ({ label, type = 'text', value, onChange, placeholder, error, show
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full px-4 py-3 pr-11 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+          className={`w-full px-4 py-3 pr-11 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
             error ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-blue-400'
           }`}
         />
         {showToggle && (
           <button type="button" onClick={() => setShow(s => !s)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600 transition-colors">
             {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
@@ -231,7 +231,7 @@ const RecruiterSettings = () => {
       </motion.div>
 
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-        className="flex items-center gap-1.5 text-xs text-gray-400 pl-1">
+        className="flex items-center gap-1.5 text-xs text-gray-500 pl-1">
         <ShieldCheck className="w-3.5 h-3.5" />
         Your password is encrypted and stored securely. All changes are saved to MongoDB.
       </motion.p>
@@ -258,7 +258,7 @@ const RecruiterSettings = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Enter your password to confirm</label>
                     <input type="password" value={deletePassword} onChange={e => { setDeletePassword(e.target.value); setDeleteError(''); }}
                       placeholder="Your password" autoFocus
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-red-500/20 focus:border-red-400" />
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-red-500/20 focus:border-red-400" />
                     {deleteError && <p className="text-xs text-red-500 mt-1.5">{deleteError}</p>}
                   </div>
 

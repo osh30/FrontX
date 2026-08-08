@@ -159,7 +159,7 @@ export const NotificationsPage = () => {
                         <h4 className={`text-base ${!notif.isRead ? 'font-bold text-gray-900' : 'font-semibold text-gray-800'}`}>
                           {notif.title || (notif.type.charAt(0).toUpperCase() + notif.type.slice(1))}
                         </h4>
-                        <span className="text-xs font-medium text-gray-400 whitespace-nowrap ml-4">
+                        <span className="text-xs font-medium text-gray-500 whitespace-nowrap ml-4">
                           {formatTime(notif.createdAt)}
                         </span>
                       </div>

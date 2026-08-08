@@ -165,7 +165,7 @@ const BlogPage = () => {
       <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 shadow-sm p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
               placeholder="Search by title, tags, or author..."
@@ -174,14 +174,14 @@ const BlogPage = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none transition-all"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
           <div className="relative">
-            <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -190,11 +190,11 @@ const BlogPage = () => {
               <option value="All">All Categories</option>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
           </div>
 
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             <select
               value={authorRole}
               onChange={(e) => setAuthorRole(e.target.value)}
@@ -205,11 +205,11 @@ const BlogPage = () => {
               <option value="alumni">Alumni</option>
               <option value="student">Student</option>
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
           </div>
 
           <div className="relative">
-            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
@@ -220,7 +220,7 @@ const BlogPage = () => {
               <option value="most-liked">Most Liked</option>
               <option value="most-viewed">Most Viewed</option>
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
           </div>
         </div>
       </div>
@@ -270,7 +270,7 @@ const BlogPage = () => {
                         {featuredBlog.authorRole}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-[11px] text-gray-400">
+                    <div className="flex items-center gap-3 text-[11px] text-gray-500">
                       <span>{formatDate(featuredBlog.createdAt)}</span>
                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {featuredBlog.readingTime}</span>
                     </div>
@@ -300,7 +300,7 @@ const BlogPage = () => {
       {blogs.length === 0 && !loading ? (
         <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="w-8 h-8 text-gray-400" />
+            <BookOpen className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-lg font-medium text-gray-900 mb-1">No blogs found.</p>
           <p className="text-sm text-gray-500 mb-4">
@@ -444,7 +444,7 @@ const BlogCard = ({ blog, index, navigate }) => {
                 {blog.authorRole}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+            <div className="flex items-center gap-2 text-[10px] text-gray-500">
               <span>{formatDate(blog.createdAt)}</span>
               <span className="flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" /> {blog.readingTime}</span>
             </div>
@@ -452,7 +452,7 @@ const BlogCard = ({ blog, index, navigate }) => {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center justify-between text-[10px] text-gray-400 mb-3">
+        <div className="flex items-center justify-between text-[10px] text-gray-500 mb-3">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1"><Heart className="w-3 h-3" /></span>
             <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {blog.commentCount || 0}</span>
@@ -474,7 +474,7 @@ const BlogCard = ({ blog, index, navigate }) => {
             whileTap={{ scale: 0.9 }}
             onClick={handleBookmark}
             className={`p-2 rounded-xl text-xs transition-all ${
-              isBookmarked ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-gray-50 text-gray-400 border border-gray-100 hover:bg-amber-50 hover:text-amber-500'
+              isBookmarked ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-gray-50 text-gray-500 border border-gray-100 hover:bg-amber-50 hover:text-amber-500'
             }`}
           >
             <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-current' : ''}`} />

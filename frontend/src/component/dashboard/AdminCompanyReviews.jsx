@@ -133,7 +133,7 @@ const AdminCompanyReviews = () => {
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search by company name or review text..."
@@ -143,7 +143,7 @@ const AdminCompanyReviews = () => {
               />
             </div>
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <select
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value)}
@@ -165,7 +165,7 @@ const AdminCompanyReviews = () => {
             >
               <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 font-semibold">No reviews found</p>
-              <p className="text-gray-400 text-sm mt-1">No reviews match your current filters</p>
+              <p className="text-gray-500 text-sm mt-1">No reviews match your current filters</p>
             </motion.div>
           ) : (
             <div className="space-y-4">
@@ -197,7 +197,7 @@ const AdminCompanyReviews = () => {
                               by {review.reviewerId?.name || 'Anonymous'} &middot; {review.reviewerId?.email}
                             </p>
                             {review.recruiterId && (
-                              <p className="text-xs text-gray-400 mt-0.5">
+                              <p className="text-xs text-gray-500 mt-0.5">
                                 Recruiter: {review.recruiterId.name} &middot; {review.recruiterId.companyName}
                               </p>
                             )}
@@ -233,7 +233,7 @@ const AdminCompanyReviews = () => {
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <StatusBadge status={review.status} />
-                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
                           {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
@@ -268,7 +268,7 @@ const AdminCompanyReviews = () => {
                         </button>
                       )}
                       {review.status === 'deleted' && (
-                        <span className="flex items-center gap-1.5 px-3 py-2 text-gray-400 text-[12px] font-semibold ml-auto">
+                        <span className="flex items-center gap-1.5 px-3 py-2 text-gray-500 text-[12px] font-semibold ml-auto">
                           <AlertTriangle className="w-3.5 h-3.5" />
                           Permanently deleted
                         </span>

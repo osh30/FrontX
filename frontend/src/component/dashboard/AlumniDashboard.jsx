@@ -348,7 +348,7 @@ const AlumniDashboard = ({ user }) => {
               {activeTab.replace('-', ' ')}
             </h1>
             <div className="relative ml-10 lg:ml-0" ref={searchRef}>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input 
                 type="text"
                 value={searchQuery}
@@ -358,7 +358,7 @@ const AlumniDashboard = ({ user }) => {
                 className="pl-10 pr-10 py-2.5 w-48 md:w-64 xl:w-80 bg-white/80 border border-gray-200 rounded-full text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all shadow-sm"
               />
               {searchQuery && (
-                <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
                   <X className="w-4 h-4" />
                 </button>
               )}
@@ -386,7 +386,7 @@ const AlumniDashboard = ({ user }) => {
                       <div className="py-2">
                         {searchResults.students.length > 0 && (
                           <div>
-                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Students</div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-500">Students</div>
                             {searchResults.students.map((s) => (
                               <button
                                 key={s._id}
@@ -405,7 +405,7 @@ const AlumniDashboard = ({ user }) => {
 
                         {searchResults.alumni.length > 0 && (
                           <div>
-                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Alumni</div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-500">Alumni</div>
                             {searchResults.alumni.map((a) => (
                               <button
                                 key={a._id}
@@ -424,7 +424,7 @@ const AlumniDashboard = ({ user }) => {
 
                         {searchResults.resources.length > 0 && (
                           <div>
-                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">Resources</div>
+                            <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-500">Resources</div>
                             {searchResults.resources.map((r) => (
                               <button
                                 key={r._id}
@@ -587,7 +587,7 @@ const AlumniDashboard = ({ user }) => {
                               <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2">
                                 <Bell className="w-4 h-4 text-gray-300" />
                               </div>
-                              <p className="text-xs text-gray-400">No recent activity.</p>
+                              <p className="text-xs text-gray-500">No recent activity.</p>
                             </div>
                           ) : (
                             <div className="space-y-2.5">
@@ -609,7 +609,7 @@ const AlumniDashboard = ({ user }) => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-[13px] text-gray-700 leading-snug line-clamp-2">{notif.message}</p>
-                                      <p className="text-[11px] text-gray-400 mt-1">{getRelativeTime(notif.createdAt)}</p>
+                                      <p className="text-[11px] text-gray-500 mt-1">{getRelativeTime(notif.createdAt)}</p>
                                     </div>
                                     {!notif.isRead && (
                                       <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-2 animate-pulse" />
@@ -627,14 +627,14 @@ const AlumniDashboard = ({ user }) => {
                         {/* ─── Section 2: Upcoming Session ─── */}
                         <div className="px-6 pt-5 pb-6">
                           <div className="flex items-center gap-2 mb-3">
-                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Upcoming Session</span>
+                            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Upcoming Session</span>
                           </div>
                           {!nextSession ? (
                             <div className="py-5 text-center">
                               <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-2">
                                 <Calendar className="w-4 h-4 text-gray-300" />
                               </div>
-                              <p className="text-xs text-gray-400">No upcoming sessions scheduled.</p>
+                              <p className="text-xs text-gray-500">No upcoming sessions scheduled.</p>
                             </div>
                           ) : (
                             <motion.div

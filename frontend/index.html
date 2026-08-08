@@ -10,13 +10,15 @@
       (function () {
         try {
           var dark = false;
-          var landing = localStorage.getItem('landing-theme');
-          if (landing) {
-            dark = landing === 'dark';
-          } else {
-            var saved = localStorage.getItem('user');
-            var pref = saved ? (JSON.parse(saved).themePreference || 'system') : 'system';
-            dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var saved = localStorage.getItem('user');
+          var pref = saved ? (JSON.parse(saved).themePreference || null) : null;
+          if (!pref) {
+            pref = localStorage.getItem('landing-theme');
+          }
+          if (pref === 'dark') {
+            dark = true;
+          } else if (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            dark = true;
           }
           if (dark) document.documentElement.classList.add('dark');
         } catch (e) {}

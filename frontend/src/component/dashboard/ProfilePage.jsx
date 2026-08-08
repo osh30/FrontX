@@ -13,7 +13,7 @@ import Avatar from './Avatar';
 
 const EmptyState = ({ icon: Icon, title, desc, actionText, onAction, isEditing }) => (
   <div className="flex flex-col items-center justify-center h-full min-h-[250px] py-8 text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-300">
-    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-4 text-gray-400 shadow-sm border border-gray-100">
+    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-4 text-gray-500 shadow-sm border border-gray-100">
       <Icon className="w-6 h-6" />
     </div>
     <h4 className="text-gray-900 font-bold mb-2 text-base">{title}</h4>
@@ -608,16 +608,16 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
                     {profileData.role}
                   </span>
                   <span className="flex items-center gap-1.5 text-sm text-gray-600 font-medium bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
-                    <MapPin className="w-3.5 h-3.5 text-gray-400" /> {profileData.department || "Dept not set"}
+                    <MapPin className="w-3.5 h-3.5 text-gray-500" /> {profileData.department || "Dept not set"}
                   </span>
                   {profileData.session && (
                     <span className="flex items-center gap-1.5 text-sm text-gray-600 font-medium bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
-                      <GraduationCap className="w-3.5 h-3.5 text-gray-400" /> {profileData.session}
+                      <GraduationCap className="w-3.5 h-3.5 text-gray-500" /> {profileData.session}
                     </span>
                   )}
                   {profileData.studentId && (
                     <span className="flex items-center gap-1.5 text-sm text-gray-600 font-medium bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
-                      <Hash className="w-3.5 h-3.5 text-gray-400" /> {profileData.studentId}
+                      <Hash className="w-3.5 h-3.5 text-gray-500" /> {profileData.studentId}
                     </span>
                   )}
                 </div>
@@ -685,7 +685,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
                     <span key={idx} className="group relative inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold bg-white text-gray-800 border border-gray-200 shadow-sm transition-all hover:border-purple-300 hover:text-purple-700 cursor-default">
                       {interest}
                       {isEditing && (
-                        <button onClick={() => removeInterest(interest)} className="ml-2 text-gray-400 hover:text-red-500 focus:outline-none"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => removeInterest(interest)} className="ml-2 text-gray-500 hover:text-red-500 focus:outline-none"><X className="w-3.5 h-3.5" /></button>
                       )}
                     </span>
                   ))
@@ -914,7 +914,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl w-full max-w-md border border-gray-100">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Request Mentorship</h3>
-                <button onClick={() => setShowRequestModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full">
+                <button onClick={() => setShowRequestModal(false)} className="text-gray-500 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full">
                   <X className="w-5 h-5" />
                 </button>
               </div>

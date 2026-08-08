@@ -346,7 +346,7 @@ const CreateSessionPage = () => {
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Meeting Link</label>
                         <div className="relative">
-                          <Video className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                          <Video className="w-5 h-5 text-gray-500 absolute left-4 top-1/2 -translate-y-1/2" />
                           <input 
                             type="url" 
                             name="meetingLink"

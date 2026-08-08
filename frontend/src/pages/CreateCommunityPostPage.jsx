@@ -313,7 +313,7 @@ const CreateCommunityPostPage = () => {
             <div className="flex items-center gap-3 shrink-0">
               {draftStatus && (
                 <motion.span initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  className="text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full flex items-center gap-1.5">
                   <Clock className="w-3 h-3" /> {draftStatus}
                 </motion.span>
               )}
@@ -403,7 +403,7 @@ const CreateCommunityPostPage = () => {
             {/* Title */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                <Hash className="w-4 h-4 text-purple-500" /> Post Title <span className="text-gray-400 font-normal">(optional)</span>
+                <Hash className="w-4 h-4 text-purple-500" /> Post Title <span className="text-gray-500 font-normal">(optional)</span>
               </label>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="Give your post a title..."
@@ -444,7 +444,7 @@ const CreateCommunityPostPage = () => {
             {/* Image Upload */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-purple-500" /> Image <span className="text-gray-400 font-normal">(optional)</span>
+                <ImageIcon className="w-4 h-4 text-purple-500" /> Image <span className="text-gray-500 font-normal">(optional)</span>
               </label>
               <div
                 onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
@@ -469,7 +469,7 @@ const CreateCommunityPostPage = () => {
                       <Upload className="w-6 h-6 text-purple-600" />
                     </div>
                     <p className="text-sm font-medium text-gray-700">Drop an image here or click to browse</p>
-                    <p className="text-xs text-gray-400">PNG, JPG, WEBP up to 10MB</p>
+                    <p className="text-xs text-gray-500">PNG, JPG, WEBP up to 10MB</p>
                   </div>
                 )}
               </div>
@@ -478,7 +478,7 @@ const CreateCommunityPostPage = () => {
             {/* Document Upload */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-purple-500" /> Document / PDF <span className="text-gray-400 font-normal">(optional)</span>
+                <FileText className="w-4 h-4 text-purple-500" /> Document / PDF <span className="text-gray-500 font-normal">(optional)</span>
               </label>
               <div onClick={() => docInputRef.current?.click()}
                 className="border-2 border-dashed border-gray-300 rounded-2xl p-4 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50/30 transition-all">
@@ -490,7 +490,7 @@ const CreateCommunityPostPage = () => {
                     </div>
                     <span className="text-sm font-medium text-gray-700">{documentName}</span>
                     <button type="button" onClick={e => { e.stopPropagation(); setDocumentFile(null); setDocumentName(''); setUploadedDocumentUrl(''); }}
-                      className="p-1 hover:bg-gray-100 rounded-full text-gray-400 hover:text-red-500">
+                      className="p-1 hover:bg-gray-100 rounded-full text-gray-500 hover:text-red-500">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -507,7 +507,7 @@ const CreateCommunityPostPage = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <List className="w-4 h-4 text-purple-500" /> Poll <span className="text-gray-400 font-normal">(optional)</span>
+                  <List className="w-4 h-4 text-purple-500" /> Poll <span className="text-gray-500 font-normal">(optional)</span>
                 </label>
                 <button type="button" onClick={() => { setEnablePoll(!enablePoll); if (!enablePoll) setPollOptions(['', '']); }}
                   className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
@@ -531,7 +531,7 @@ const CreateCommunityPostPage = () => {
                           className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all" />
                         {pollOptions.length > 2 && (
                           <button type="button" onClick={() => removePollOption(idx)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                            className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
@@ -543,7 +543,7 @@ const CreateCommunityPostPage = () => {
                         <Plus className="w-4 h-4" /> Add option
                       </button>
                     )}
-                    <p className="text-xs text-gray-400">{pollOptions.length}/4 options</p>
+                    <p className="text-xs text-gray-500">{pollOptions.length}/4 options</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -552,7 +552,7 @@ const CreateCommunityPostPage = () => {
             {/* Tags */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-purple-500" /> Tags <span className="text-gray-400 font-normal">(optional, up to 10)</span>
+                <Tag className="w-4 h-4 text-purple-500" /> Tags <span className="text-gray-500 font-normal">(optional, up to 10)</span>
               </label>
               <div className="relative">
                 <div className="flex flex-wrap gap-1.5 mb-2">
@@ -616,7 +616,7 @@ const CreateCommunityPostPage = () => {
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${allowComments ? 'bg-green-100' : 'bg-gray-100'}`}>
-                    <MessageCircle className={`w-4 h-4 ${allowComments ? 'text-green-600' : 'text-gray-400'}`} />
+                    <MessageCircle className={`w-4 h-4 ${allowComments ? 'text-green-600' : 'text-gray-500'}`} />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-gray-900">Allow Comments</p>
@@ -651,7 +651,7 @@ const CreateCommunityPostPage = () => {
                         <p className="text-sm font-bold text-gray-900">
                           {previewPost.isAnonymous ? 'Anonymous Student' : previewPost.originalAuthor?.name || 'You'}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-500">
                           {previewPost.originalAuthor?.department || ''} • Just now
                         </p>
                       </div>
@@ -711,11 +711,11 @@ const CreateCommunityPostPage = () => {
                   )}
 
                   {/* Reactions placeholder */}
-                  <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100 text-gray-400">
+                  <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100 text-gray-500">
                     <span className="flex items-center gap-1 text-xs"><Heart className="w-4 h-4" /> 0</span>
                     <span className="flex items-center gap-1 text-xs"><MessageCircle className="w-4 h-4" /> 0</span>
                     <span className="flex items-center gap-1 text-xs"><Bookmark className="w-4 h-4" /> 0</span>
-                    <span className="ml-auto text-xs text-gray-400">
+                    <span className="ml-auto text-xs text-gray-500">
                       {previewPost.allowComments ? 'Comments on' : 'Comments off'}
                     </span>
                   </div>
@@ -820,7 +820,7 @@ const CreateCommunityPostPage = () => {
                         <p className="text-sm font-bold text-gray-900">
                           {previewPost.isAnonymous ? 'Anonymous Student' : previewPost.originalAuthor?.name || 'You'}
                         </p>
-                        <p className="text-xs text-gray-400">Just now</p>
+                        <p className="text-xs text-gray-500">Just now</p>
                       </div>
                     </div>
                     <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">

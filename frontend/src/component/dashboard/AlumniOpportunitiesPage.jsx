@@ -245,7 +245,7 @@ const AlumniOpportunitiesPage = () => {
       <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/50 shadow-sm p-4">
         <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
               placeholder="Search by title, company, or location..."
@@ -254,13 +254,13 @@ const AlumniOpportunitiesPage = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-200 focus:border-blue-300 outline-none transition-all"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
           <div className="relative">
-            <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
             <select
               value={jobTypeFilter}
               onChange={(e) => setJobTypeFilter(e.target.value)}
@@ -268,7 +268,7 @@ const AlumniOpportunitiesPage = () => {
             >
               {JOB_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
           </div>
         </div>
       </div>
@@ -281,7 +281,7 @@ const AlumniOpportunitiesPage = () => {
       ) : filteredJobs.length === 0 ? (
         <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Briefcase className="w-8 h-8 text-gray-400" />
+            <Briefcase className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-lg font-medium text-gray-900 mb-1">No opportunities found</p>
           <p className="text-sm text-gray-500 mb-4">
@@ -318,7 +318,7 @@ const AlumniOpportunitiesPage = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-lg text-gray-900 line-clamp-1 group-hover:text-[#1E3A8A] transition-colors">{job.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                        <Building2 className="w-3.5 h-3.5 text-gray-500" />
                         <p className="text-sm text-gray-500 truncate">{job.company}</p>
                       </div>
                     </div>
@@ -331,10 +331,10 @@ const AlumniOpportunitiesPage = () => {
 
                   <div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-4">
                     {job.location && (
-                      <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-gray-400" /> {job.location}</span>
+                      <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-gray-500" /> {job.location}</span>
                     )}
                     {job.salaryRange?.min && (
-                      <span className="flex items-center gap-1"><span className="text-sm font-semibold text-gray-400">৳</span> {job.salaryRange.min.toLocaleString()}{job.salaryRange.max ? ` - ${job.salaryRange.max.toLocaleString()}` : '+'}</span>
+                      <span className="flex items-center gap-1"><span className="text-sm font-semibold text-gray-500">৳</span> {job.salaryRange.min.toLocaleString()}{job.salaryRange.max ? ` - ${job.salaryRange.max.toLocaleString()}` : '+'}</span>
                     )}
                     {job.deadline && (
                       <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-red-400" /> Closes {formatDate(job.deadline)}</span>
@@ -347,7 +347,7 @@ const AlumniOpportunitiesPage = () => {
                         <span key={i} className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 rounded-md text-[10px] font-medium">{r}</span>
                       ))}
                       {job.requirements.length > 3 && (
-                        <span className="px-2 py-0.5 bg-gray-50 text-gray-400 rounded-md text-[10px]">+{job.requirements.length - 3}</span>
+                        <span className="px-2 py-0.5 bg-gray-50 text-gray-500 rounded-md text-[10px]">+{job.requirements.length - 3}</span>
                       )}
                     </div>
                   )}
@@ -361,7 +361,7 @@ const AlumniOpportunitiesPage = () => {
                 </div>
 
                 <div className="px-6 py-4 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
                     <Avatar src={job.postedBy?.profilePicture} alt={job.postedBy?.name} size={20} className="border border-white" />
                     <span>{job.postedBy?.name || 'Alumni'}</span>
                     <span className="text-gray-300">|</span>
@@ -372,14 +372,14 @@ const AlumniOpportunitiesPage = () => {
                       <>
                         <button
                           onClick={(e) => { e.stopPropagation(); toast('Edit functionality coming soon'); }}
-                          className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+                          className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
                           title="Edit"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(job._id); }}
-                          className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                          className="p-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -447,7 +447,7 @@ const AlumniOpportunitiesPage = () => {
                     value={publishForm.title}
                     onChange={handlePublishChange}
                     placeholder="e.g. Frontend Developer, Marketing Intern"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                   />
                 </div>
 
@@ -455,13 +455,13 @@ const AlumniOpportunitiesPage = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Company / Organization *</label>
                   <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       name="company"
                       value={publishForm.company}
                       onChange={handlePublishChange}
                       placeholder="e.g. Google, Ministry of Education"
-                      className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                      className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                     />
                   </div>
                 </div>
@@ -475,7 +475,7 @@ const AlumniOpportunitiesPage = () => {
                     onChange={handlePublishChange}
                     rows={4}
                     placeholder="Describe the opportunity in detail..."
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all resize-none"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all resize-none"
                   />
                 </div>
 
@@ -484,7 +484,7 @@ const AlumniOpportunitiesPage = () => {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type</label>
                     <div className="relative">
-                      <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                       <select
                         name="jobType"
                         value={publishForm.jobType}
@@ -495,19 +495,19 @@ const AlumniOpportunitiesPage = () => {
                           <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Location</label>
                     <div className="relative">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                       <input
                         name="location"
                         value={publishForm.location}
                         onChange={handlePublishChange}
                         placeholder="e.g. Dhaka, Remote"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                       />
                     </div>
                   </div>
@@ -518,25 +518,25 @@ const AlumniOpportunitiesPage = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Salary Range (BDT)</label>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400">৳</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500">৳</span>
                       <input
                         name="salaryMin"
                         type="number"
                         value={publishForm.salaryMin}
                         onChange={handlePublishChange}
                         placeholder="Min"
-                        className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                        className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                       />
                     </div>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-400">৳</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-gray-500">৳</span>
                       <input
                         name="salaryMax"
                         type="number"
                         value={publishForm.salaryMax}
                         onChange={handlePublishChange}
                         placeholder="Max"
-                        className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                        className="w-full pl-9 pr-3 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                       />
                     </div>
                   </div>
@@ -550,7 +550,7 @@ const AlumniOpportunitiesPage = () => {
                     value={publishForm.requirements}
                     onChange={handlePublishChange}
                     placeholder="e.g. React, Node.js, 2 years experience"
-                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                   />
                 </div>
 
@@ -558,7 +558,7 @@ const AlumniOpportunitiesPage = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Application Deadline</label>
                   <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       name="deadline"
                       type="date"

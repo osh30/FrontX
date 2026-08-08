@@ -215,7 +215,7 @@ const BlogDetails = () => {
                   {blog.authorRole || 'author'}
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-xs text-gray-400">
+              <div className="flex items-center gap-3 text-xs text-gray-500">
                 <span>{formatDate(blog.publishedAt || blog.createdAt)}</span>
                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {blogReadingTime(blog)}</span>
                 <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {blog.views} views</span>
@@ -302,7 +302,7 @@ const BlogDetails = () => {
         <aside className="hidden lg:block">
           {toc.length > 0 && (
             <div className="sticky top-8">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <ListOrdered className="w-4 h-4 text-violet-500" /> On this page
               </p>
               <nav className="bg-white dark:bg-white/[0.04] rounded-2xl border border-gray-100 dark:border-white/10 p-5 max-h-[70vh] overflow-y-auto">
@@ -335,7 +335,7 @@ const BlogDetails = () => {
                       {rec.category}
                     </span>
                     <h3 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-2 mb-2 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">{rec.title}</h3>
-                    <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                    <div className="flex items-center gap-2 text-[11px] text-gray-500">
                       <span>{rec.author?.name || 'FrontX'}</span>
                       <span>&middot;</span>
                       <span>{formatDate(rec.publishedAt || rec.createdAt)}</span>
@@ -480,7 +480,7 @@ const CommentsSection = ({ blogId, blog, comments, setComments, currentUser, tok
               onChange={e => setCommentText(e.target.value)}
               placeholder="Share your thoughts..."
               rows={3}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 resize-none"
+              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500/30 resize-none"
             />
             <div className="flex justify-end mt-2">
               <button
@@ -497,7 +497,7 @@ const CommentsSection = ({ blogId, blog, comments, setComments, currentUser, tok
 
       <div className="space-y-4">
         {comments.length === 0 && (
-          <p className="text-center py-8 text-sm text-gray-400">No comments yet. Be the first to share your thoughts!</p>
+          <p className="text-center py-8 text-sm text-gray-500">No comments yet. Be the first to share your thoughts!</p>
         )}
         {comments.map(comment => (
           <CommentItem
@@ -551,7 +551,7 @@ const CommentItem = ({
             <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${ROLE_BADGES[comment.authorRole] || 'bg-gray-100 text-gray-600'}`}>
               {comment.authorRole || 'member'}
             </span>
-            <span className="text-[11px] text-gray-400">{timeAgo(comment.createdAt)}</span>
+            <span className="text-[11px] text-gray-500">{timeAgo(comment.createdAt)}</span>
           </div>
 
           {editingId === comment._id ? (
@@ -569,21 +569,21 @@ const CommentItem = ({
 
           <div className="flex items-center gap-3 mt-2">
             <button onClick={() => handleCommentLike(comment._id)}
-              className={`text-[11px] font-medium flex items-center gap-1 transition-colors ${comment.liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+              className={`text-[11px] font-medium flex items-center gap-1 transition-colors ${comment.liked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}>
               <Heart className={`w-3 h-3 ${comment.liked ? 'fill-current' : ''}`} /> {comment.likeCount || 0}
             </button>
             {token && (
               <button onClick={() => { setReplyTo(replyTo === comment._id ? null : comment._id); setReplyText(''); }}
-                className="text-[11px] font-medium text-gray-400 hover:text-violet-500 flex items-center gap-1 transition-colors">
+                className="text-[11px] font-medium text-gray-500 hover:text-violet-500 flex items-center gap-1 transition-colors">
                 <Reply className="w-3 h-3" /> Reply
               </button>
             )}
             {isOwner && (
               <>
-                <button onClick={() => { setEditingId(comment._id); setEditText(comment.content); }} className="text-[11px] font-medium text-gray-400 hover:text-blue-500 flex items-center gap-1 transition-colors">
+                <button onClick={() => { setEditingId(comment._id); setEditText(comment.content); }} className="text-[11px] font-medium text-gray-500 hover:text-blue-500 flex items-center gap-1 transition-colors">
                   <Edit3 className="w-3 h-3" /> Edit
                 </button>
-                <button onClick={() => handleDeleteComment(comment._id)} className="text-[11px] font-medium text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors">
+                <button onClick={() => handleDeleteComment(comment._id)} className="text-[11px] font-medium text-gray-500 hover:text-red-500 flex items-center gap-1 transition-colors">
                   <Trash2 className="w-3 h-3" /> Delete
                 </button>
               </>
@@ -620,7 +620,7 @@ const CommentItem = ({
                         <span className={`px-1 py-0.5 rounded text-[7px] font-bold uppercase tracking-wider ${ROLE_BADGES[reply.authorRole] || 'bg-gray-100 text-gray-600'}`}>
                           {reply.authorRole || 'member'}
                         </span>
-                        <span className="text-[10px] text-gray-400">{timeAgo(reply.createdAt)}</span>
+                        <span className="text-[10px] text-gray-500">{timeAgo(reply.createdAt)}</span>
                       </div>
                       {editingId === reply._id ? (
                         <div className="mt-1">
@@ -635,13 +635,13 @@ const CommentItem = ({
                         <p className="text-xs text-gray-700 dark:text-gray-300">{reply.content}</p>
                       )}
                       <div className="flex items-center gap-3 mt-1">
-                        <button onClick={() => handleCommentLike(reply._id, comment._id)} className={`text-[10px] font-medium flex items-center gap-0.5 ${reply.liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+                        <button onClick={() => handleCommentLike(reply._id, comment._id)} className={`text-[10px] font-medium flex items-center gap-0.5 ${reply.liked ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}>
                           <Heart className={`w-2.5 h-2.5 ${reply.liked ? 'fill-current' : ''}`} /> {reply.likeCount || 0}
                         </button>
                         {isReplyOwner && (
                           <>
-                            <button onClick={() => { setEditingId(reply._id); setEditText(reply.content); }} className="text-[10px] text-gray-400 hover:text-blue-500">Edit</button>
-                            <button onClick={() => handleDeleteComment(reply._id, comment._id)} className="text-[10px] text-gray-400 hover:text-red-500">Delete</button>
+                            <button onClick={() => { setEditingId(reply._id); setEditText(reply.content); }} className="text-[10px] text-gray-500 hover:text-blue-500">Edit</button>
+                            <button onClick={() => handleDeleteComment(reply._id, comment._id)} className="text-[10px] text-gray-500 hover:text-red-500">Delete</button>
                           </>
                         )}
                       </div>

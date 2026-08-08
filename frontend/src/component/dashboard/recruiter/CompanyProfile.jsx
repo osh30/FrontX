@@ -156,7 +156,7 @@ const CompanyProfile = ({ user }) => {
   };
 
   const inputClass = (field) =>
-    `w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
+    `w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${
       errors[field] ? 'border-red-400 focus:border-red-400' : 'border-gray-200 focus:border-blue-400'
     }`;
 
@@ -267,7 +267,7 @@ const CompanyProfile = ({ user }) => {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Company Name *</label>
             <div className="relative">
-              <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input name="companyName" value={form.companyName} onChange={handleChange}
                 placeholder="Acme Corporation" className={inputClass('companyName')} />
             </div>
@@ -278,7 +278,7 @@ const CompanyProfile = ({ user }) => {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Industry *</label>
             <div className="relative">
-              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <select name="industryType" value={form.industryType} onChange={handleChange}
                 className={`${inputClass('industryType')} appearance-none cursor-pointer`}>
                 <option value="">Select industry</option>
@@ -292,7 +292,7 @@ const CompanyProfile = ({ user }) => {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Official Website</label>
             <div className="relative">
-              <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input name="companyWebsite" value={form.companyWebsite} onChange={handleChange}
                 placeholder="https://www.example.com" className={inputClass('companyWebsite')} />
             </div>
@@ -303,7 +303,7 @@ const CompanyProfile = ({ user }) => {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Office Address</label>
             <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input name="officeAddress" value={form.officeAddress} onChange={handleChange}
                 placeholder="123 Tech Park, Dhaka, Bangladesh" className={inputClass('officeAddress')} />
             </div>
@@ -313,17 +313,17 @@ const CompanyProfile = ({ user }) => {
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Company Description *</label>
             <div className="relative">
-              <FileText className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+              <FileText className="absolute left-4 top-4 w-5 h-5 text-gray-500" />
               <textarea name="companyDescription" value={form.companyDescription} onChange={handleChange}
                 rows={5} maxLength={1000}
                 placeholder="Tell students about your company, its mission, values, and what makes it a great place to work..."
-                className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 resize-none ${
+                className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 resize-none ${
                   errors.companyDescription ? 'border-red-400' : 'border-gray-200 focus:border-blue-400'
                 }`} />
             </div>
             <div className="flex justify-between items-center mt-1.5">
               {errors.companyDescription && <p className="text-xs text-red-500">{errors.companyDescription}</p>}
-              <p className={`text-xs ml-auto ${form.companyDescription.length > 900 ? 'text-amber-500' : 'text-gray-400'}`}>
+              <p className={`text-xs ml-auto ${form.companyDescription.length > 900 ? 'text-amber-500' : 'text-gray-500'}`}>
                 {form.companyDescription.length}/1000
               </p>
             </div>
@@ -344,7 +344,7 @@ const CompanyProfile = ({ user }) => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Contact Person Name</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input name="contactPerson" value={form.contactPerson} onChange={handleChange}
                   placeholder="John Doe" className={inputClass('contactPerson')} />
               </div>
@@ -352,7 +352,7 @@ const CompanyProfile = ({ user }) => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Designation</label>
               <div className="relative">
-                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input value={user?.designation || 'Not specified'} disabled
                   className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 cursor-not-allowed" />
               </div>
@@ -360,7 +360,7 @@ const CompanyProfile = ({ user }) => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Official Email</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input value={user?.email || ''} disabled
                   className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500 cursor-not-allowed" />
               </div>
@@ -368,7 +368,7 @@ const CompanyProfile = ({ user }) => {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input name="phoneNumber" value={form.phoneNumber} onChange={handleChange}
                   placeholder="+880 1XXXXXXXXX" className={inputClass('phoneNumber')} />
               </div>

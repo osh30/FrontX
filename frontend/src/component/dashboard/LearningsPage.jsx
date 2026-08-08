@@ -137,7 +137,7 @@ const LearningsPage = () => {
         <div className="flex flex-col md:flex-row gap-3">
           {/* Search */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
               placeholder="Search by note title, course, or subject..."
@@ -149,7 +149,7 @@ const LearningsPage = () => {
 
           {/* Sort */}
           <div className="relative">
-            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
@@ -192,28 +192,28 @@ const LearningsPage = () => {
             >
               <div className="pt-4 mt-4 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Department</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 block">Department</label>
                   <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200">
                     <option value="All">All Departments</option>
                     {filterMeta.departments.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Semester</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 block">Semester</label>
                   <select value={semester} onChange={(e) => setSemester(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200">
                     <option value="All">All Semesters</option>
                     {filterMeta.semesters.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Course</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 block">Course</label>
                   <select value={course} onChange={(e) => setCourse(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200">
                     <option value="All">All Courses</option>
                     {filterMeta.courses.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1 block">Week / Topic</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1 block">Week / Topic</label>
                   <select value={weekOrTopic} onChange={(e) => setWeekOrTopic(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200">
                     <option value="All">All Weeks</option>
                     {filterMeta.weekOrTopics.map(w => <option key={w} value={w}>{w}</option>)}
@@ -240,7 +240,7 @@ const LearningsPage = () => {
       ) : notes.length === 0 ? (
         <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="w-8 h-8 text-gray-400" />
+            <BookOpen className="w-8 h-8 text-gray-500" />
           </div>
           <p className="text-lg font-medium text-gray-900 mb-1">No study notes found.</p>
           <p className="text-sm text-gray-500 mb-4">
@@ -307,7 +307,7 @@ const LearningsPage = () => {
 
                     {/* Week/Topic */}
                     {note.weekOrTopic && (
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                      <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
                         {note.weekOrTopic}
                       </p>
                     )}
@@ -321,7 +321,7 @@ const LearningsPage = () => {
                         <Avatar src={uploader?.profilePicture} alt={uploader?.name} size={20} className="border-2 border-white shadow-sm shrink-0" />
                         <span className="text-[11px] text-gray-500 truncate">{uploader?.name || 'Student'}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] text-gray-400 shrink-0">
+                      <div className="flex items-center gap-1 text-[11px] text-gray-500 shrink-0">
                         <Calendar className="w-3 h-3" />
                         {formatDate(note.createdAt)}
                       </div>
@@ -329,10 +329,10 @@ const LearningsPage = () => {
 
                     {/* Stats */}
                     <div className="flex items-center gap-4 mb-3">
-                      <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                      <span className="flex items-center gap-1 text-[10px] text-gray-500">
                         <Eye className="w-3 h-3" /> {note.views || 0} views
                       </span>
-                      <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                      <span className="flex items-center gap-1 text-[10px] text-gray-500">
                         <Download className="w-3 h-3" /> {note.downloads || 0} downloads
                       </span>
                     </div>

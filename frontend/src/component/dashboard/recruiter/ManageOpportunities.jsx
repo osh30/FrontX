@@ -81,9 +81,9 @@ const ManageOpportunities = () => {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
         className="flex flex-col sm:flex-row gap-3">
         <form onSubmit={handleSearch} className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search opportunities..."
-            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
         </form>
         <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400">
@@ -105,7 +105,7 @@ const ManageOpportunities = () => {
           <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
             <Briefcase className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">No opportunities found</p>
-            <p className="text-sm text-gray-400 mt-1">Create your first opportunity to start hiring</p>
+            <p className="text-sm text-gray-500 mt-1">Create your first opportunity to start hiring</p>
           </div>
         ) : (
           opportunities.map((opp, idx) => (
@@ -125,7 +125,7 @@ const ManageOpportunities = () => {
                       {opp.opportunityType || opp.type}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-1">{opp.description?.about || opp.description || ''}</p>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-1">{opp.description?.about || opp.description || ''}</p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                     {opp.location && <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {opp.location}</span>}
                     {opp.applicationCount > 0 && <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {opp.applicationCount} applicants</span>}
@@ -146,7 +146,7 @@ const ManageOpportunities = () => {
                     <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-50 text-red-600">Rejected</span>
                   ) : null}
                   <button onClick={() => deleteOpportunity(opp._id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                    className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

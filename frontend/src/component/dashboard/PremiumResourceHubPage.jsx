@@ -103,15 +103,15 @@ function ResourceCard({ resource, onBookmark, onDownload, onShare, userId }) {
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{resource.category}</span>
             {resource.tags?.slice(0, 2).map((tag, i) => (
-              <span key={i} className="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">{tag}</span>
+              <span key={i} className="text-[10px] text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full">{tag}</span>
             ))}
-            {resource.tags?.length > 2 && <span className="text-[10px] text-gray-400">+{resource.tags.length - 2}</span>}
+            {resource.tags?.length > 2 && <span className="text-[10px] text-gray-500">+{resource.tags.length - 2}</span>}
           </div>
 
           <h3 className="font-bold text-gray-900 text-base leading-tight mb-1 group-hover:text-purple-700 transition-colors line-clamp-1">{resource.title}</h3>
           <p className="text-xs text-gray-500 line-clamp-2 mb-2 leading-relaxed">{resource.description}</p>
 
-          <div className="flex items-center gap-4 flex-wrap text-[11px] text-gray-400">
+          <div className="flex items-center gap-4 flex-wrap text-[11px] text-gray-500">
             <div className="flex items-center gap-1.5">
               <Avatar src={""} alt="Alumni" size={32} className="border border-gray-200 shrink-0" />
               <span className="font-medium text-gray-600 truncate max-w-[120px]">{resource.alumniId?.name || 'Unknown'}</span>
@@ -202,7 +202,7 @@ function SectionRow({ title, icon: Icon, iconColor, resources, loading, onBookma
           <Icon className="w-4 h-4 text-purple-600" />
         </div>
         <h3 className="font-bold text-gray-900 text-sm">{title}</h3>
-        <span className="text-[11px] text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded-full">{resources.length}</span>
+        <span className="text-[11px] text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded-full">{resources.length}</span>
       </div>
       <div className="space-y-3">
         {resources.map(resource => (
@@ -338,7 +338,7 @@ export default function PremiumResourceHubPage() {
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text" placeholder="Search resources..." value={searchTerm}
               onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
@@ -398,7 +398,7 @@ export default function PremiumResourceHubPage() {
               </div>
               <h3 className="font-bold text-gray-900 text-sm">Recommended for You</h3>
               {recommended.length > 0 && (
-                <span className="text-[11px] text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded-full">{recommended.length}</span>
+                <span className="text-[11px] text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded-full">{recommended.length}</span>
               )}
             </div>
             <div className="space-y-3">
@@ -425,7 +425,7 @@ export default function PremiumResourceHubPage() {
             >
               <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-1">No resources yet</h3>
-              <p className="text-sm text-gray-400">Resources will appear here once you start using the hub</p>
+              <p className="text-sm text-gray-500">Resources will appear here once you start using the hub</p>
             </motion.div>
           )}
         </div>

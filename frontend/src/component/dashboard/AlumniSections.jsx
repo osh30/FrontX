@@ -545,7 +545,7 @@ export const CareerOpportunitiesManagement = ({ isPreview, onViewAll }) => {
           <div className="col-span-2 p-8 text-center text-gray-500 bg-white/80 rounded-3xl border border-dashed border-gray-200">
             <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-2" />
             <p className="font-medium">No opportunities posted yet</p>
-            <p className="text-sm text-gray-400 mt-1">Post an opportunity to get started.</p>
+            <p className="text-sm text-gray-500 mt-1">Post an opportunity to get started.</p>
           </div>
         ) : displayJobs.map(job => (
           <motion.div key={job._id} variants={fadeInUp} whileHover={{ y: -5 }} className={`bg-white/80 backdrop-blur-xl p-6 rounded-3xl border border-gray-100 shadow-sm relative group overflow-hidden ${isPreview ? 'min-w-[300px] shrink-0 snap-start' : ''}`}>
@@ -966,10 +966,10 @@ export const ResourceSharingSection = ({ isPreview, onViewAll }) => {
                 <div className="min-w-0">
                   <h4 className="font-bold text-gray-900 truncate">{file.title}</h4>
                   <p className="text-xs text-gray-500">{file.category} • {new Date(file.createdAt).toLocaleDateString()}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">by {file.alumniId?.name || 'Alumni'}</p>
+                  <p className="text-[10px] text-gray-500 mt-0.5">by {file.alumniId?.name || 'Alumni'}</p>
                 </div>
               </div>
-              <button className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-colors shrink-0">
+              <button className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-colors shrink-0">
                 <Download className="w-5 h-5" />
               </button>
             </motion.div>
@@ -1050,7 +1050,7 @@ export const CollaborationReview = ({ onViewProfile }) => {
               <h4 className="text-green-800 font-bold mb-1">Collaboration Accepted!</h4>
               <p className="text-gray-600 text-sm leading-relaxed">{toastMessage}</p>
             </div>
-            <button onClick={() => setToastMessage('')} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <button onClick={() => setToastMessage('')} className="absolute top-4 right-4 text-gray-500 hover:text-gray-600">
               <XCircle className="w-5 h-5" />
             </button>
           </motion.div>
@@ -1243,7 +1243,7 @@ export const CommunityResourcesSection = () => {
 
       {/* Search Bar */}
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
         <input
           type="text"
           value={search}
@@ -1252,7 +1252,7 @@ export const CommunityResourcesSection = () => {
           className="w-full pl-12 pr-10 py-3 bg-white/80 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all shadow-sm"
         />
         {search && (
-          <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
             <X className="w-4 h-4" />
           </button>
         )}
@@ -1369,7 +1369,7 @@ export const CommunityResourcesSection = () => {
                       <h3 className="font-bold text-gray-900 truncate text-base">{r.title}</h3>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">{r.category}</span>
-                        <span className="text-xs text-gray-400">{ft}</span>
+                        <span className="text-xs text-gray-500">{ft}</span>
                       </div>
                     </div>
                   </div>
@@ -1384,7 +1384,7 @@ export const CommunityResourcesSection = () => {
                         <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-medium">{tag}</span>
                       ))}
                       {r.tags.length > 3 && (
-                        <span className="px-2 py-0.5 text-gray-400 text-[10px] font-medium">+{r.tags.length - 3}</span>
+                        <span className="px-2 py-0.5 text-gray-500 text-[10px] font-medium">+{r.tags.length - 3}</span>
                       )}
                     </div>
                   )}
@@ -1394,9 +1394,9 @@ export const CommunityResourcesSection = () => {
                     <Avatar src={r.alumniId?.profilePicture} alt="Alumni" size={28} className="border border-gray-200 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-gray-800 truncate">{r.alumniId?.name || 'Alumni'}</p>
-                      <p className="text-[10px] text-gray-400 truncate">{r.alumniId?.department || ''}</p>
+                      <p className="text-[10px] text-gray-500 truncate">{r.alumniId?.department || ''}</p>
                     </div>
-                    <span className="text-[10px] text-gray-400 ml-auto shrink-0">{formatDate(r.createdAt)}</span>
+                    <span className="text-[10px] text-gray-500 ml-auto shrink-0">{formatDate(r.createdAt)}</span>
                   </div>
 
                   {/* Stats */}

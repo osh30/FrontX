@@ -83,7 +83,7 @@ const CommunityFeedPreview = ({ setActiveTab }) => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-bold text-gray-900 line-clamp-1">{authorName}</h4>
-                  <span className="text-xs text-gray-400 shrink-0">• {formatTime(post.createdAt)}</span>
+                  <span className="text-xs text-gray-500 shrink-0">• {formatTime(post.createdAt)}</span>
                 </div>
                 <p className="text-sm text-gray-600 line-clamp-2 mt-0.5 whitespace-pre-wrap">
                   {post.content}

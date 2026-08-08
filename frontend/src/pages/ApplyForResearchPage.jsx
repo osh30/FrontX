@@ -223,7 +223,7 @@ const ApplyForResearchPage = () => {
                       </>
                     ) : (
                       <>
-                        <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                        <Upload className="w-8 h-8 text-gray-500 mb-2" />
                         <p className="text-sm text-gray-600 font-medium">Click to select PDF</p>
                       </>
                     )}
