@@ -134,9 +134,7 @@ const Register = () => {
 
     const result = await register(payload);
     if (result.success) {
-      // Route to the appropriate dashboard based on role
-      const dashboardMap = { student: '/dashboard/student', alumni: '/dashboard/alumni', recruiter: '/dashboard/recruiter' };
-      navigate(dashboardMap[result.role] || '/dashboard/student');
+      navigate('/dashboard');
     } else {
       setErrors({ submit: result.error || 'Registration failed. Please try again.' });
     }

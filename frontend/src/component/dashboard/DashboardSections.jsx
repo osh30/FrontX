@@ -158,6 +158,25 @@ const normalizeSession = (s, type) => {
   return { ...s, _sessionType: 'one-on-one' };
 };
 
+const getSessionStartTime = (s) => {
+  const dateStr = s.date || s.sessionDate;
+  const timeStr = s.time || s.sessionTime || '00:00';
+  if (!dateStr) return Infinity;
+  const dateObj = new Date(dateStr);
+  const timeMatch = timeStr.toString().match(/(\d+):(\d+)\s*(AM|PM)?/i);
+  if (timeMatch) {
+    let hours = parseInt(timeMatch[1], 10);
+    const mins = parseInt(timeMatch[2], 10);
+    const ampm = timeMatch[3];
+    if (ampm) {
+      if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+      if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+    }
+    dateObj.setHours(hours, mins, 0, 0);
+  }
+  return dateObj.getTime();
+};
+
 export const UpcomingSessions = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -225,7 +244,9 @@ export const UpcomingSessions = () => {
         all = all.concat(data.map(s => normalizeSession(s, 'group')));
       }
 
-      setSessions(all.filter(s => s.status === 'Upcoming'));
+      const upcoming = all.filter(s => s.status === 'Upcoming');
+      upcoming.sort((a, b) => getSessionStartTime(a) - getSessionStartTime(b));
+      setSessions(upcoming.slice(0, 1));
     } catch (error) {
       console.error(error);
     } finally {
@@ -263,46 +284,44 @@ export const UpcomingSessions = () => {
             No upcoming sessions.
           </div>
         ) : (
-          sessions.slice(0, 3).map((session, idx) => (
-            <motion.div
-              key={session._id || idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-all"
-            >
-              <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center text-purple-600 shadow-sm font-bold flex-col shrink-0">
-                  <span className="text-[10px] uppercase">{new Date(session.date).toLocaleString('default', { month: 'short' })}</span>
-                  <span className="text-lg leading-none">{new Date(session.date).getDate()}</span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-gray-900">{session.title}</h4>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{getMeetingType(session)}</span>
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    with {session.alumni?.name || 'Mentor'} • {formatDate(session.date)} • {session.time}
-                  </p>
-                </div>
+          <motion.div
+            key={sessions[0]._id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => navigate(`/dashboard/sessions/${sessions[0]._id}${sessions[0]._sessionType === 'group' ? '?type=group' : ''}`)}
+            className="flex flex-col sm:flex-row items-center justify-between p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm hover:shadow-md hover:border-purple-200 transition-all cursor-pointer"
+          >
+            <div className="flex items-center gap-4 w-full sm:w-auto mb-4 sm:mb-0">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center text-purple-600 shadow-sm font-bold flex-col shrink-0">
+                <span className="text-[10px] uppercase">{new Date(sessions[0].date).toLocaleString('default', { month: 'short' })}</span>
+                <span className="text-lg leading-none">{new Date(sessions[0].date).getDate()}</span>
               </div>
-              <div className="flex gap-2 w-full sm:w-auto shrink-0">
-                <button
-                  onClick={() => navigate(`/dashboard/sessions/${session._id}${session._sessionType === 'group' ? '?type=group' : ''}`)}
-                  className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors shadow-sm"
-                >
-                  View Details
-                </button>
-                <button
-                  onClick={() => handleJoin(session)}
-                  disabled={joiningId === session._id || isSessionEnded(session)}
-                  className="px-6 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg text-center disabled:opacity-60 disabled:from-gray-400 disabled:to-gray-500"
-                >
-                  {isSessionEnded(session) ? 'Session Ended' : (joiningId === session._id ? 'Opening...' : 'Join Session')}
-                </button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-gray-900">{sessions[0].title}</h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{getMeetingType(sessions[0])}</span>
+                </div>
+                <p className="text-sm text-gray-500">
+                  with {sessions[0].alumni?.name || 'Mentor'} • {formatDate(sessions[0].date)} • {sessions[0].time}
+                </p>
               </div>
-            </motion.div>
-          ))
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto shrink-0">
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/sessions/${sessions[0]._id}${sessions[0]._sessionType === 'group' ? '?type=group' : ''}`); }}
+                className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors shadow-sm"
+              >
+                View Details
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleJoin(sessions[0]); }}
+                disabled={joiningId === sessions[0]._id || isSessionEnded(sessions[0])}
+                className="px-6 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg text-center disabled:opacity-60 disabled:from-gray-400 disabled:to-gray-500"
+              >
+                {isSessionEnded(sessions[0]) ? 'Session Ended' : (joiningId === sessions[0]._id ? 'Opening...' : 'Join Session')}
+              </button>
+            </div>
+          </motion.div>
         )}
       </div>
     </div>
@@ -313,6 +332,7 @@ export const UpcomingSessions = () => {
 export const CareerOpportunities = ({ limit = 4, fullPage = false }) => {
   const [jobs, setJobs] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const navigate = useNavigate();
 
   const fetchJobs = async () => {
     try {
@@ -406,7 +426,10 @@ export const CareerOpportunities = ({ limit = 4, fullPage = false }) => {
                 <span className="text-xs text-red-500 font-medium bg-red-50 px-2 py-1 rounded-md">
                   {job.deadline ? `Closes ${new Date(job.deadline).toLocaleDateString()}` : 'No Deadline'}
                 </span>
-                <button className="px-4 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-md">
+                <button
+                  onClick={() => navigate(`/dashboard/career/${job._id}`)}
+                  className="px-4 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors shadow-md"
+                >
                   Apply
                 </button>
               </div>

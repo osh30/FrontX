@@ -71,8 +71,7 @@ const Login = () => {
     setIsLoading(true);
     const result = await login(email, password, selectedRole, turnstileToken);
     if (result.success) {
-      const dashboardMap = { student: '/dashboard/student', alumni: '/dashboard/alumni', recruiter: '/dashboard/recruiter' };
-      navigate(dashboardMap[result.role] || '/dashboard/student');
+      navigate('/dashboard');
     } else {
       setErrors({ submit: result.error || 'Login failed. Please try again.' });
     }
