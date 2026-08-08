@@ -15,7 +15,7 @@ export const getMeetingSocket = ({ token }) => {
     throw new Error('A valid token is required to open the meeting socket');
   }
 
-  meetingSocket = io(MEETING_CONFIG.socketNamespace, {
+  meetingSocket = io(MEETING_CONFIG.socketUrl, {
     auth: { token },
     transports: ['websocket', 'polling'],
   });

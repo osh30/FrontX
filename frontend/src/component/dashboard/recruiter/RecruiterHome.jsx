@@ -1,3 +1,4 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -6,7 +7,7 @@ import {
   Clock, FileText, Bell, Building2
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const AnimatedCounter = ({ value, duration = 1500 }) => {
   const [count, setCount] = useState(0);

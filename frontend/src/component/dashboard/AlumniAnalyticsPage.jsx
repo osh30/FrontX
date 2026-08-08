@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { io } from 'socket.io-client';
@@ -59,7 +60,7 @@ export const AlumniAnalyticsPage = () => {
   const fetchAnalytics = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/alumni/analytics/dashboard?filter=${filter}`, {
+      const res = await axios.get(`${API_BASE}/alumni/analytics/dashboard?filter=${filter}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setData(res.data);
@@ -74,7 +75,7 @@ export const AlumniAnalyticsPage = () => {
     setLoading(true);
     fetchAnalytics();
     
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     // Listen to real-time events that would affect metrics
     socket.on('request_updated', fetchAnalytics);
     socket.on('session_updated', fetchAnalytics);

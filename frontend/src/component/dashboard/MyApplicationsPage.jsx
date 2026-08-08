@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -38,7 +39,7 @@ export default function MyApplicationsPage() {
           setLoading(false);
           return;
         }
-        const { data } = await axios.get('/api/opportunities/my-applications/me', {
+        const { data } = await axios.get(`${API_BASE}/opportunities/my-applications/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (data.success) setApplications(data.applications);

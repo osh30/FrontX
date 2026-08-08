@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -58,10 +59,10 @@ const SessionsPage = () => {
       if (!token) return;
 
       const [oneOnOneRes, groupRes] = await Promise.all([
-        fetch('http://localhost:5000/api/sessions', {
+        fetch(`${API_BASE}/sessions`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/mentorship-sessions', {
+        fetch(`${API_BASE}/mentorship-sessions`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -90,7 +91,7 @@ const SessionsPage = () => {
   }, []);
 
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('session_updated', fetchAllSessions);
     return () => { socket.disconnect(); };
   }, []);

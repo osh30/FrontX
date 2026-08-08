@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -91,7 +92,7 @@ const AlumniDashboard = ({ user }) => {
     setIsSearching(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query.trim())}`, {
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query.trim())}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -138,8 +139,8 @@ const AlumniDashboard = ({ user }) => {
         if (!token) return;
 
         const [notifRes, sessionRes] = await Promise.all([
-          fetch('http://localhost:5000/api/notifications', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('http://localhost:5000/api/mentorship-sessions', { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_BASE}/notifications`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_BASE}/mentorship-sessions`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         if (notifRes.ok) {

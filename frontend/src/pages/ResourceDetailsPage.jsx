@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../config/api';
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -96,7 +97,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    fetch('http://localhost:5000/api/users/profile', {
+    fetch(`${API_BASE}/users/profile`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(data => setCurrentUser(data)).catch(() => {});
   }, []);
@@ -119,7 +120,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
       try {
         const token = localStorage.getItem('token');
         console.log('[ResourceDetailsPage] Fetching resource:', id);
-        const res = await fetch(`http://localhost:5000/api/resources/${id}`, {
+        const res = await fetch(`${API_BASE}/resources/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (cancelled) return;
@@ -150,7 +151,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
   }, [id, navigate, cachedResource]);
 
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('resource_downloaded', (data) => {
       if (data.resourceId === id) setDownloadCount(data.downloads);
     });
@@ -184,7 +185,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
         targetAudience: JSON.stringify(editForm.targetAudience), tags: JSON.stringify(editForm.tags),
         readingTime: editForm.readingTime, whyUse: editForm.whyUse
       };
-      const res = await fetch(`http://localhost:5000/api/resources/${id}`, {
+      const res = await fetch(`${API_BASE}/resources/${id}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(body)
       });
@@ -203,7 +204,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
     if (!window.confirm("Are you sure you want to delete this resource? This action cannot be undone.")) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/resources/${id}`, {
+      const res = await fetch(`${API_BASE}/resources/${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) { toast.success("Resource deleted"); navigate('/dashboard'); }
@@ -214,7 +215,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
   const handleBookmark = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/resources/${id}/bookmark`, {
+      const res = await fetch(`${API_BASE}/resources/${id}/bookmark`, {
         method: 'PUT', headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -228,7 +229,7 @@ const ResourceDetailsPage = ({ resourceId: propId, standalone: isStandalone = tr
   const handleDownload = async () => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/resources/${id}/download`, {
+      await fetch(`${API_BASE}/resources/${id}/download`, {
         method: 'PUT', headers: { Authorization: `Bearer ${token}` }
       });
       setDownloadCount(prev => prev + 1);

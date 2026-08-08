@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +7,7 @@ import {
   ArrowLeft, Briefcase, CheckCircle2, XCircle,
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const TYPES = ['Government Job', 'Private Job', 'Scholarship', 'Competition'];
 

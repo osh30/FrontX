@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -235,7 +236,7 @@ export default function PremiumResourceHubPage() {
 
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
-  const API = 'http://localhost:5000/api/resources';
+  const API = `${API_BASE}/resources`;
 
   const fetchSection = async (endpoint, setter) => {
     try {
@@ -272,7 +273,7 @@ export default function PremiumResourceHubPage() {
 
   useEffect(() => {
     fetchAll();
-    const socket = io('http://localhost:5000', { transports: ['websocket', 'polling'] });
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
     socket.on('connect_error', () => {});
     socket.on('new_resource', () => fetchAll());
     socket.on('resource:updated', () => fetchAll());

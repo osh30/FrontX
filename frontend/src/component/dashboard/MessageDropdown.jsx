@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Avatar from './Avatar';
@@ -34,7 +35,7 @@ export const MessageDropdown = ({ isOpen, onClose, onOpenFullChat }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5000/api/chat/conversations', {
+      const res = await axios.get(`${API_BASE}/chat/conversations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setConversations(res.data);

@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -94,7 +95,7 @@ const AttendanceModal = ({ meeting, onClose }) => {
     setLoading(true);
     setError(null);
     axios
-      .get(`/api/meetings/${meeting.roomId}/participants`)
+      .get(`${API_BASE}/meetings/${meeting.roomId}/participants`)
       .then(({ data }) => {
         if (!cancelled) setRows(data.participants || []);
       })
@@ -265,7 +266,7 @@ const MeetingHistoryPage = () => {
     try {
       const params = { page, limit: 20 };
       if (status) params.status = status;
-      const { data } = await axios.get('/api/meetings/history', { params });
+      const { data } = await axios.get(`${API_BASE}/meetings/history`, { params });
       setMeetings(data.meetings || []);
       setPages(data.pages || 1);
       setTotal(data.total || 0);

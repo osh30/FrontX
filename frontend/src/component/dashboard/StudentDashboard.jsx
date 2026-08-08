@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -112,7 +113,7 @@ const StudentDashboard = ({ user }) => {
     setIsSearching(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query.trim())}`, {
+      const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query.trim())}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -591,7 +592,7 @@ const MentorshipPage = ({ onViewProfile }) => {
       params.set('page', pageNum);
       params.set('limit', '9');
 
-      const res = await fetch(`http://localhost:5000/api/users/mentors?${params}`, {
+      const res = await fetch(`${API_BASE}/users/mentors?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -619,7 +620,7 @@ const MentorshipPage = ({ onViewProfile }) => {
     debounceRef.current = setTimeout(() => {
       fetchAlumni(1);
     }, 300);
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_alumni_registered', () => fetchAlumni(1));
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -789,7 +790,7 @@ function RightSidebar({ onToggle }) {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/notifications', {
+      const res = await fetch(`${API_BASE}/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -806,8 +807,8 @@ function RightSidebar({ onToggle }) {
       const token = localStorage.getItem('token');
       if (!token) return;
       const [sessionsRes, groupRes] = await Promise.all([
-        fetch('http://localhost:5000/api/sessions', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('http://localhost:5000/api/mentorship-sessions', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_BASE}/sessions`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/mentorship-sessions`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       let all = [];
       if (sessionsRes.ok) {
@@ -837,7 +838,7 @@ function RightSidebar({ onToggle }) {
   useEffect(() => {
     fetchNotifications();
     fetchNearestSession();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_notification', () => { fetchNotifications(); });
     socket.on('notification:new', () => { fetchNotifications(); });
     socket.on('session_updated', () => { fetchNearestSession(); });

@@ -1,3 +1,4 @@
+import { API_URL } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,7 +8,7 @@ import {
 import Avatar from './Avatar';
 import axios from 'axios';
 
-const API = 'http://localhost:5000';
+const API = API_URL;
 
 const CATEGORY_COLORS = {
   'Study Tips': 'bg-emerald-100 text-emerald-700',

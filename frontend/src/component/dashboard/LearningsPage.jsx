@@ -1,3 +1,4 @@
+import { API_URL } from '../../config/api';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,7 +7,7 @@ import { BookOpen, FileText, Download, Calendar, ChevronRight, Search, SlidersHo
 import Avatar from './Avatar';
 import axios from 'axios';
 
-const API = 'http://localhost:5000';
+const API = API_URL;
 
 const formatDate = (dateStr) => {
   const d = new Date(dateStr);

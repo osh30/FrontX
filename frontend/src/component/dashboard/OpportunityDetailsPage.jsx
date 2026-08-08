@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect, Fragment } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -98,7 +99,7 @@ export default function OpportunityDetailsPage() {
     const fetchOpp = async () => {
       try {
         const headers = token ? authHeaders() : {};
-        const { data } = await axios.get(`/api/opportunities/${id}`, { headers });
+        const { data } = await axios.get(`${API_BASE}/opportunities/${id}`, { headers });
         if (mounted) setOpp(data.opportunity);
       } catch (err) {
         if (mounted) setError(err.response?.data?.message || 'Failed to load opportunity');

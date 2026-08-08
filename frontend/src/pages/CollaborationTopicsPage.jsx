@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,7 +15,7 @@ const CollaborationTopicsPage = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const res = await fetch('http://localhost:5000/api/collaboration', {
+        const res = await fetch(`${API_BASE}/collaboration`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {

@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -220,7 +221,7 @@ const PasswordUpdateForm = ({ logout }) => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/users/change-password', 
+      await axios.put(`${API_BASE}/users/change-password`, 
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );

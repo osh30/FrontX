@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -49,7 +50,7 @@ export const RecommendedMentors = ({ onViewProfile, limit = 2 }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/users/mentors?limit=50', {
+      const res = await fetch(`${API_BASE}/users/mentors?limit=50`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -63,7 +64,7 @@ export const RecommendedMentors = ({ onViewProfile, limit = 2 }) => {
 
   React.useEffect(() => {
     fetchMentors();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_alumni_registered', fetchMentors);
     return () => { socket.disconnect(); };
   }, [fetchMentors]);
@@ -206,10 +207,10 @@ export const UpcomingSessions = () => {
       if (!token) return;
 
       const [oneOnOneRes, groupRes] = await Promise.all([
-        fetch('http://localhost:5000/api/sessions', {
+        fetch(`${API_BASE}/sessions`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/mentorship-sessions', {
+        fetch(`${API_BASE}/mentorship-sessions`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -234,7 +235,7 @@ export const UpcomingSessions = () => {
 
   useEffect(() => {
     fetchSessions();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('session_updated', fetchSessions);
     return () => socket.disconnect();
   }, []);
@@ -317,7 +318,7 @@ export const CareerOpportunities = ({ limit = 4, fullPage = false }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const endpoint = limit ? `http://localhost:5000/api/jobs?limit=${limit}` : 'http://localhost:5000/api/jobs';
+      const endpoint = limit ? `${API_BASE}/jobs?limit=${limit}` : `${API_BASE}/jobs`;
       const res = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -334,7 +335,7 @@ export const CareerOpportunities = ({ limit = 4, fullPage = false }) => {
 
   React.useEffect(() => {
     fetchJobs();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_job', fetchJobs);
     return () => socket.disconnect();
   }, []);
@@ -438,8 +439,8 @@ export const AISkillAnalysis = () => {
       if (!token) return;
 
       const [profileRes, analysisRes] = await Promise.allSettled([
-        axios.get('http://localhost:5000/api/users/profile', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('http://localhost:5000/api/ai-analysis/me', { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API_BASE}/users/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE}/ai-analysis/me`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       if (profileRes.status === 'fulfilled') {
@@ -469,7 +470,7 @@ export const AISkillAnalysis = () => {
       console.log("User Profile Career Interest:", userProfile.careerInterest);
       
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/ai-analysis/generate', {}, {
+      const res = await axios.post(`${API_BASE}/ai-analysis/generate`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -633,7 +634,7 @@ export const ProgressTrackerPreview = ({ setActiveTab }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5000/api/progress', {
+      const res = await axios.get(`${API_BASE}/progress`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProgressData(res.data);
@@ -645,7 +646,7 @@ export const ProgressTrackerPreview = ({ setActiveTab }) => {
   useEffect(() => {
     if (user) {
       fetchProgress();
-      const socket = io('http://localhost:5000');
+      const socket = io(SOCKET_URL);
       socket.on('progress_updated', () => {
         fetchProgress();
       });
@@ -721,7 +722,7 @@ export const ProgressAnalyticsPage = ({ setActiveTab }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5000/api/progress', {
+      const res = await axios.get(`${API_BASE}/progress`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProgressData(res.data);
@@ -733,7 +734,7 @@ export const ProgressAnalyticsPage = ({ setActiveTab }) => {
   useEffect(() => {
     if (user) {
       fetchProgress();
-      const socket = io('http://localhost:5000');
+      const socket = io(SOCKET_URL);
       socket.on('progress_updated', () => {
         fetchProgress();
       });
@@ -940,7 +941,7 @@ export const ResourceHub = () => {
 
   useEffect(() => {
     fetchResources();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_resource', (newResource) => {
       setResources(prev => [newResource, ...prev]);
     });
@@ -958,7 +959,7 @@ export const ResourceHub = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      let url = `http://localhost:5000/api/resources?category=${encodeURIComponent(activeCategory)}`;
+      let url = `${API_BASE}/resources?category=${encodeURIComponent(activeCategory)}`;
       if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
 
       const res = await axios.get(url, {
@@ -1089,7 +1090,7 @@ export const RecommendedLearning = ({ limit = 3 }) => {
 
   useEffect(() => {
     fetchNotes();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_note_uploaded', () => {
       fetchNotes();
     });
@@ -1100,7 +1101,7 @@ export const RecommendedLearning = ({ limit = 3 }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5000/api/notes?sort=latest', {
+      const res = await axios.get(`${API_BASE}/notes?sort=latest`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotes(res.data);
@@ -1204,7 +1205,7 @@ export const AnonymousSharing = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/community-posts', {
+      const res = await fetch(`${API_BASE}/community-posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -1272,7 +1273,7 @@ export const StudentNetwork = ({ onViewProfile }) => {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const res = await axios.get('http://localhost:5000/api/users/students', {
+        const res = await axios.get(`${API_BASE}/users/students`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -1304,7 +1305,7 @@ export const StudentNetwork = ({ onViewProfile }) => {
     if (user) {
       fetchStudents();
       
-      const socket = io('http://localhost:5000');
+      const socket = io(SOCKET_URL);
       socket.on('student_updated', () => {
         fetchStudents();
       });
@@ -1362,7 +1363,7 @@ export const CollaborationSection = () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const res = await fetch('http://localhost:5000/api/collaboration', {
+        const res = await fetch(`${API_BASE}/collaboration`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {

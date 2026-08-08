@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -5,7 +6,7 @@ const AlumniAuthContext = createContext(null);
 
 const TOKEN_KEY = 'alumniToken';
 const USER_KEY = 'alumniUser';
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 export const AlumniAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

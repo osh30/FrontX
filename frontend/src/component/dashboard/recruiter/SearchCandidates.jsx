@@ -1,3 +1,4 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -14,7 +15,7 @@ const Github = ({ className }) => (
   </svg>
 );
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const DEPARTMENTS = [
   'Computer Science', 'Information Technology', 'Software Engineering',

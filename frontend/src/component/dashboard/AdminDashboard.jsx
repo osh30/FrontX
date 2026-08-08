@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 ﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
@@ -8,7 +9,7 @@ import {
   ChevronRight, Zap,
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },

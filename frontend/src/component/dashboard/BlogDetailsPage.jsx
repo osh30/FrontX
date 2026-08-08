@@ -1,3 +1,4 @@
+import { API_URL } from '../../config/api';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -10,7 +11,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import RichContentRenderer, { blogReadingTime } from '../blog/richContent';
 
-const API = 'http://localhost:5000';
+const API = API_URL;
 
 const CATEGORY_COLORS = {
   'Study Tips': 'bg-emerald-100 text-emerald-700',

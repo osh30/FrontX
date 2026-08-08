@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Heart } from 'lucide-react';
 import Avatar from './Avatar';
@@ -13,7 +14,7 @@ const CommunityFeedPreview = ({ setActiveTab }) => {
     const fetchRecentPosts = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/community-posts', {
+        const res = await fetch(`${API_BASE}/community-posts`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -28,7 +29,7 @@ const CommunityFeedPreview = ({ setActiveTab }) => {
     };
     
     fetchRecentPosts();
-    socketRef.current = io('http://localhost:5000');
+    socketRef.current = io(SOCKET_URL);
     socketRef.current.on('new_post', fetchRecentPosts);
     socketRef.current.on('post_reaction_updated', fetchRecentPosts);
     socketRef.current.on('post_comment_added', fetchRecentPosts);

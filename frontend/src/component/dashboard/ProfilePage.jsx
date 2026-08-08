@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -275,7 +276,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
         const token = localStorage.getItem('token');
         if (!token) return;
         
-        const endpoint = viewedUserId ? `http://localhost:5000/api/users/${viewedUserId}` : 'http://localhost:5000/api/users/profile';
+        const endpoint = viewedUserId ? `${API_BASE}/users/${viewedUserId}` : `${API_BASE}/users/profile`;
         
         const res = await axios.get(endpoint, {
           headers: { Authorization: `Bearer ${token}` }
@@ -293,7 +294,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
 
         // Fetch mentorship request status if viewing an alumni
         if (viewedUserId && res.data.role === 'alumni') {
-           const outgoingRes = await axios.get('http://localhost:5000/api/mentorship/outgoing', {
+           const outgoingRes = await axios.get(`${API_BASE}/mentorship/outgoing`, {
              headers: { Authorization: `Bearer ${token}` }
            });
            const existingReq = outgoingRes.data.find(req => req.alumniId && req.alumniId._id === viewedUserId);
@@ -304,7 +305,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
 
         // Fetch notes if the user is a student
         if (res.data.role === 'student' || res.data.role === 'Student') {
-          const notesRes = await axios.get(`http://localhost:5000/api/notes/student/${viewedUserId || res.data._id}`, {
+          const notesRes = await axios.get(`${API_BASE}/notes/student/${viewedUserId || res.data._id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setClassNotes(notesRes.data);
@@ -328,7 +329,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
         return;
       }
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/mentorship/request', {
+      await axios.post(`${API_BASE}/mentorship/request`, {
         alumniId: viewedUserId,
         requestType: requestData.requestType,
         message: requestData.message
@@ -351,7 +352,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
     formData.append('folder', folder);
     const token = localStorage.getItem('token');
     
-    const res = await axios.post('http://localhost:5000/api/users/upload', formData, {
+    const res = await axios.post(`${API_BASE}/users/upload`, formData, {
       headers: { 
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data'
@@ -364,7 +365,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
     setIsSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/users/profile', profileData, {
+      await axios.put(`${API_BASE}/users/profile`, profileData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("Profile updated successfully!");
@@ -372,7 +373,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
 
       if (profileData.resumeUrl && profileData.careerInterest) {
         toast.promise(
-          axios.post('http://localhost:5000/api/ai-analysis/generate', {}, {
+          axios.post(`${API_BASE}/ai-analysis/generate`, {}, {
             headers: { Authorization: `Bearer ${token}` }
           }),
           {
@@ -420,7 +421,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
     setRemovingPicture(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.delete('http://localhost:5000/api/users/profile-picture', {
+      await axios.delete(`${API_BASE}/users/profile-picture`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProfileData(prev => ({ ...prev, profilePicture: '' }));
@@ -802,7 +803,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
                     {addingNote && <InlineClassNoteForm uploadToBackend={uploadToBackend} onSave={async (noteData) => {
                       try {
                         const token = localStorage.getItem('token');
-                        const res = await axios.post('http://localhost:5000/api/notes', noteData, {
+                        const res = await axios.post(`${API_BASE}/notes`, noteData, {
                           headers: { Authorization: `Bearer ${token}` }
                         });
                         setClassNotes([res.data, ...classNotes]);
@@ -823,7 +824,7 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
                             <button onClick={async () => {
                               try {
                                 const token = localStorage.getItem('token');
-                                await axios.delete(`http://localhost:5000/api/notes/${note._id}`, {
+                                await axios.delete(`${API_BASE}/notes/${note._id}`, {
                                   headers: { Authorization: `Bearer ${token}` }
                                 });
                                 setClassNotes(classNotes.filter(n => n._id !== note._id));

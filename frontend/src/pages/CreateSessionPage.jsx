@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Calendar, Clock, Video, Users, ListPlus, Send, X, AlertCircle, Sparkles } from 'lucide-react';
@@ -32,7 +33,7 @@ const CreateSessionPage = () => {
         const token = localStorage.getItem('token');
         if (!token) return navigate('/login');
         
-        const res = await fetch('http://localhost:5000/api/mentorship-sessions/accepted-students', {
+        const res = await fetch(`${API_BASE}/mentorship-sessions/accepted-students`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -102,7 +103,7 @@ const CreateSessionPage = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/mentorship-sessions', {
+      const res = await fetch(`${API_BASE}/mentorship-sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

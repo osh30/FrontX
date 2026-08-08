@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { MEETING_EVENTS } from '../lib/events';
@@ -11,7 +12,7 @@ export const useRecording = ({ socket, roomCode, isHost = false }) => {
   useEffect(() => {
     let cancelled = false;
     axios
-      .get('/api/meetings/config')
+      .get(`${API_BASE}/meetings/config`)
       .then(({ data }) => {
         if (!cancelled) setConfigured(Boolean(data.recording && data.recording.configured));
       })

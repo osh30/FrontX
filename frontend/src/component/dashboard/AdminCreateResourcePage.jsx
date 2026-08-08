@@ -1,9 +1,10 @@
+import { API_BASE } from '../../config/api';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Upload, Loader2, FileText, X, Plus, CheckCircle, AlertCircle, Image } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const CATEGORIES = [
   'Resume Guide', 'Interview Preparation', 'Career Development',

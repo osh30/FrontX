@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, XCircle, FileText, Eye, Mail, Briefcase, Clock, FileDown, User } from 'lucide-react';
@@ -14,7 +15,7 @@ const ReviewApplicationsPage = () => {
   const fetchApplications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/collaboration/${id}/applications`, {
+      const res = await fetch(`${API_BASE}/collaboration/${id}/applications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -35,7 +36,7 @@ const ReviewApplicationsPage = () => {
   const handleStatusUpdate = async (appId, status) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/collaboration/applications/${appId}/status`, {
+      const res = await fetch(`${API_BASE}/collaboration/applications/${appId}/status`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',

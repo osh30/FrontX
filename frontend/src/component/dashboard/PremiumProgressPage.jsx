@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -128,7 +129,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5000/api/progress', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(`${API_BASE}/progress`, { headers: { Authorization: `Bearer ${token}` } });
       setData(res.data);
     } catch (err) {
       console.error('Failed to fetch progress', err);
@@ -139,7 +140,7 @@ const PremiumProgressPage = ({ setActiveTab }) => {
 
   useEffect(() => {
     fetchProgress();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('progress_updated', fetchProgress);
     return () => socket.disconnect();
   }, []);

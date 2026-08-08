@@ -4,9 +4,7 @@ import { io } from 'socket.io-client';
 import { Network, Handshake, BriefcaseBusiness, BookOpen, Clock, Users, ArrowUpRight } from 'lucide-react';
 import axios from 'axios';
 
-const SOCKET_URL = 'http://localhost:5000'; // Make sure this matches your backend URL
-const API_URL = 'http://localhost:5000/api';
-
+import { SOCKET_URL, API_BASE as API_URL } from '../../config/api';
 const getActivityIcon = (type) => {
   switch (type) {
     case 'mentorship': return <Handshake className="w-5 h-5 text-orange-600" />;

@@ -1,3 +1,4 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
@@ -6,7 +7,7 @@ import {
   Briefcase, Building2, Calendar, FileText, Search
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const STATUS_CONFIG = {
   pending: { icon: Clock, label: 'Pending Review', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },

@@ -1,3 +1,4 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -6,7 +7,7 @@ import {
   Phone, Mail, User, FileText, Briefcase, Shield, Camera
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const INDUSTRIES = [
   'Software Development', 'Information Technology', 'Education', 'Healthcare',

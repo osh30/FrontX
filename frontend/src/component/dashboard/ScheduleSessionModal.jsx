@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, Video, Link as LinkIcon, Target, FileText, Sparkles } from 'lucide-react';
@@ -23,7 +24,7 @@ export const ScheduleSessionModal = ({ isOpen, onClose, studentId, studentName, 
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/sessions', {
+      const res = await fetch(`${API_BASE}/sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

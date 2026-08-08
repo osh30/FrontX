@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Star, Eye, EyeOff, Trash2, Search, Filter, AlertTriangle, MessageSquare, Building2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 

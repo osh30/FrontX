@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -23,7 +24,7 @@ export const CollaborationPage = ({ onViewProfile }) => {
   useEffect(() => {
     fetchPosts();
 
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('research:new', (post) => {
       setPosts(prev => [post, ...prev.filter(p => p._id !== post._id)]);
     });
@@ -34,7 +35,7 @@ export const CollaborationPage = ({ onViewProfile }) => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/collaboration', {
+      const res = await fetch(`${API_BASE}/collaboration`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {

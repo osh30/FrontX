@@ -1,5 +1,5 @@
-export const API = 'http://localhost:5000';
-
+import { API_URL } from '../../config/api';
+export const API = API_URL;
 export const CATEGORIES = [
   'Study Tips', 'Career', 'Internship', 'Research', 'Programming',
   'AI', 'Scholarship', 'Productivity', 'University Life',

@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -9,7 +10,7 @@ import {
 } from 'lucide-react';
 import { joinInterviewMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];

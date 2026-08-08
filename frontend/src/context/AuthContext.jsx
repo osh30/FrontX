@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../config/api';
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
@@ -40,7 +41,7 @@ export const AuthProvider = ({ children }) => {
   const [currentRole, setCurrentRole] = useState(stored?.role || null);
   const [socket, setSocket] = useState(null);
 
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = API_BASE;
 
   if (token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -128,7 +129,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
 
     try {
-      const socket = io('http://localhost:5000');
+      const socket = io(SOCKET_URL);
       if (socket) {
         socket.disconnect();
       }
@@ -190,7 +191,7 @@ export const AuthProvider = ({ children }) => {
     }
     loadUser();
 
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
     newSocket.on('profile_updated', (data) => {
       const currentUser = JSON.parse(localStorage.getItem('user'));

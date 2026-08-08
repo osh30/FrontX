@@ -1,10 +1,11 @@
+import { API_BASE, SOCKET_URL } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Clock, Calendar, CheckCircle, Tag, Target, Edit3, Trash2, Save, X, Lightbulb, BookOpen, Briefcase, GraduationCap, Star, Send, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Avatar from '../component/dashboard/Avatar';
 import { io } from 'socket.io-client';
-const socket = io('http://localhost:5000');
+const socket = io(SOCKET_URL);
 
 const ResearchDetailsPage = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const ResearchDetailsPage = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/collaboration/${id}`, {
+      const res = await fetch(`${API_BASE}/collaboration/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -101,7 +102,7 @@ const ResearchDetailsPage = () => {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/collaboration/${id}`, {
+      const res = await fetch(`${API_BASE}/collaboration/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +129,7 @@ const ResearchDetailsPage = () => {
     if (!window.confirm('Are you sure you want to delete this research opportunity? This action cannot be undone.')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/collaboration/${id}`, {
+      const res = await fetch(`${API_BASE}/collaboration/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

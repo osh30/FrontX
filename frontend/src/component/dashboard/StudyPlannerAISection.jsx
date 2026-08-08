@@ -1,8 +1,9 @@
+import { API_URL } from '../../config/api';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 
-const API = 'http://localhost:5000';
+const API = API_URL;
 
 const formatDate = (d) => {
   if (!d) return 'Unknown date';

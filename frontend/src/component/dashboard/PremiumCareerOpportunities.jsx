@@ -1,3 +1,4 @@
+import { API_URL } from '../../config/api';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,7 +10,7 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API = 'http://localhost:5000';
+const API = API_URL;
 
 const JOB_TYPE_BADGES = {
   'full-time': { label: 'Full-Time', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },

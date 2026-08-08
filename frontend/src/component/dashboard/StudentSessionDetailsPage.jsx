@@ -1,3 +1,4 @@
+import { API_URL, API_BASE, SOCKET_URL } from '../../config/api';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -73,7 +74,7 @@ const StudentSessionDetailsPage = () => {
       const endpoint = sessionType === 'group'
         ? `/api/mentorship-sessions/${sessionId}`
         : `/api/sessions/${sessionId}`;
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const res = await fetch(`${API_URL}${endpoint}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -91,7 +92,7 @@ const StudentSessionDetailsPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch(`http://localhost:5000/api/announcements/${sessionId}/${sessionType}`, {
+      const res = await fetch(`${API_BASE}/announcements/${sessionId}/${sessionType}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setAnnouncements(await res.json());
@@ -102,7 +103,7 @@ const StudentSessionDetailsPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch(`http://localhost:5000/api/discussion/${sessionId}/${sessionType}/questions`, {
+      const res = await fetch(`${API_BASE}/discussion/${sessionId}/${sessionType}/questions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setQuestions(await res.json());
@@ -113,7 +114,7 @@ const StudentSessionDetailsPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch(`http://localhost:5000/api/discussion/questions/${questionId}/replies`, {
+      const res = await fetch(`${API_BASE}/discussion/questions/${questionId}/replies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -132,7 +133,7 @@ const StudentSessionDetailsPage = () => {
 
   // Socket listeners
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('session_updated', fetchSession);
     socket.on('announcement:created', (d) => setAnnouncements(prev => [d, ...prev]));
     socket.on('announcement:updated', (d) => setAnnouncements(prev => prev.map(a => a._id === d._id ? d : a)));
@@ -259,7 +260,7 @@ const StudentSessionDetailsPage = () => {
   const handleCreateAnnouncement = async () => {
     if (!announceForm.title.trim()) return;
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:5000/api/announcements', {
+    const res = await fetch(`${API_BASE}/announcements`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ sessionId, sessionType, ...announceForm })
@@ -273,7 +274,7 @@ const StudentSessionDetailsPage = () => {
   const handleUpdateAnnouncement = async () => {
     if (!announceForm.title.trim() || !editingAnnounce) return;
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/announcements/${editingAnnounce}`, {
+    const res = await fetch(`${API_BASE}/announcements/${editingAnnounce}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(announceForm)
@@ -288,14 +289,14 @@ const StudentSessionDetailsPage = () => {
   const handleDeleteAnnouncement = async (id) => {
     if (!window.confirm('Delete this announcement?')) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:5000/api/announcements/${id}`, {
+    await fetch(`${API_BASE}/announcements/${id}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
     });
   };
 
   const handlePinAnnouncement = async (id) => {
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:5000/api/announcements/${id}/pin`, {
+    await fetch(`${API_BASE}/announcements/${id}/pin`, {
       method: 'PUT', headers: { Authorization: `Bearer ${token}` }
     });
   };
@@ -326,7 +327,7 @@ const StudentSessionDetailsPage = () => {
   const handleCreateQuestion = async () => {
     if (!questionContent.trim()) return;
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:5000/api/discussion/questions', {
+    const res = await fetch(`${API_BASE}/discussion/questions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ sessionId, sessionType, content: questionContent })
@@ -340,7 +341,7 @@ const StudentSessionDetailsPage = () => {
   const handleUpdateQuestion = async (id) => {
     if (!questionContent.trim()) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:5000/api/discussion/questions/${id}`, {
+    await fetch(`${API_BASE}/discussion/questions/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ content: questionContent })
@@ -352,14 +353,14 @@ const StudentSessionDetailsPage = () => {
   const handleDeleteQuestion = async (id) => {
     if (!window.confirm('Delete this question?')) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:5000/api/discussion/questions/${id}`, {
+    await fetch(`${API_BASE}/discussion/questions/${id}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
     });
   };
 
   const handleResolveQuestion = async (id) => {
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:5000/api/discussion/questions/${id}/resolve`, {
+    await fetch(`${API_BASE}/discussion/questions/${id}/resolve`, {
       method: 'PUT', headers: { Authorization: `Bearer ${token}` }
     });
   };
@@ -377,7 +378,7 @@ const StudentSessionDetailsPage = () => {
     const content = replyContent[questionId] || '';
     if (!content.trim()) return;
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:5000/api/discussion/questions/${questionId}/replies`, {
+    const res = await fetch(`${API_BASE}/discussion/questions/${questionId}/replies`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ content })
@@ -390,14 +391,14 @@ const StudentSessionDetailsPage = () => {
   const handleDeleteReply = async (questionId, replyId) => {
     if (!window.confirm('Delete this reply?')) return;
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:5000/api/discussion/questions/${questionId}/replies/${replyId}`, {
+    await fetch(`${API_BASE}/discussion/questions/${questionId}/replies/${replyId}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
     });
   };
 
   const handlePinReply = async (questionId, replyId) => {
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:5000/api/discussion/questions/${questionId}/replies/${replyId}/pin`, {
+    await fetch(`${API_BASE}/discussion/questions/${questionId}/replies/${replyId}/pin`, {
       method: 'PUT', headers: { Authorization: `Bearer ${token}` }
     });
   };

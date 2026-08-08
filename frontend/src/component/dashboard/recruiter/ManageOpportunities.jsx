@@ -1,9 +1,10 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Briefcase, Search, Filter, Trash2, Edit3, Eye, Clock, Users, X } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const ManageOpportunities = () => {
   const [opportunities, setOpportunities] = useState([]);

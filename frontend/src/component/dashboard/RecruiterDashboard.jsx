@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -31,7 +32,7 @@ const RecruiterDashboard = ({ user }) => {
   ];
   const [activeTab, setActiveTab] = useState(validTabs.includes(pathTab) ? pathTab : 'dashboard');
 
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = API_BASE;
 
   const fetchNotifCount = async () => {
     try {

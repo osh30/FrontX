@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Megaphone, CheckCircle2, XCircle } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const CATEGORIES = ['Academic', 'Career', 'Internship', 'Scholarship', 'Competition', 'Event', 'Maintenance', 'General Notice'];
 const PRIORITIES = ['Normal', 'Important', 'Urgent'];

@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -146,7 +147,7 @@ const UploadResourcePage = () => {
         submitData.append('file', file);
       }
 
-      const res = await fetch('http://localhost:5000/api/resources', {
+      const res = await fetch(`${API_BASE}/resources`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`

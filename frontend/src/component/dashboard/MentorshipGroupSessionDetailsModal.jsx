@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Clock, Video, Users, List, FileText, CheckCircle, Ban } from 'lucide-react';
@@ -34,7 +35,7 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/mentorship-sessions/${session._id}/cancel`, {
+      const res = await fetch(`${API_BASE}/mentorship-sessions/${session._id}/cancel`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -57,7 +58,7 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/mentorship-sessions/${session._id}/outcome`, {
+      const res = await fetch(`${API_BASE}/mentorship-sessions/${session._id}/outcome`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

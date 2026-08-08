@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, MessageCircle, Calendar, Users, FileText, CheckCircle, Award } from 'lucide-react';
@@ -42,7 +43,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onUnreadCount }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await axios.get('http://localhost:5000/api/notifications', {
+      const res = await axios.get(`${API_BASE}/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data);
@@ -93,7 +94,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onUnreadCount }) => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:5000/api/notifications/read-all', {}, {
+      await axios.put(`${API_BASE}/notifications/read-all`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -107,7 +108,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onUnreadCount }) => {
     if (isRead) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {}, {
+      await axios.put(`${API_BASE}/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(prev => {

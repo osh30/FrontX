@@ -1,3 +1,4 @@
+import { API_URL } from '../../config/api';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -9,7 +10,7 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API = 'http://localhost:5000';
+const API = API_URL;
 
 const CATEGORIES = [
   'Study Tips', 'Career', 'Internship', 'Research', 'Programming',

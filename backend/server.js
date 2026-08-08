@@ -108,7 +108,11 @@ io.on('connection', (socket) => {
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://front-x-git-main-nures-projects-2f9a3173.vercel.app',
+    'https://front-x-alpha.vercel.app'
+  ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
@@ -288,7 +292,11 @@ server.listen(PORT, () => {
 
 // server.js এ
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: [
+    'http://localhost:5173',
+    'https://front-x-git-main-nures-projects-2f9a3173.vercel.app',
+    'https://front-x-alpha.vercel.app'
+  ],
   credentials: true
 }));
 

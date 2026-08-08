@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,7 +84,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
   const handleDelete = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/community-posts/${post._id}`, {
+      const res = await fetch(`${API_BASE}/community-posts/${post._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -104,7 +105,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
   const handleReact = async (type) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/community-posts/${post._id}/react`, {
+      const res = await fetch(`${API_BASE}/community-posts/${post._id}/react`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ type })
@@ -129,7 +130,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/community-posts/${post._id}/save`, {
+      const res = await fetch(`${API_BASE}/community-posts/${post._id}/save`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -143,7 +144,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
   const handleResolve = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/community-posts/${post._id}/resolve`, {
+      const res = await fetch(`${API_BASE}/community-posts/${post._id}/resolve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -156,7 +157,7 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
     if (!newComment.trim()) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/community-posts/${post._id}/comments`, {
+      const res = await fetch(`${API_BASE}/community-posts/${post._id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ content: newComment, isAnonymous: isAnonymousComment })
@@ -524,7 +525,7 @@ const CommunityFeed = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/users/profile', {
+      const res = await fetch(`${API_BASE}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setCurrentUserData(await res.json());
@@ -534,7 +535,7 @@ const CommunityFeed = () => {
   const fetchPosts = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/community-posts', {
+      const res = await fetch(`${API_BASE}/community-posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setPosts(await res.json());
@@ -550,7 +551,7 @@ const CommunityFeed = () => {
     let userId = null;
     try { userId = JSON.parse(atob(token.split('.')[1])).id; } catch (e) {}
 
-    const socket = io('http://localhost:5000', { transports: ['websocket', 'polling'] });
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
     socket.on('connect_error', () => {});
     socket.on('connect', () => { if (userId) socket.emit('setup', { id: userId }); });
     socket.on('new_community_post', (newPost) => {

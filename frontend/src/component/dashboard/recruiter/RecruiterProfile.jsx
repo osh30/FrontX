@@ -1,9 +1,10 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { User, Mail, Building2, Briefcase, Globe, MapPin, Edit3, Save, Loader2, X } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const RecruiterProfile = ({ user }) => {
   const [editing, setEditing] = useState(false);

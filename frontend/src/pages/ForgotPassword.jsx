@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -5,7 +6,7 @@ import axios from 'axios';
 import { Mail, Lock, KeyRound, ArrowRight, ArrowLeft, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import TurnstileWidget from '../component/TurnstileWidget';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const STEPS = ['Email', 'OTP', 'New Password'];
 

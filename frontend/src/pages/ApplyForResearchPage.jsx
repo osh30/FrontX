@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, Send, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -32,8 +33,8 @@ const ApplyForResearchPage = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [topicRes, checkRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/collaboration/${id}`, { headers }),
-          fetch(`http://localhost:5000/api/collaboration/${id}/my-application`, { headers })
+          fetch(`${API_BASE}/collaboration/${id}`, { headers }),
+          fetch(`${API_BASE}/collaboration/${id}/my-application`, { headers })
         ]);
 
         if (topicRes.ok) {
@@ -92,7 +93,7 @@ const ApplyForResearchPage = () => {
     setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/collaboration/${id}/apply`, {
+      const res = await fetch(`${API_BASE}/collaboration/${id}/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

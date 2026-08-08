@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +18,7 @@ export const SessionFeedbackModal = ({ isOpen, onClose, session, onComplete }) =
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/sessions/${session._id}/complete`, {
+      const res = await fetch(`${API_BASE}/sessions/${session._id}/complete`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

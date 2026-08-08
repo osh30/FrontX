@@ -1,3 +1,4 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -21,7 +22,7 @@ const LinkedinIcon = ({ className }) => (
   </svg>
 );
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Status' },

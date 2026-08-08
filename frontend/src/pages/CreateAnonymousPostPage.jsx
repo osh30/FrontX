@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -50,7 +51,7 @@ const CreateAnonymousPostPage = () => {
         formData.append('image', imageFile);
       }
 
-      const res = await fetch('http://localhost:5000/api/anonymous-posts', {
+      const res = await fetch(`${API_BASE}/anonymous-posts`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`

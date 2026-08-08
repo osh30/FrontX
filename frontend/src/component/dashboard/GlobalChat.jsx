@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -96,7 +97,7 @@ export const GlobalChat = ({ user }) => {
   // Socket setup
   useEffect(() => {
     if (!user) return;
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socketRef.current = socket;
     socket.emit('setup', user);
 
@@ -202,7 +203,7 @@ export const GlobalChat = ({ user }) => {
   const fetchConversations = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/chat/conversations', {
+      const res = await axios.get(`${API_BASE}/chat/conversations`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setConversations(res.data);
@@ -223,7 +224,7 @@ export const GlobalChat = ({ user }) => {
     const fetchMessages = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:5000/api/chat/conversations/${activeConvId}/messages`, {
+        const res = await axios.get(`${API_BASE}/chat/conversations/${activeConvId}/messages`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setMessages(res.data.messages || []);
@@ -247,7 +248,7 @@ export const GlobalChat = ({ user }) => {
   const fetchLabels = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/chat/labels', {
+      const res = await axios.get(`${API_BASE}/chat/labels`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserLabels(res.data);
@@ -272,7 +273,7 @@ export const GlobalChat = ({ user }) => {
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('folder', 'chat');
-        const uploadRes = await axios.post('http://localhost:5000/api/users/upload', formData, {
+        const uploadRes = await axios.post(`${API_BASE}/users/upload`, formData, {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
         });
         fileUrl = uploadRes.data.url;
@@ -281,7 +282,7 @@ export const GlobalChat = ({ user }) => {
         msgType = selectedFile.type.startsWith('image/') ? 'image' : 'file';
       }
 
-      const res = await axios.post(`http://localhost:5000/api/chat/conversations/${activeConvId}/messages`, {
+      const res = await axios.post(`${API_BASE}/chat/conversations/${activeConvId}/messages`, {
         content: messageText,
         messageType: msgType,
         fileUrl,
@@ -316,7 +317,7 @@ export const GlobalChat = ({ user }) => {
   const handleReaction = async (messageId, emoji) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:5000/api/chat/messages/${messageId}/reaction`, { emoji }, {
+      const res = await axios.put(`${API_BASE}/chat/messages/${messageId}/reaction`, { emoji }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessages(prev => prev.map(m => m._id === messageId ? { ...m, reactions: res.data.reactions || [] } : m));
@@ -330,7 +331,7 @@ export const GlobalChat = ({ user }) => {
     if (!editText.trim() || !editingMsg) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/chat/messages/${editingMsg._id}`, { content: editText }, {
+      await axios.put(`${API_BASE}/chat/messages/${editingMsg._id}`, { content: editText }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEditingMsg(null);
@@ -343,7 +344,7 @@ export const GlobalChat = ({ user }) => {
   const handleDelete = async (messageId, deleteFor) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/chat/messages/${messageId}`, {
+      await axios.delete(`${API_BASE}/chat/messages/${messageId}`, {
         data: { deleteFor },
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -357,7 +358,7 @@ export const GlobalChat = ({ user }) => {
   const handleTogglePin = async (convId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/chat/conversations/${convId}/pin`, {}, {
+      await axios.put(`${API_BASE}/chat/conversations/${convId}/pin`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchConversations();
@@ -369,7 +370,7 @@ export const GlobalChat = ({ user }) => {
   const handleToggleStar = async (messageId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/chat/messages/${messageId}/star`, {}, {
+      await axios.put(`${API_BASE}/chat/messages/${messageId}/star`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchStarred();
@@ -381,7 +382,7 @@ export const GlobalChat = ({ user }) => {
   const handleSaveLabel = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/chat/conversations/${activeConvId}/label`, { label: conversationLabel }, {
+      await axios.put(`${API_BASE}/chat/conversations/${activeConvId}/label`, { label: conversationLabel }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Label saved');
@@ -394,7 +395,7 @@ export const GlobalChat = ({ user }) => {
   const fetchSharedFiles = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/chat/conversations/${activeConvId}/files`, {
+      const res = await axios.get(`${API_BASE}/chat/conversations/${activeConvId}/files`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSharedFiles(res.data);
@@ -406,7 +407,7 @@ export const GlobalChat = ({ user }) => {
   const fetchStarred = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/chat/starred', {
+      const res = await axios.get(`${API_BASE}/chat/starred`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStarredMsgs(res.data);
@@ -424,7 +425,7 @@ export const GlobalChat = ({ user }) => {
     if (!newNoteTitle.trim() && !newNoteContent.trim()) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post(`http://localhost:5000/api/chat/conversations/${activeConvId}/notes`, {
+      const res = await axios.post(`${API_BASE}/chat/conversations/${activeConvId}/notes`, {
         title: newNoteTitle.trim(),
         content: newNoteContent.trim()
       }, { headers: { Authorization: `Bearer ${token}` } });
@@ -440,7 +441,7 @@ export const GlobalChat = ({ user }) => {
   const updateNote = async (noteId, title, content) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:5000/api/chat/notes/${noteId}`, {
+      const res = await axios.put(`${API_BASE}/chat/notes/${noteId}`, {
         title, content
       }, { headers: { Authorization: `Bearer ${token}` } });
       setNotes(prev => prev.map(n => n._id === noteId ? res.data : n));
@@ -457,7 +458,7 @@ export const GlobalChat = ({ user }) => {
     if (!window.confirm('Are you sure you want to delete this note?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/chat/notes/${noteId}`, {
+      await axios.delete(`${API_BASE}/chat/notes/${noteId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotes(prev => prev.filter(n => n._id !== noteId));
@@ -473,7 +474,7 @@ export const GlobalChat = ({ user }) => {
       const token = localStorage.getItem('token');
       const payload = { title: newGoalTitle.trim() };
       if (newGoalDeadline) payload.deadline = newGoalDeadline;
-      const res = await axios.post(`http://localhost:5000/api/chat/conversations/${activeConvId}/goals`, payload, {
+      const res = await axios.post(`${API_BASE}/chat/conversations/${activeConvId}/goals`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGoals(prev => [...prev, res.data]);
@@ -489,7 +490,7 @@ export const GlobalChat = ({ user }) => {
   const handleUpdateGoal = async (goalId, updates) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put(`http://localhost:5000/api/chat/goals/${goalId}`, updates, {
+      const res = await axios.put(`${API_BASE}/chat/goals/${goalId}`, updates, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGoals(prev => prev.map(g => g._id === goalId ? res.data : g));
@@ -504,7 +505,7 @@ export const GlobalChat = ({ user }) => {
     if (!window.confirm('Are you sure you want to delete this goal?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/chat/goals/${goalId}`, {
+      await axios.delete(`${API_BASE}/chat/goals/${goalId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setGoals(prev => prev.filter(g => g._id !== goalId));
@@ -521,7 +522,7 @@ export const GlobalChat = ({ user }) => {
       const payload = { title: newReminderTitle.trim() };
       if (newReminderDate) payload.reminderDate = newReminderDate;
       if (newReminderTime) payload.reminderTime = newReminderTime;
-      const res = await axios.post(`http://localhost:5000/api/chat/conversations/${activeConvId}/reminders`, payload, {
+      const res = await axios.post(`${API_BASE}/chat/conversations/${activeConvId}/reminders`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReminders(prev => [...prev, res.data]);
@@ -539,7 +540,7 @@ export const GlobalChat = ({ user }) => {
     if (!window.confirm('Are you sure you want to delete this reminder?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/chat/reminders/${reminderId}`, {
+      await axios.delete(`${API_BASE}/chat/reminders/${reminderId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReminders(prev => prev.filter(r => r._id !== reminderId));
@@ -1136,7 +1137,7 @@ export const GlobalChat = ({ user }) => {
                                   <span className="text-xs font-bold text-gray-500 uppercase">Label</span>
                                   {conversationLabel && (
                                     <button onClick={async () => {
-                                      await axios.put(`http://localhost:5000/api/chat/conversations/${activeConvId}/label`, { label: '' }, {
+                                      await axios.put(`${API_BASE}/chat/conversations/${activeConvId}/label`, { label: '' }, {
                                         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                       });
                                       setConversationLabel('');
@@ -1159,7 +1160,7 @@ export const GlobalChat = ({ user }) => {
                                   <button onClick={async () => {
                                     const label = showAddLabelInput ? newLabelValue : conversationLabel;
                                     if (!label.trim()) return;
-                                    await axios.put(`http://localhost:5000/api/chat/conversations/${activeConvId}/label`, { label: label.trim() }, {
+                                    await axios.put(`${API_BASE}/chat/conversations/${activeConvId}/label`, { label: label.trim() }, {
                                       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                     });
                                     setConversationLabel(label.trim());
@@ -1173,7 +1174,7 @@ export const GlobalChat = ({ user }) => {
                                   <div className="mt-2 flex flex-wrap gap-1">
                                     {userLabels.filter(l => l !== conversationLabel).slice(0, 5).map(label => (
                                       <button key={label} onClick={async () => {
-                                        await axios.put(`http://localhost:5000/api/chat/conversations/${activeConvId}/label`, { label }, {
+                                        await axios.put(`${API_BASE}/chat/conversations/${activeConvId}/label`, { label }, {
                                           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                                         });
                                         setConversationLabel(label);

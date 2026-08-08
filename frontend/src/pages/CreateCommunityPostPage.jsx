@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -85,7 +86,7 @@ const CreateCommunityPostPage = () => {
   useEffect(() => {
     const loadDraft = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/community-posts/draft', {
+        const res = await fetch(`${API_BASE}/community-posts/draft`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -118,7 +119,7 @@ const CreateCommunityPostPage = () => {
     draftTimerRef.current = setTimeout(async () => {
       lastSavedRef.current = snapshot;
       try {
-        await fetch('http://localhost:5000/api/community-posts/draft', {
+        await fetch(`${API_BASE}/community-posts/draft`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({
@@ -161,7 +162,7 @@ const CreateCommunityPostPage = () => {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('type', type);
-      const res = await fetch('http://localhost:5000/api/community-posts/upload', {
+      const res = await fetch(`${API_BASE}/community-posts/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -231,7 +232,7 @@ const CreateCommunityPostPage = () => {
         formData.append('documentName', documentName);
       }
 
-      const res = await fetch('http://localhost:5000/api/community-posts', {
+      const res = await fetch(`${API_BASE}/community-posts`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -254,7 +255,7 @@ const CreateCommunityPostPage = () => {
 
   const handleSaveDraft = async () => {
     try {
-      await fetch('http://localhost:5000/api/community-posts/draft', {
+      await fetch(`${API_BASE}/community-posts/draft`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

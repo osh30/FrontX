@@ -1,3 +1,4 @@
+import { API_URL } from '../../config/api';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -9,7 +10,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import StudyPlannerAISection from './StudyPlannerAISection';
 
-const API = 'http://localhost:5000';
+const API = API_URL;
 
 const MARK_DIST = {
   '1.0': [

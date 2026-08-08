@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -27,7 +28,7 @@ const AISkillAnalysisPage = () => {
         return;
       }
 
-      const res = await axios.get('http://localhost:5000/api/ai-analysis/me', {
+      const res = await axios.get(`${API_BASE}/ai-analysis/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

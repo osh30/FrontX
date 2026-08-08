@@ -1,3 +1,4 @@
+import { API_BASE } from '../../../config/api';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -7,7 +8,7 @@ import {
   Clock, Target, Award, File, Trash2, Send, ChevronDown
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const OPPORTUNITY_TYPES = [
   'Government Job', 'Private Job', 'Internship', 'Remote Job',

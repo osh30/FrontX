@@ -1,3 +1,4 @@
+import { API_BASE, SOCKET_URL } from '../../config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Calendar, Share2, 
@@ -42,7 +43,7 @@ export const WelcomeSection = ({ userName }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/alumni/stats', {
+      const res = await fetch(`${API_BASE}/alumni/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -56,7 +57,7 @@ export const WelcomeSection = ({ userName }) => {
   useEffect(() => {
     fetchStats();
 
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     
     // Listen for relevant updates to refresh stats
     socket.on('request_accepted', fetchStats);
@@ -143,7 +144,7 @@ export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, on
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/mentorship/incoming', {
+      const res = await fetch(`${API_BASE}/mentorship/incoming`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -160,7 +161,7 @@ export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, on
   useEffect(() => {
     fetchRequests();
 
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('request_updated', () => {
       fetchRequests();
     });
@@ -179,7 +180,7 @@ export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, on
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/mentorship/request/${req._id}/status`, {
+      const res = await fetch(`${API_BASE}/mentorship/request/${req._id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -358,7 +359,7 @@ export const MentorshipSessions = ({ isPreview, onViewAll }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('http://localhost:5000/api/mentorship-sessions', {
+      const res = await fetch(`${API_BASE}/mentorship-sessions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -373,7 +374,7 @@ export const MentorshipSessions = ({ isPreview, onViewAll }) => {
 
   useEffect(() => {
     fetchSessions();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('session_updated', fetchSessions);
     return () => socket.disconnect();
   }, []);
@@ -501,7 +502,7 @@ export const CareerOpportunitiesManagement = ({ isPreview, onViewAll }) => {
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const res = await fetch('http://localhost:5000/api/jobs?limit=10', {
+        const res = await fetch(`${API_BASE}/jobs?limit=10`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -584,7 +585,7 @@ export const CollaborationResearch = ({ isPreview, onViewAll }) => {
 
   const fetchTopics = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/collaboration/alumni', {
+      const res = await fetch(`${API_BASE}/collaboration/alumni`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -748,7 +749,7 @@ export const CommunityManagement = ({ isPreview, onViewAll }) => {
   const fetchPosts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/community-posts', {
+      const res = await fetch(`${API_BASE}/community-posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -763,7 +764,7 @@ export const CommunityManagement = ({ isPreview, onViewAll }) => {
 
   useEffect(() => {
     fetchPosts();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_community_post', fetchPosts);
     socket.on('community_post_updated', fetchPosts);
     socket.on('new_community_comment', fetchPosts);
@@ -834,7 +835,7 @@ export const ResourceSharingSection = ({ isPreview, onViewAll }) => {
   const fetchResources = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/resources', {
+      const res = await fetch(`${API_BASE}/resources`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -850,7 +851,7 @@ export const ResourceSharingSection = ({ isPreview, onViewAll }) => {
 
   useEffect(() => {
     fetchResources();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_resource', (resource) => {
       setFiles(prev => [resource, ...prev]);
     });
@@ -1139,7 +1140,7 @@ export const CommunityResourcesSection = () => {
       if (fileType !== 'All') params.set('fileType', fileType);
       if (sort) params.set('sort', sort);
 
-      const res = await fetch(`http://localhost:5000/api/resources/community/all?${params}`, {
+      const res = await fetch(`${API_BASE}/resources/community/all?${params}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -1154,7 +1155,7 @@ export const CommunityResourcesSection = () => {
 
   useEffect(() => {
     fetchResources();
-    const socket = io('http://localhost:5000');
+    const socket = io(SOCKET_URL);
     socket.on('new_resource', fetchResources);
     socket.on('resource:updated', fetchResources);
     socket.on('resource:deleted', fetchResources);
@@ -1188,7 +1189,7 @@ export const CommunityResourcesSection = () => {
     e.stopPropagation();
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/resources/community/${r._id}/download`, {
+      await fetch(`${API_BASE}/resources/community/${r._id}/download`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -1205,7 +1206,7 @@ export const CommunityResourcesSection = () => {
   const handleView = async (r) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/resources/community/${r._id}/view`, {
+      await fetch(`${API_BASE}/resources/community/${r._id}/view`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       });

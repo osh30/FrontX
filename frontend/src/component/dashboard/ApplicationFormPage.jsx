@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -38,7 +39,7 @@ export default function ApplicationFormPage() {
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const { data } = await axios.get(`/api/opportunities/${id}`, { headers });
+        const { data } = await axios.get(`${API_BASE}/opportunities/${id}`, { headers });
         setOpp(data.opportunity);
 
         const userStr = localStorage.getItem('user');
@@ -113,7 +114,7 @@ export default function ApplicationFormPage() {
       if (files.portfolioFile) formData.append('portfolioFile', files.portfolioFile);
       files.certificates.forEach(f => formData.append('certificates', f));
 
-      const { data } = await axios.post(`/api/opportunities/${id}/apply`, formData, {
+      const { data } = await axios.post(`${API_BASE}/opportunities/${id}/apply`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

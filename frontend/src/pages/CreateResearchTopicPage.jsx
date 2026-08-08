@@ -1,3 +1,4 @@
+import { API_BASE } from '../config/api';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Microscope, Target, Briefcase, BookOpen, Send, X } from 'lucide-react';
@@ -71,7 +72,7 @@ const CreateResearchTopicPage = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/collaboration', {
+      const res = await fetch(`${API_BASE}/collaboration`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

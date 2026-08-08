@@ -1,3 +1,4 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -19,7 +20,7 @@ export default function OpportunityDetailsRouter() {
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const { data } = await axios.get(`/api/opportunities/${id}`, { headers });
+        const { data } = await axios.get(`${API_BASE}/opportunities/${id}`, { headers });
         if (mounted) setOpp(data.opportunity);
       } catch (err) {
         if (mounted) setError(err.response?.data?.message || 'Failed to load opportunity');

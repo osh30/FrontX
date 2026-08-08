@@ -1,10 +1,11 @@
+import { API_BASE } from '../../config/api';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { BookOpen, Plus, Search, X, Loader2, Trash2, Edit3, FileText, Download, Calendar, Tag, ExternalLink } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = API_BASE;
 
 const CATEGORIES = ['All', 'Resume Guide', 'Interview Preparation', 'Career Development', 'Programming', 'Research', 'Academic Notes', 'Study Material', 'Soft Skills', 'Portfolio Guide', 'Other'];
 
