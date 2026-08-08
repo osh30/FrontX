@@ -338,4 +338,49 @@ router.put('/request/:id/status', protect, async (req, res) => {
   }
 });
 
+// GET /api/mentorship/connections/:userId - Accepted connections for any user
+// Student → returns connected alumni (mentors). Alumni → returns connected students.
+router.get('/connections/:userId', protect, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!isValidObjectId(userId)) return res.status(400).json({ message: 'Invalid user id' });
+
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const pickFields = 'name department profilePicture bio role session graduationYear';
+
+    if (user.role === 'student') {
+      const requests = await MentorshipRequest.find({ studentId: userId, status: 'accepted' })
+        .populate('alumniId', pickFields)
+        .sort({ createdAt: -1 });
+      const unique = new Map();
+      requests.forEach(r => {
+        if (r.alumniId && !unique.has(r.alumniId._id.toString())) {
+          unique.set(r.alumniId._id.toString(), r.alumniId);
+        }
+      });
+      return res.json(Array.from(unique.values()));
+    }
+
+    if (user.role === 'alumni') {
+      const requests = await MentorshipRequest.find({ alumniId: userId, status: 'accepted' })
+        .populate('studentId', pickFields)
+        .sort({ createdAt: -1 });
+      const unique = new Map();
+      requests.forEach(r => {
+        if (r.studentId && !unique.has(r.studentId._id.toString())) {
+          unique.set(r.studentId._id.toString(), r.studentId);
+        }
+      });
+      return res.json(Array.from(unique.values()));
+    }
+
+    res.json([]);
+  } catch (error) {
+    console.error('Error getting connections:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

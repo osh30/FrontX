@@ -242,6 +242,9 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
   // Class Notes state
   const [classNotes, setClassNotes] = useState([]);
 
+  // Connected users state (mentors for students, students for alumni)
+  const [connections, setConnections] = useState([]);
+
   // Mentorship Status
   const [mentorshipStatus, setMentorshipStatus] = useState(null); // 'pending', 'accepted', 'rejected', or null
   const [isSendingRequest, setIsSendingRequest] = useState(false);
@@ -309,6 +312,19 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
             headers: { Authorization: `Bearer ${token}` }
           });
           setClassNotes(notesRes.data);
+        }
+
+        // Fetch accepted connections (connected mentors/students) for this profile
+        const profileId = viewedUserId || res.data._id;
+        if (profileId) {
+          try {
+            const connRes = await axios.get(`${API_BASE}/mentorship/connections/${profileId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setConnections(connRes.data || []);
+          } catch (e) {
+            setConnections([]);
+          }
         }
       } catch (error) {
         toast.error("Failed to load profile data");
@@ -696,21 +712,33 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
 
           <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
             <h3 className="font-bold text-gray-900 flex items-center gap-2 mb-6 shrink-0">
-              <Users className="w-5 h-5 text-blue-500" /> Connected Mentors
+              <Users className="w-5 h-5 text-blue-500" /> {(profileData.role || '').toLowerCase() === 'student' ? 'Connected Mentors' : 'Connected Students'}
             </h3>
             <div className="flex-1">
-              <div className="grid gap-4">
-                {profileData.mentors && profileData.mentors.map(mentor => (
-                  <div key={mentor.id} className="flex items-center gap-4 p-4 bg-white/80 border border-gray-100 shadow-sm rounded-2xl">
-                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-2xl shadow-inner border border-blue-100 shrink-0">{mentor.img}</div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-sm">{mentor.name}</h4>
-                      <p className="text-xs text-gray-500 font-medium mb-1">{mentor.role}</p>
-                      <span className="inline-block text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md border border-green-200">{mentor.status}</span>
+              {connections.length === 0 ? (
+                <EmptyState
+                  icon={Users}
+                  title={(profileData.role || '').toLowerCase() === 'student' ? 'No Connected Mentors' : 'No Connected Students'}
+                  desc={(profileData.role || '').toLowerCase() === 'student' ? 'This student is not connected with any alumni yet.' : 'This alumni is not connected with any students yet.'}
+                />
+              ) : (
+                <div className="grid gap-4">
+                  {connections.map(person => (
+                    <div key={person._id} className="flex items-center gap-4 p-4 bg-white/80 border border-gray-100 shadow-sm rounded-2xl">
+                      {person.profilePicture ? (
+                        <img src={person.profilePicture} alt={person.name} className="w-12 h-12 bg-blue-50 rounded-xl object-cover shadow-inner border border-blue-100 shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-lg font-bold text-blue-600 shadow-inner border border-blue-100 shrink-0">{person.name?.[0] || 'U'}</div>
+                      )}
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-gray-900 text-sm truncate">{person.name}</h4>
+                        <p className="text-xs text-gray-500 font-medium mb-1 truncate">{(profileData.role || '').toLowerCase() === 'student' ? 'Alumni' : 'Student'}{person.department ? ` · ${person.department}` : ''}</p>
+                        <span className="inline-block text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md border border-green-200">Connected</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -785,7 +813,62 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
             </div>
           </div>
 
-          {/* ROW 3: Class Notes (Student Only) */}
+          {/* ROW 4: Certificates & CV */}
+          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div className="flex justify-between items-center mb-6 shrink-0">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
+                <Award className="w-5 h-5 text-emerald-500" /> Certificates
+              </h3>
+              {isEditing && !addingCert && (
+                <button onClick={() => setAddingCert(true)} className="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-emerald-200"><Plus className="w-3.5 h-3.5" /> Add</button>
+              )}
+            </div>
+
+            <div className="flex-1 flex flex-col">
+              <AnimatePresence>{addingCert && <InlineCertificateForm uploadToBackend={uploadToBackend} onSave={saveCert} onCancel={() => setAddingCert(false)} />}</AnimatePresence>
+              {profileData.certificates.length === 0 && !addingCert ? (
+                <EmptyState icon={Award} title="No Certificates" desc="Upload your course certificates or awards." actionText="Add Certificate" onAction={() => setAddingCert(true)} isEditing={isEditing} />
+              ) : (
+                <div className="grid gap-4">
+                  {profileData.certificates.map(cert => (
+                    <div key={cert._id || cert.id} className="flex gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm relative group">
+                      {isEditing && <button onClick={() => deleteItem('certificates', cert._id || cert.id)} className="absolute top-2 right-2 p-1.5 bg-red-50 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100"><Trash2 className="w-3 h-3" /></button>}
+                      <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0 border border-emerald-100"><Award className="w-5 h-5 text-emerald-500" /></div>
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-sm mb-0.5">{cert.title}</h4>
+                        <p className="text-[10px] font-semibold text-emerald-600 mb-1">{cert.org}</p>
+                        {(cert.link || cert.fileUrl) && <a href={cert.link || cert.fileUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-blue-600 hover:underline">Verify <ExternalLink className="w-3 h-3" /></a>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2 text-lg shrink-0">
+              <FileText className="w-5 h-5 text-blue-500" /> Professional Resume
+            </h3>
+            
+            <div className="flex-1 flex flex-col">
+              {!profileData.resumeUrl && !isEditing ? (
+                <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
+                  <p className="text-sm text-gray-500">No CV Uploaded</p>
+                </div>
+              ) : (
+                <div onClick={() => isEditing && resumeInputRef.current?.click()} className={`flex flex-col items-center justify-center h-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-white transition-colors group relative overflow-hidden ${isEditing ? 'hover:bg-blue-50/30 cursor-pointer' : ''}`}>
+                  <FileText className="w-10 h-10 text-blue-400 mb-3 group-hover:scale-110 group-hover:text-blue-500 transition-all" />
+                  <p className="text-sm font-bold text-gray-800 mb-1 z-10">
+                    {profileData.resumeUrl ? <a href={profileData.resumeUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="hover:underline text-blue-600">View CV</a> : "Upload your CV"}
+                  </p>
+                  {isEditing && <p className="text-xs text-gray-500 font-medium">{profileData.resumeUrl ? "Click to replace" : "Supports PDF, DOCX"}</p>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ROW 5: Published Class Notes (Student Only) — directly under Professional Resume */}
           {(profileData.role === 'student' || profileData.role === 'Student') && (
             <div className="grid grid-cols-1">
               <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 flex flex-col transition-all duration-300">
@@ -848,61 +931,6 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
               </div>
             </div>
           )}
-
-          {/* ROW 4: Certificates & CV */}
-          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div className="flex justify-between items-center mb-6 shrink-0">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
-                <Award className="w-5 h-5 text-emerald-500" /> Certificates
-              </h3>
-              {isEditing && !addingCert && (
-                <button onClick={() => setAddingCert(true)} className="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 border border-emerald-200"><Plus className="w-3.5 h-3.5" /> Add</button>
-              )}
-            </div>
-
-            <div className="flex-1 flex flex-col">
-              <AnimatePresence>{addingCert && <InlineCertificateForm uploadToBackend={uploadToBackend} onSave={saveCert} onCancel={() => setAddingCert(false)} />}</AnimatePresence>
-              {profileData.certificates.length === 0 && !addingCert ? (
-                <EmptyState icon={Award} title="No Certificates" desc="Upload your course certificates or awards." actionText="Add Certificate" onAction={() => setAddingCert(true)} isEditing={isEditing} />
-              ) : (
-                <div className="grid gap-4">
-                  {profileData.certificates.map(cert => (
-                    <div key={cert._id || cert.id} className="flex gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm relative group">
-                      {isEditing && <button onClick={() => deleteItem('certificates', cert._id || cert.id)} className="absolute top-2 right-2 p-1.5 bg-red-50 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100"><Trash2 className="w-3 h-3" /></button>}
-                      <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0 border border-emerald-100"><Award className="w-5 h-5 text-emerald-500" /></div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-sm mb-0.5">{cert.title}</h4>
-                        <p className="text-[10px] font-semibold text-emerald-600 mb-1">{cert.org}</p>
-                        {(cert.link || cert.fileUrl) && <a href={cert.link || cert.fileUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-blue-600 hover:underline">Verify <ExternalLink className="w-3 h-3" /></a>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <h3 className="font-bold text-gray-900 mb-6 flex items-center gap-2 text-lg shrink-0">
-              <FileText className="w-5 h-5 text-blue-500" /> Professional Resume
-            </h3>
-            
-            <div className="flex-1 flex flex-col">
-              {!profileData.resumeUrl && !isEditing ? (
-                <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-                  <p className="text-sm text-gray-500">No CV Uploaded</p>
-                </div>
-              ) : (
-                <div onClick={() => isEditing && resumeInputRef.current?.click()} className={`flex flex-col items-center justify-center h-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-white transition-colors group relative overflow-hidden ${isEditing ? 'hover:bg-blue-50/30 cursor-pointer' : ''}`}>
-                  <FileText className="w-10 h-10 text-blue-400 mb-3 group-hover:scale-110 group-hover:text-blue-500 transition-all" />
-                  <p className="text-sm font-bold text-gray-800 mb-1 z-10">
-                    {profileData.resumeUrl ? <a href={profileData.resumeUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="hover:underline text-blue-600">View CV</a> : "Upload your CV"}
-                  </p>
-                  {isEditing && <p className="text-xs text-gray-500 font-medium">{profileData.resumeUrl ? "Click to replace" : "Supports PDF, DOCX"}</p>}
-                </div>
-              )}
-            </div>
-          </div>
 
         </div>
       </div>
