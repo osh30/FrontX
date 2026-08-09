@@ -107,12 +107,19 @@ io.on('connection', (socket) => {
 });
 
 // Middleware
+// Production CORS: allowlist is driven by the CORS_ORIGINS env (comma-separated)
+// so deployed frontends can be configured without redeploying code.
+const defaultCorsOrigins = [
+  'http://localhost:5173',
+  'https://front-x-git-main-nures-projects-2f9a3173.vercel.app',
+  'https://front-x-alpha.vercel.app'
+];
+const corsOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://front-x-git-main-nures-projects-2f9a3173.vercel.app',
-    'https://front-x-alpha.vercel.app'
-  ],
+  origin: corsOrigins.length > 0 ? corsOrigins : defaultCorsOrigins,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
@@ -289,17 +296,6 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
-// server.js এ
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://front-x-git-main-nures-projects-2f9a3173.vercel.app',
-    'https://front-x-alpha.vercel.app'
-  ],
-  credentials: true
-}));
-
 
 // Test email endpoint
 app.get('/api/test-email', async (req, res) => {

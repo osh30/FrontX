@@ -7,9 +7,9 @@ import {
   Calendar, Clock, Video, Plus, Trash2, XCircle, CheckCircle,
   Loader2, ChevronLeft, ChevronRight, MapPin, Users, Link as LinkIcon,
   AlertTriangle, Edit3, Eye, Filter, X, CalendarDays, TrendingUp,
-  User, Briefcase, Building2, MessageSquare, Star, Sparkles
+  User, Briefcase, Building2, MessageSquare, Star
 } from 'lucide-react';
-import { joinInterviewMeeting, openMeeting, meetingPlatformLabel } from '../../../meeting/lib/sessionJoin';
+import { joinInterviewMeeting, openMeeting, meetingPlatformLabel, interviewJoinState, canJoinInterview } from '../../../meeting/lib/sessionJoin';
 import { MeetingTypeSelector } from '../MeetingTypeSelector';
 
 const API_URL = API_BASE;
@@ -387,7 +387,7 @@ const Interviews = () => {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_1fr_100px] gap-4 px-6 py-3.5 bg-gray-50 border-b border-gray-100">
+          <div className="hidden md:grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_1fr_150px] gap-4 px-6 py-3.5 bg-gray-50 border-b border-gray-100">
             {['Student', 'Position', 'Date & Time', 'Type', 'Duration', 'Platform/Location', 'Status', 'Actions'].map(h => (
               <span key={h} className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{h}</span>
             ))}
@@ -409,7 +409,7 @@ const Interviews = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.03 }}
-              className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_1fr_100px] gap-4 px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors items-center cursor-pointer"
+              className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_1fr_150px] gap-4 px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors items-center cursor-pointer"
               onClick={() => { setSelectedInterview(int); setShowDetail(true); }}
             >
               {/* Student */}
@@ -471,6 +471,12 @@ const Interviews = () => {
 
               {/* Actions */}
               <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                {canJoinInterview(int) && (
+                  <button onClick={() => handleJoinInterview(int)} disabled={joining}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all disabled:opacity-60">
+                    <Video className="w-3 h-3" /> {joining ? 'Opening…' : 'Join'}
+                  </button>
+                )}
                 {int.status === 'scheduled' && (
                   <>
                     <button onClick={() => { setCompleteTarget(int); setShowCompleteModal(true); }}
@@ -547,13 +553,13 @@ const Interviews = () => {
                   <span className="text-sm font-semibold capitalize">{selectedInterview.status}</span>
                 </div>
 
-                {selectedInterview.status === 'scheduled' && selectedInterview.interviewType === 'Online' && (
+                {canJoinInterview(selectedInterview) && (
                   <button
                     onClick={() => handleJoinInterview(selectedInterview)}
                     disabled={joining}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-60"
                   >
-                    <Video className="w-4 h-4" /> {joining ? 'Opening room…' : 'Join Interview'}
+                    <Video className="w-4 h-4" /> {joining ? 'Opening room…' : interviewJoinState(selectedInterview).label}
                   </button>
                 )}
 
@@ -722,28 +728,7 @@ const Interviews = () => {
                       accent="blue"
                     />
                     <AnimatePresence initial={false}>
-                      {scheduleForm.meetingType === 'frontx' ? (
-                        <motion.div
-                          key="frontx-info"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3, ease: 'easeInOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-                            <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                              <Sparkles className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-blue-700">FrontX Live Interview</p>
-                              <p className="text-xs text-gray-600 mt-0.5">
-                                A secure FrontX video room is created automatically when the interview is scheduled. The candidate joins instantly from the app — no external link needed.
-                              </p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ) : (
+                      {scheduleForm.meetingType === 'frontx' ? null : (
                         <motion.div
                           key="external-fields"
                           initial={{ height: 0, opacity: 0 }}
@@ -835,28 +820,7 @@ const Interviews = () => {
                       accent="blue"
                     />
                     <AnimatePresence initial={false}>
-                      {rescheduleForm.meetingType === 'frontx' ? (
-                        <motion.div
-                          key="frontx-info"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3, ease: 'easeInOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-                            <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                              <Sparkles className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-blue-700">FrontX Live Interview</p>
-                              <p className="text-xs text-gray-600 mt-0.5">
-                                A secure FrontX video room is created automatically when rescheduled. The candidate joins instantly from the app — no external link needed.
-                              </p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ) : (
+                      {rescheduleForm.meetingType === 'frontx' ? null : (
                         <motion.div
                           key="external-fields"
                           initial={{ height: 0, opacity: 0 }}

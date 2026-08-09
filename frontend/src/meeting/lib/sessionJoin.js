@@ -57,3 +57,19 @@ export const isFrontxMeeting = (item) => item && item.meetingType === 'frontx';
 
 export const meetingPlatformLabel = (item) =>
   isFrontxMeeting(item) ? 'FrontX Live Meeting' : (item?.platform || item?.meetingPlatform || 'Online');
+
+// ── Interview join state ─────────────────────────────────────────────
+// Returns { joinable, label, reason } so UIs can show/enable Join only
+// for interviews that can be joined (and the backend still re-validates).
+const JOINABLE_STATUSES = ['scheduled', 'rescheduled'];
+
+export const interviewJoinState = (interview) => {
+  if (!interview) return { joinable: false, label: null, reason: '' };
+  if (interview.status === 'completed') return { joinable: false, label: 'Completed', reason: 'This interview has been completed' };
+  if (interview.status === 'cancelled') return { joinable: false, label: 'Cancelled', reason: 'This interview has been cancelled' };
+  if (!JOINABLE_STATUSES.includes(interview.status)) return { joinable: false, label: null, reason: '' };
+  if (interview.interviewType !== 'Online') return { joinable: false, label: null, reason: 'Only online interviews can be joined live' };
+  return { joinable: true, label: 'Join Interview', reason: '' };
+};
+
+export const canJoinInterview = (interview) => interviewJoinState(interview).joinable;

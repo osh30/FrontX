@@ -230,7 +230,7 @@ const joinMeeting = async ({ user, roomId }) => {
     metadata: JSON.stringify({ role: user.role, meetingId: String(meeting._id), meetingRole: participantRole }),
   });
 
-  return { meeting, token };
+  return { meeting, token, role: participantRole };
 };
 
 const leaveMeeting = async ({ user, roomId }) => {
@@ -497,6 +497,9 @@ const getOrCreateInterviewMeeting = async ({ user, interviewId }) => {
   if (interview.status === 'cancelled') {
     throw createError('This interview has been cancelled', 403);
   }
+  if (interview.status === 'completed') {
+    throw createError('This interview has already been completed', 403);
+  }
 
   if (interview.meetingType === 'external') {
     if (!interview.meetingLink) {
@@ -527,7 +530,14 @@ const getOrCreateInterviewMeeting = async ({ user, interviewId }) => {
   }
 
   const joined = await joinMeeting({ user, roomId: meeting.roomId });
-  return { roomId: meeting.roomId, meeting: joined.meeting, token: joined.token, serverUrl: config.livekit.url, identity: String(user.id) };
+  return {
+    roomId: meeting.roomId,
+    meeting: joined.meeting,
+    token: joined.token,
+    role: joined.role,
+    serverUrl: config.livekit.url,
+    identity: String(user.id),
+  };
 };
 
 const getMeetingHistory = async ({ userId, query = {} }) => {

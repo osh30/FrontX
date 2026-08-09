@@ -8,7 +8,7 @@ import {
   X, CheckCircle, AlertTriangle, Eye, CalendarDays, Briefcase,
   Building2, User, Link as LinkIcon, Star
 } from 'lucide-react';
-import { joinInterviewMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
+import { joinInterviewMeeting, openMeeting, meetingPlatformLabel, interviewJoinState, canJoinInterview } from '../../meeting/lib/sessionJoin';
 
 const API_URL = API_BASE;
 
@@ -237,8 +237,8 @@ const StudentInterviews = () => {
       {view === 'table' && (
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_80px] gap-4 px-6 py-3.5 bg-gray-50 border-b border-gray-100">
-            {['Position', 'Company', 'Date & Time', 'Type', 'Platform/Location', 'Status', 'Details'].map(h => (
+          <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_140px] gap-4 px-6 py-3.5 bg-gray-50 border-b border-gray-100">
+            {['Position', 'Company', 'Date & Time', 'Type', 'Platform/Location', 'Status', 'Actions'].map(h => (
               <span key={h} className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{h}</span>
             ))}
           </div>
@@ -259,7 +259,7 @@ const StudentInterviews = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.03 }}
-              className="grid grid-cols-1 md:grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_80px] gap-4 px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors items-center cursor-pointer"
+              className="grid grid-cols-1 md:grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_1fr_140px] gap-4 px-6 py-4 border-b border-gray-50 hover:bg-gray-50/50 transition-colors items-center cursor-pointer"
               onClick={() => { setSelectedInterview(int); setShowDetail(true); }}
             >
               <div className="min-w-0">
@@ -308,6 +308,12 @@ const StudentInterviews = () => {
               </span>
 
               <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                {canJoinInterview(int) && (
+                  <button onClick={() => handleJoinInterview(int)} disabled={joining}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 transition-all disabled:opacity-60">
+                    <Video className="w-3 h-3" /> {joining ? 'Opening…' : 'Join'}
+                  </button>
+                )}
                 <button onClick={() => { setSelectedInterview(int); setShowDetail(true); }}
                   className="p-1.5 text-purple-500 hover:bg-purple-50 rounded-lg transition-colors" title="View Details">
                   <Eye className="w-4 h-4" />
@@ -363,13 +369,13 @@ const StudentInterviews = () => {
                   <span className="text-sm font-semibold capitalize">{selectedInterview.status}</span>
                 </div>
 
-                {selectedInterview.status === 'scheduled' && selectedInterview.interviewType === 'Online' && (
+                {canJoinInterview(selectedInterview) && (
                   <button
                     onClick={() => handleJoinInterview(selectedInterview)}
                     disabled={joining}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-60"
                   >
-                    <Video className="w-4 h-4" /> {joining ? 'Opening room…' : 'Join Interview'}
+                    <Video className="w-4 h-4" /> {joining ? 'Opening room…' : interviewJoinState(selectedInterview).label}
                   </button>
                 )}
 

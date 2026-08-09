@@ -6,9 +6,10 @@ import {
   Users, Search, XCircle, CheckCircle, FileText, Calendar,
   Download, ExternalLink, Globe, Award, GraduationCap, Briefcase,
   ChevronDown, ChevronUp, Filter, X, Loader2, Clock, MapPin, Mail,
-  Phone, Building2, AlertTriangle, Send, User, Upload, Sparkles
+  Phone, Building2, AlertTriangle, Send, User, Upload, Video
 } from 'lucide-react';
 import { MeetingTypeSelector } from '../MeetingTypeSelector';
+import { joinInterviewMeeting, openMeeting, meetingPlatformLabel, interviewJoinState } from '../../../meeting/lib/sessionJoin';
 
 const Github = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -50,6 +51,13 @@ const STATUS_DOTS = {
   interview: 'bg-purple-500', rejected: 'bg-red-500', accepted: 'bg-emerald-500'
 };
 
+const IV_STATUS_BADGES = {
+  scheduled: 'bg-blue-50 text-blue-600',
+  rescheduled: 'bg-amber-50 text-amber-600',
+  completed: 'bg-emerald-50 text-emerald-600',
+  cancelled: 'bg-red-50 text-red-500'
+};
+
 const INTERVIEW_TYPES = [
   { value: 'Online', subtypes: ['Google Meet', 'Zoom', 'Microsoft Teams'] },
   { value: 'Offline', subtypes: ['In-Person', 'Phone'] }
@@ -76,6 +84,7 @@ const Applicants = () => {
   const [selectedApp, setSelectedApp] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [joiningDrive, setJoiningDrive] = useState(false);
 
   // Modals
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -216,14 +225,27 @@ const Applicants = () => {
       }, { headers: { Authorization: `Bearer ${token}` } });
       showToast('Interview scheduled successfully!');
       setShowInterviewModal(false);
-      setInterviewTarget(null);
-      setSelectedApp(null);
-      setProfileData(null);
       fetchApplicants();
+      if (interviewTarget) openProfile(interviewTarget);
     } catch (err) { showToast('Failed to schedule interview', 'error'); }
   };
 
   const hasActiveFilters = search || statusFilter !== 'all' || opportunityFilter || departmentFilter || gradYearFilter || cgpaFilter || skillsFilter || dateFrom || dateTo;
+
+  const handleJoinInterview = async (interview) => {
+    setJoiningDrive(true);
+    try {
+      const data = await joinInterviewMeeting(interview._id);
+      openMeeting(data);
+      if (data?.meetingType === 'external' && data.externalUrl) {
+        showToast('Opening external meeting link…');
+      }
+    } catch (err) {
+      showToast(err?.response?.data?.message || 'Failed to open interview room', 'error');
+    } finally {
+      setJoiningDrive(false);
+    }
+  };
 
   return (
     <div className="max-w-6xl space-y-8">
@@ -751,6 +773,43 @@ const Applicants = () => {
                     </div>
                   </div>
 
+                  {/* Scheduled Interviews */}
+                  {profileData.interviews && profileData.interviews.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-3">
+                        <Calendar className="w-4 h-4 text-blue-600" /> Scheduled Interviews
+                      </h3>
+                      <div className="space-y-3">
+                        {profileData.interviews.map((iv) => {
+                          const joinState = interviewJoinState(iv);
+                          return (
+                            <div key={iv._id} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                              <div className="flex items-center justify-between gap-2 mb-2">
+                                <p className="text-sm font-semibold text-gray-800 truncate">{iv.title || iv.opportunity?.title || 'Interview'}</p>
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${IV_STATUS_BADGES[iv.status] || 'bg-gray-100 text-gray-600'}`}>
+                                  {iv.status.charAt(0).toUpperCase() + iv.status.slice(1)}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                                <p className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-gray-400" /> {new Date(iv.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                <p className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-gray-400" /> {iv.time || '—'} ({iv.duration ?? 30} min)</p>
+                              </div>
+                              <div className="mt-2 text-xs text-gray-500">
+                                {iv.interviewType === 'Online' ? meetingPlatformLabel(iv) : (iv.interviewLocation || 'In-Person')}
+                              </div>
+                              {joinState.joinable && (
+                                <button onClick={() => handleJoinInterview(iv)} disabled={joiningDrive}
+                                  className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all disabled:opacity-60">
+                                  <Video className="w-3.5 h-3.5" /> {joiningDrive ? 'Opening room…' : joinState.label}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Action Buttons */}
                   <div className="sticky bottom-0 bg-white border-t border-gray-100 pt-4 pb-2 -mx-6 px-6">
                     <div className="flex flex-wrap gap-2">
@@ -885,28 +944,7 @@ const Applicants = () => {
                       accent="blue"
                     />
                     <AnimatePresence initial={false}>
-                      {interviewForm.meetingType === 'frontx' ? (
-                        <motion.div
-                          key="frontx-info"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3, ease: 'easeInOut' }}
-                          className="overflow-hidden"
-                        >
-                          <div className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
-                            <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                              <Sparkles className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-blue-700">FrontX Live Interview</p>
-                              <p className="text-xs text-gray-600 mt-0.5">
-                                A secure FrontX video room will be created automatically. The student can join instantly from the app — no external link needed.
-                              </p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ) : (
+                      {interviewForm.meetingType === 'frontx' ? null : (
                         <motion.div
                           key="external-fields"
                           initial={{ height: 0, opacity: 0 }}

@@ -614,7 +614,15 @@ const getApplicantById = async (req, res) => {
 
     if (!application) return res.status(404).json({ message: 'Application not found' });
 
-    res.json(application);
+    const interviewFilter = [{ application: application._id }];
+    if (application.student) {
+      interviewFilter.push({ recruiter: req.user.id, student: application.student });
+    }
+    const interviews = await Interview.find({ $or: interviewFilter })
+      .sort({ date: 1, time: 1 })
+      .lean();
+
+    res.json({ ...application, interviews });
   } catch (error) {
     console.error('Get applicant by id error:', error);
     if (error.kind === 'ObjectId') {
