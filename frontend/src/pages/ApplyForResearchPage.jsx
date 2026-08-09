@@ -1,7 +1,7 @@
 import { API_BASE } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, Send, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Upload, Send, FileText, CheckCircle, AlertTriangle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
@@ -14,6 +14,7 @@ const ApplyForResearchPage = () => {
   const [success, setSuccess] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const [closed, setClosed] = useState(false);
 
   const [formData, setFormData] = useState({
     motivation: '',
@@ -109,7 +110,11 @@ const ApplyForResearchPage = () => {
         }, 3000);
       } else {
         const data = await res.json();
-        toast.error(data.message || 'Failed to apply.');
+        if (data.code === 'APPLICATION_CLOSED') {
+          setClosed(true);
+        } else {
+          toast.error(data.message || 'Failed to apply.');
+        }
       }
     } catch (err) {
       console.error(err);
@@ -120,6 +125,30 @@ const ApplyForResearchPage = () => {
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full"></div></div>;
+
+  const isExpired = (topic?.deadline && new Date(topic.deadline) < new Date()) || closed;
+
+  if (isExpired) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
+        <div className="bg-white p-10 rounded-3xl shadow-xl text-center max-w-lg w-full">
+          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <X className="w-12 h-12 text-red-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Applications Closed</h2>
+          <p className="text-gray-600 mb-8 leading-relaxed">
+            Applications are closed. The deadline for this collaboration has passed.
+          </p>
+          <Link
+            to={`/dashboard/collaboration/${id}`}
+            className="inline-block px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
+          >
+            Back to Details
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (hasApplied) {
     return (

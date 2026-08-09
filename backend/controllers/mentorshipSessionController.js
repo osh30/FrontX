@@ -4,7 +4,7 @@ const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
 const User = require('../models/User');
 const meetingService = require('../meetings/services/meetingService');
-const { computeScheduleWindow } = require('../meetings/lib/meetingTime');
+const { computeScheduleWindow, deriveSessionStatus } = require('../meetings/lib/meetingTime');
 
 // @desc    Create a new mentorship group session
 // @route   POST /api/mentorship-sessions
@@ -162,53 +162,48 @@ const getMentorshipSessions = async (req, res) => {
       .populate('attendance.studentId', 'name profilePicture')
       .sort({ sessionDate: 1, sessionTime: 1 });
 
-    // Check for auto-complete
+    // Derive real statuses from the schedule window (sessionDate + sessionTime + sessionDuration).
+    // A session whose window has passed moves to Past Sessions immediately; never remains Upcoming.
     const now = new Date();
     let updated = false;
     const io = req.app.get('io');
 
     for (const session of sessions) {
-      if (session.status === 'Upcoming') {
-        const sessionDateTime = new Date(session.sessionDate);
-        const [hours, minutes] = session.sessionTime.split(':');
-        let hour = parseInt(hours);
-        sessionDateTime.setHours(hour, parseInt(minutes), 0, 0);
-        sessionDateTime.setMinutes(sessionDateTime.getMinutes() + session.sessionDuration);
+      const derived = deriveSessionStatus(session, now);
+      if (!derived || derived === session.status) continue;
 
-        if (now > sessionDateTime) {
-          session.status = 'Completed';
-          await session.save();
+      const wasEnded = derived === 'Completed' || derived === 'Past Session';
+      session.status = derived;
+      await session.save();
 
-          // Notify each student
-          for (const studentId of session.selectedStudents) {
-            await Notification.create({
-              user: studentId,
-              title: 'Session Completed',
-              message: `The session "${session.sessionTitle}" has ended. Check back for outcomes and feedback.`,
-              type: 'mentor',
-              relatedId: session._id
-            });
-            if (io) {
-              io.to(studentId.toString()).emit('new_notification');
-            }
-          }
-
-          // Emit general update
+      if (derived === 'Completed') {
+        // Notify each student
+        for (const studentId of session.selectedStudents) {
+          await Notification.create({
+            user: studentId,
+            title: 'Session Completed',
+            message: `The session "${session.sessionTitle}" has ended. Check back for outcomes and feedback.`,
+            type: 'mentor',
+            relatedId: session._id
+          });
           if (io) {
-            io.emit('session_updated');
+            io.to(studentId.toString()).emit('new_notification');
           }
+        }
 
-          const { recalculateProgress } = require('../utils/progressCalculator');
-          for (const studentId of session.selectedStudents) {
-            await recalculateProgress(studentId);
-            if (io) {
-              io.emit('progress_updated', { userId: studentId });
-            }
+        const { recalculateProgress } = require('../utils/progressCalculator');
+        for (const studentId of session.selectedStudents) {
+          await recalculateProgress(studentId);
+          if (io) {
+            io.emit('progress_updated', { userId: studentId });
           }
-
-          updated = true;
         }
       }
+
+      if (wasEnded && io) {
+        io.emit('session_updated');
+      }
+      updated = true;
     }
 
     if (updated) {
@@ -238,6 +233,12 @@ const getMentorshipSessionById = async (req, res) => {
 
     if (!session) {
       return res.status(404).json({ message: 'Session not found' });
+    }
+
+    const derived = deriveSessionStatus(session, new Date());
+    if (derived && derived !== session.status) {
+      session.status = derived;
+      await session.save();
     }
 
     res.json(session);

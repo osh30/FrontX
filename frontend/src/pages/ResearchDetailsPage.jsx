@@ -150,6 +150,8 @@ const ResearchDetailsPage = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full"></div></div>;
   if (!post) return <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Research topic not found.</div>;
 
+  const isExpired = post.deadline && new Date(post.deadline) < new Date();
+
   const responsibilityOptions = ['Literature Review', 'Data Collection', 'Data Analysis', 'Report Writing', 'Research Writing', 'Development', 'Testing', 'UI/UX Design', 'Presentation'];
   const outcomeOptions = ['Conference Paper', 'Research Publication', 'Journal Publication', 'Portfolio Project', 'Certificate', 'Recommendation Letter'];
   const benefitOptions = ['Hands-on Research Experience', 'Publication Opportunity', 'Mentorship', 'Portfolio Development', 'Networking', 'Recommendation Letter', 'Research Training'];
@@ -183,7 +185,16 @@ const ResearchDetailsPage = () => {
                     </button>
                   </>
                 )}
-                {!isOwner && post.alumni && (
+                {!isOwner && isExpired && (
+                  <button
+                    disabled
+                    title="Applications are closed. The deadline for this collaboration has passed."
+                    className="px-6 py-2.5 bg-gray-100 text-gray-400 rounded-xl text-sm font-bold cursor-not-allowed flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" /> Applications Closed
+                  </button>
+                )}
+                {!isOwner && post.alumni && !isExpired && (
                   <button onClick={() => navigate(`/dashboard/collaboration/${post._id}/apply`)} className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all">
                     Apply Now
                   </button>
@@ -333,13 +344,29 @@ const ResearchDetailsPage = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Calendar className="w-5 h-5" /></div>
-                  <div><p className="text-xs text-gray-500 font-semibold">Deadline</p><p className="font-bold text-gray-900">{formatDate(post.deadline)}</p></div>
+                  <div>
+                    <p className="text-xs text-gray-500 font-semibold">Deadline</p>
+                    <p className="font-bold text-gray-900 flex items-center gap-2">
+                      {formatDate(post.deadline)}
+                      {isExpired && <span className="text-xs font-semibold text-red-600 bg-red-50 ring-1 ring-red-200 rounded-full px-2 py-0.5 flex items-center gap-0.5"><X className="w-3 h-3" /> Closed</span>}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><GraduationCap className="w-5 h-5" /></div>
                   <div><p className="text-xs text-gray-500 font-semibold">Experience Level</p><p className="font-bold text-gray-900">{post.experienceLevel}</p></div>
                 </div>
               </div>
+
+              {isExpired && (
+                <div className="mb-8 flex items-start gap-3 bg-red-50 border border-red-200 text-red-600 rounded-2xl px-5 py-4">
+                  <X className="w-5 h-5 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold">Applications are closed.</p>
+                    <p className="text-sm">The deadline for this collaboration has passed.</p>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-8">
                 <section>
@@ -433,10 +460,20 @@ const ResearchDetailsPage = () => {
                         </div>
                       )}
                     </div>
-                    {!isOwner && (
-                      <button onClick={() => navigate(`/dashboard/collaboration/${post._id}/apply`)} className="shrink-0 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2">
-                        <Send className="w-4 h-4" /> Apply Now
+                    {!isOwner && isExpired ? (
+                      <button
+                        disabled
+                        title="Applications are closed. The deadline for this collaboration has passed."
+                        className="shrink-0 px-6 py-3 bg-gray-200 text-gray-500 rounded-xl font-bold cursor-not-allowed flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" /> Applications Closed
                       </button>
+                    ) : (
+                      !isOwner && (
+                        <button onClick={() => navigate(`/dashboard/collaboration/${post._id}/apply`)} className="shrink-0 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                          <Send className="w-4 h-4" /> Apply Now
+                        </button>
+                      )
                     )}
                   </div>
                 </div>

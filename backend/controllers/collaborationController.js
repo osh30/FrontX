@@ -6,6 +6,10 @@ const Activity = require('../models/Activity');
 const Deadline = require('../models/Deadline');
 const Notification = require('../models/Notification');
 
+// @desc    Check whether a collaboration post's application deadline has passed
+const isDeadlinePassed = (post) =>
+  !!post && !!post.deadline && new Date(post.deadline) < new Date();
+
 // @desc    Create a new collaboration post
 // @route   POST /api/collaboration
 // @access  Private (Alumni only)
@@ -100,7 +104,7 @@ const getPosts = async (req, res) => {
     // Optionally calculate applicant count for each post
     const postsWithCount = await Promise.all(posts.map(async (post) => {
       const count = await CollaborationApplication.countDocuments({ post: post._id });
-      return { ...post.toObject(), applicantCount: count };
+      return { ...post.toObject(), applicantCount: count, isExpired: isDeadlinePassed(post) };
     }));
 
     res.json(postsWithCount);
@@ -119,7 +123,7 @@ const getAlumniPosts = async (req, res) => {
 
     const postsWithCount = await Promise.all(posts.map(async (post) => {
       const count = await CollaborationApplication.countDocuments({ post: post._id });
-      return { ...post.toObject(), applicantCount: count };
+      return { ...post.toObject(), applicantCount: count, isExpired: isDeadlinePassed(post) };
     }));
 
     res.json(postsWithCount);
@@ -142,7 +146,7 @@ const getPostById = async (req, res) => {
 
     const applicantCount = await CollaborationApplication.countDocuments({ post: post._id, status: 'pending' });
 
-    res.json({ ...post.toObject(), applicantCount });
+    res.json({ ...post.toObject(), applicantCount, isExpired: isDeadlinePassed(post) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -245,6 +249,15 @@ const applyForPost = async (req, res) => {
     const post = await CollaborationPost.findById(postId);
     if (!post || post.status !== 'active') {
       return res.status(404).json({ message: 'Post not found or closed.' });
+    }
+
+    // Enforce the real collaboration deadline from MongoDB.
+    // Never trust the client to check the date — block expired posts here.
+    if (isDeadlinePassed(post)) {
+      return res.status(400).json({
+        message: 'Applications are closed. The deadline for this collaboration has passed.',
+        code: 'APPLICATION_CLOSED'
+      });
     }
 
     // Check if already applied

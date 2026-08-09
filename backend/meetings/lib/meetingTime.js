@@ -107,6 +107,26 @@ const finalStatusFor = (kind, hasStarted) => {
   return hasStarted ? 'Completed' : 'Past Session';
 };
 
+// Derive the effective status for a scheduled session (one-on-one Session or group
+// MentorshipSession) from its real schedule window (scheduleStart/scheduleEnd or
+// date+time+duration) compared against `now`.
+//   - upcoming  (now < start)      -> keep 'Scheduled'/'Upcoming'
+//   - active    (start <= now < end) -> 'Ongoing'
+//   - ended     (now >= end)       -> 'Completed' if anyone attended, else 'Past Session'
+// Explicit final statuses (Completed / Cancelled / Past Session) are preserved.
+const deriveSessionStatus = (source, now = new Date()) => {
+  if (!source) return null;
+  const current = source.status;
+  if (!current || current === 'Completed' || current === 'Cancelled' || current === 'Past Session') {
+    return current || 'Scheduled';
+  }
+  const phase = getMeetingPhase(effectiveWindow(source), now).phase;
+  if (phase === 'active') return 'Ongoing';
+  if (phase === 'ended') return hasParticipated(source) ? 'Completed' : 'Past Session';
+  if (phase === 'upcoming') return (current === 'Upcoming' || current === 'Scheduled') ? current : 'Scheduled';
+  return current;
+};
+
 module.exports = {
   MINUTE_MS,
   EXPIRED_MSG,
@@ -121,4 +141,5 @@ module.exports = {
   hasParticipated,
   assertJoinableWindow,
   finalStatusFor,
+  deriveSessionStatus,
 };

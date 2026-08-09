@@ -2,7 +2,7 @@ import { API_BASE } from '../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Microscope, Clock, Users, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Microscope, Clock, Users, ChevronRight, X } from 'lucide-react';
 import Avatar from '../component/dashboard/Avatar';
 
 const CollaborationTopicsPage = () => {
@@ -87,8 +87,15 @@ const CollaborationTopicsPage = () => {
                 
                 <div className="flex-1 flex flex-col">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="inline-block px-3 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg border border-purple-100 uppercase tracking-wide">
-                      {topic.type || 'Research'}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="inline-block px-3 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg border border-purple-100 uppercase tracking-wide">
+                        {topic.type || 'Research'}
+                      </div>
+                      {topic.deadline && new Date(topic.deadline) < new Date() && (
+                        <div className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-lg border border-red-200 uppercase tracking-wide">
+                          <X className="w-3 h-3" /> Closed
+                        </div>
+                      )}
                     </div>
                     {topic.createdAt && (
                       <span className="text-[10px] text-gray-500 font-medium">

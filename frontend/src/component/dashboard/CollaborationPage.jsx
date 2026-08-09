@@ -2,7 +2,7 @@ import { API_BASE, SOCKET_URL } from '../../config/api';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Microscope, Search, Clock, Users, Calendar, Tag, GraduationCap, BookOpen, ChevronRight, MapPin } from 'lucide-react';
+import { Microscope, Search, Clock, Users, Calendar, Tag, GraduationCap, BookOpen, ChevronRight, MapPin, X } from 'lucide-react';
 import { io } from 'socket.io-client';
 
 const fadeInUp = {
@@ -152,7 +152,9 @@ export const CollaborationPage = ({ onViewProfile }) => {
           </div>
         ) : (
           <div className="space-y-6">
-            {filteredPosts.map(post => (
+            {filteredPosts.map(post => {
+              const postExpired = post.deadline && new Date(post.deadline) < new Date();
+              return (
               <motion.div
                 key={post._id}
                 variants={fadeInUp}
@@ -209,9 +211,14 @@ export const CollaborationPage = ({ onViewProfile }) => {
                       </span>
                     )}
                     {post.deadline && (
-                      <span className="flex items-center gap-1.5 font-medium">
+                      <span className={`flex items-center gap-1.5 font-medium ${postExpired ? 'text-red-500' : ''}`}>
                         <Calendar className="w-4 h-4 text-red-500" />
                         <span>Deadline: <strong className="text-gray-900">{formatDate(post.deadline)}</strong></span>
+                        {postExpired && (
+                          <span className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 rounded-lg text-xs font-bold uppercase">
+                            <X className="w-3 h-3" /> Closed
+                          </span>
+                        )}
                       </span>
                     )}
                     {post.duration && (
@@ -237,7 +244,8 @@ export const CollaborationPage = ({ onViewProfile }) => {
                   </button>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
       </motion.div>

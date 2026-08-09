@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Video, Users, GraduationCap, ExternalLink } from 'lucide-react';
 import { io } from 'socket.io-client';
-import { joinSessionMeeting, joinMentorshipMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { joinSessionMeeting, joinMentorshipMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState, meetingPhase } from '../../meeting/lib/sessionJoin';
 import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 const normalizeSession = (s, type) => {
@@ -103,6 +103,80 @@ const SessionsPage = () => {
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
+  const renderSessionCard = (session, idx, isLive) => (
+    <motion.div
+      key={session._id}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.05 }}
+      whileHover={{ y: -2 }}
+      id={highlightId === session._id ? 'highlighted-session' : undefined}
+      className={`bg-white/60 backdrop-blur-md rounded-2xl border shadow-sm hover:shadow-lg transition-all overflow-hidden cursor-pointer ${
+        highlightId === session._id ? 'border-purple-400 ring-2 ring-purple-200' : isLive ? 'border-emerald-300 ring-2 ring-emerald-100' : 'border-white/50'
+      }`}
+      onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
+    >
+      <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${isLive ? 'from-emerald-100 to-teal-100 text-emerald-600' : 'from-purple-100 to-blue-100 text-purple-600'} flex items-center justify-center shadow-sm font-bold flex-col shrink-0`}>
+          <span className="text-[10px] uppercase">{new Date(session.date || session.sessionDate).toLocaleString('default', { month: 'short' })}</span>
+          <span className="text-lg leading-none">{new Date(session.date || session.sessionDate).getDate()}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h4 className="font-bold text-gray-900 truncate">{session.title}</h4>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">{session.type}</span>
+            {session._sessionType === 'group' && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center gap-1">
+                <Users className="w-3 h-3" /> Group
+              </span>
+            )}
+            {isLive && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center gap-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                Live Now
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+            <span className="flex items-center gap-1">
+              <GraduationCap className="w-3.5 h-3.5" /> {session.alumni?.name || session.alumniId?.name || 'Mentor'}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" /> {session.time || session.sessionTime}
+            </span>
+            {session.meetingType || session.platform || session.meetingPlatform ? (
+              <span className="flex items-center gap-1">
+                <Video className="w-3.5 h-3.5" /> {meetingPlatformLabel(session)}
+              </span>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex gap-2 w-full sm:w-auto shrink-0" onClick={e => e.stopPropagation()}>
+          <button
+            onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
+            className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors shadow-sm"
+          >
+            View Details
+          </button>
+          {(session.meetingType === 'frontx' || session.meetingLink) && (
+            <button
+              onClick={() => handleJoin(session)}
+              disabled={joiningId === session._id || (session.meetingType === 'frontx' && !canJoinSession(session, meetingNow))}
+              className={`px-6 py-2 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-60 ${
+                isLive ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg' : 'bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg'
+              }`}
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> {joiningId === session._id ? 'Opening…' : (session.meetingType === 'frontx' ? (sessionJoinState(session, meetingNow).label || 'Join') : 'Open')}
+            </button>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center p-12">
@@ -111,8 +185,22 @@ const SessionsPage = () => {
     );
   }
 
-  const upcoming = sessions.filter(s => s.status === 'Scheduled' || s.status === 'Upcoming' || s.status === 'Ongoing' || s.status === 'Active');
-  const past = sessions.filter(s => s.status === 'Completed' || s.status === 'Cancelled' || s.status === 'Past Session');
+  const finalStatus = ['Completed', 'Cancelled', 'Past Session'];
+
+  // Classify sessions by their real schedule window (scheduleStart/scheduleEnd from DB,
+  // or date + start time + duration) compared against the ticking `meetingNow` clock so
+  // sessions move between Upcoming / Live / Past automatically without a manual refresh.
+  const classify = (s) => {
+    if (finalStatus.includes(s.status)) return 'past';
+    const phase = meetingPhase(s, meetingNow).phase;
+    if (phase === 'ended') return 'past';
+    if (phase === 'active' || s.status === 'Ongoing' || s.status === 'Active') return 'live';
+    return 'upcoming';
+  };
+
+  const upcoming = sessions.filter(s => classify(s) === 'upcoming');
+  const liveNow = sessions.filter(s => classify(s) === 'live');
+  const past = sessions.filter(s => classify(s) === 'past');
 
   return (
     <div className="p-8 max-w-7xl mx-auto w-full">
@@ -146,74 +234,28 @@ const SessionsPage = () => {
         </div>
       ) : (
         <div className="space-y-10">
+          {liveNow.length > 0 && (
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                </span>
+                Live Now ({liveNow.length})
+              </h2>
+              <div className="space-y-4">
+                {liveNow.map((session, idx) => renderSessionCard(session, idx, true))}
+              </div>
+            </section>
+          )}
+
           {upcoming.length > 0 && (
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-purple-600" /> Upcoming Sessions ({upcoming.length})
               </h2>
               <div className="space-y-4">
-                {upcoming.map((session, idx) => (
-                  <motion.div
-                    key={session._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    whileHover={{ y: -2 }}
-                    id={highlightId === session._id ? 'highlighted-session' : undefined}
-                    className={`bg-white/60 backdrop-blur-md rounded-2xl border shadow-sm hover:shadow-lg transition-all overflow-hidden cursor-pointer ${
-                      highlightId === session._id ? 'border-purple-400 ring-2 ring-purple-200' : 'border-white/50'
-                    }`}
-                    onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
-                  >
-                    <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center text-purple-600 shadow-sm font-bold flex-col shrink-0">
-                        <span className="text-[10px] uppercase">{new Date(session.date || session.sessionDate).toLocaleString('default', { month: 'short' })}</span>
-                        <span className="text-lg leading-none">{new Date(session.date || session.sessionDate).getDate()}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h4 className="font-bold text-gray-900 truncate">{session.title}</h4>
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">{session.type}</span>
-                          {session._sessionType === 'group' && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center gap-1">
-                              <Users className="w-3 h-3" /> Group
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <GraduationCap className="w-3.5 h-3.5" /> {session.alumni?.name || session.alumniId?.name || 'Mentor'}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" /> {session.time || session.sessionTime}
-                          </span>
-                          {session.meetingType || session.platform || session.meetingPlatform ? (
-                            <span className="flex items-center gap-1">
-                              <Video className="w-3.5 h-3.5" /> {meetingPlatformLabel(session)}
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className="flex gap-2 w-full sm:w-auto shrink-0" onClick={e => e.stopPropagation()}>
-                        <button
-                          onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
-                          className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors shadow-sm"
-                        >
-                          View Details
-                        </button>
-                        {(session.meetingType === 'frontx' || session.meetingLink) && (
-                          <button
-                            onClick={() => handleJoin(session)}
-                            disabled={joiningId === session._id || (session.meetingType === 'frontx' && !canJoinSession(session, meetingNow))}
-                            className="px-6 py-2 rounded-xl text-sm font-medium transition-all shadow-sm bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg flex items-center gap-1.5 disabled:opacity-60"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" /> {joiningId === session._id ? 'Opening…' : (session.meetingType === 'frontx' ? (sessionJoinState(session, meetingNow).label || 'Join') : 'Open')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                {upcoming.map((session, idx) => renderSessionCard(session, idx, false))}
               </div>
             </section>
           )}

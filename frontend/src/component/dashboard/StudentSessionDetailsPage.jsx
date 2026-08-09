@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import Avatar from './Avatar';
-import { joinSessionMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { joinSessionMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState, meetingWindow } from '../../meeting/lib/sessionJoin';
 import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 const statusConfig = {
@@ -176,19 +176,23 @@ const StudentSessionDetailsPage = () => {
   const status = session?.status || '';
 
   const sessionStart = useMemo(() => {
+    const win = meetingWindow(session);
+    if (win && win.start) return new Date(win.start);
     if (!sesDate || !sesTime) return null;
     const d = new Date(sesDate);
     const [h, m] = sesTime.split(':').map(Number);
     d.setHours(h || 0, m || 0, 0, 0);
     return d;
-  }, [sesDate, sesTime]);
+  }, [sesDate, sesTime, session]);
 
   const sessionEnd = useMemo(() => {
     if (!sessionStart) return null;
+    const win = meetingWindow(session);
+    if (win && win.end) return new Date(win.end);
     const end = new Date(sessionStart);
     end.setMinutes(end.getMinutes() + sesDuration);
     return end;
-  }, [sessionStart, sesDuration]);
+  }, [sessionStart, sesDuration, session]);
 
   const countdown = useMemo(() => {
     if (!sessionStart) return null;

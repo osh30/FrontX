@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase, Search, MapPin, Clock, Calendar, Building2,
   ChevronDown, X, Loader2, CheckCircle, ExternalLink,
-  Sparkles, Wifi, Home, Map, Tag
+  Wifi, Home, Map, Tag
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -32,35 +32,6 @@ const fadeUp = {
     transition: { delay: i * 0.04, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
   }),
 };
-
-const HeroParticles = () => (
-  <div className="absolute inset-0 pointer-events-none overflow-hidden">
-    {[
-      { left: '10%', top: '20%', size: 3, delay: 0, dur: 8 },
-      { left: '80%', top: '25%', size: 2, delay: 1.2, dur: 9 },
-      { left: '25%', top: '70%', size: 2.5, delay: 0.6, dur: 7 },
-      { left: '70%', top: '75%', size: 2, delay: 2, dur: 8.5 },
-      { left: '50%', top: '10%', size: 1.5, delay: 2.5, dur: 10 },
-      { left: '15%', top: '50%', size: 2, delay: 0.8, dur: 7.5 },
-      { left: '88%', top: '55%', size: 1.8, delay: 1.8, dur: 9 },
-      { left: '40%', top: '85%', size: 2.2, delay: 3, dur: 6.5 },
-      { left: '60%', top: '30%', size: 1.5, delay: 1.5, dur: 9.5 },
-      { left: '35%', top: '58%', size: 2, delay: 3.2, dur: 7 },
-    ].map((p, i) => (
-      <div
-        key={i}
-        className="absolute rounded-full bg-white/[0.25]"
-        style={{
-          left: p.left,
-          top: p.top,
-          width: p.size,
-          height: p.size,
-          animation: `particleFloat ${p.dur}s ease-in-out ${p.delay}s infinite`,
-        }}
-      />
-    ))}
-  </div>
-);
 
 const CompanyLogo = ({ name, size = 48 }) => {
   const initial = (name || 'A').charAt(0).toUpperCase();
@@ -309,28 +280,10 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
               background: 'linear-gradient(170deg, #0B1120 0%, #0F1B2D 25%, #111D33 50%, #0D1625 75%, #0A0F1E 100%)',
             }}
           >
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: 'linear-gradient(210deg, transparent 25%, rgba(59,130,246,0.25) 45%, rgba(139,92,246,0.35) 50%, rgba(59,130,246,0.25) 55%, transparent 75%)',
-                  backgroundSize: '300% 100%',
-                  animation: 'shimmerSweep 12s ease-in-out infinite 2s',
-                }}
-              />
-            </div>
-            <HeroParticles />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
 
             <div className="relative z-10 px-8 sm:px-10 py-10 sm:py-12 flex flex-col sm:flex-row items-center gap-8">
               <div className="flex-1 space-y-4">
-                <div className="flex items-center gap-2.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
-                  </span>
-                  <span className="text-[11px] font-semibold text-emerald-400">Live</span>
-                </div>
                 <h1 className="text-[32px] sm:text-[40px] font-[800] text-white tracking-[-0.03em] leading-[1.1]">
                   Career<br />Opportunities
                 </h1>

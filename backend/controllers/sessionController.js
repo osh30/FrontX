@@ -4,7 +4,7 @@ const Deadline = require('../models/Deadline');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 const meetingService = require('../meetings/services/meetingService');
-const { computeScheduleWindow } = require('../meetings/lib/meetingTime');
+const { computeScheduleWindow, deriveSessionStatus } = require('../meetings/lib/meetingTime');
 
 // @desc    Create a new session
 // @route   POST /api/sessions
@@ -150,6 +150,23 @@ const getSessions = async (req, res) => {
       .populate('student', 'name profilePicture department')
       .sort({ date: 1, time: 1 });
 
+    // Derive the real status from the schedule window (date + start time + duration)
+    // so sessions whose time has passed can never be reported as Upcoming.
+    const io = req.app.get('io');
+    const now = new Date();
+    let changed = false;
+    for (const session of sessions) {
+      const derived = deriveSessionStatus(session, now);
+      if (derived && derived !== session.status) {
+        session.status = derived;
+        await session.save();
+        changed = true;
+      }
+    }
+    if (changed && io) {
+      io.emit('session_updated');
+    }
+
     res.json(sessions);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -167,6 +184,12 @@ const getSessionById = async (req, res) => {
 
     if (!session) {
       return res.status(404).json({ message: 'Session not found' });
+    }
+
+    const derived = deriveSessionStatus(session, new Date());
+    if (derived && derived !== session.status) {
+      session.status = derived;
+      await session.save();
     }
 
     res.json(session);

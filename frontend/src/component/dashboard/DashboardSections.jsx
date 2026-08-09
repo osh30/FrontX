@@ -604,9 +604,6 @@ export const AISkillAnalysis = () => {
     <div className="mb-8 p-8 bg-white/40 backdrop-blur-xl rounded-3xl border border-white/50 shadow-lg">
       <div className="flex justify-between items-start mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl shadow-md text-white">
-            <Brain className="w-6 h-6" />
-          </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-900">AI Skill Analysis</h2>
             {analysis && (
