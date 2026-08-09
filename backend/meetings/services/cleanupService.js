@@ -4,19 +4,92 @@ const MeetingNotification = require('../../models/MeetingNotification');
 const { deleteRoom } = require('../livekit/roomService');
 const { stopRoomRecording } = require('../livekit/egressService');
 const { getRoomState, deleteRoomState, sweepInactiveRooms } = require('../socket/meetingNamespace');
+const { effectiveWindow, getMeetingPhase } = require('../lib/meetingTime');
 
 const GRACE_SECONDS = 5 * 60;
 const STALE_ROOM_IDLE_MS = 15 * 60 * 1000;
+
+// Finalize the linked scheduled source (one-on-one Session, MentorshipSession, or Interview)
+// based on whether anyone actually joined during its window.
+const finalizeLinkedSource = async (meeting) => {
+  if (!meeting.linkedId) return;
+
+  const wasJoined = hasParticipated(meeting);
+  const isInterview = meeting.meetingType === 'interview';
+
+  if (isInterview) {
+    const Interview = require('../../models/Interview');
+    const interview = await Interview.findById(meeting.linkedId);
+    if (!interview) return;
+    if (interview.status === 'completed' || interview.status === 'cancelled' || interview.status === 'canceled') return;
+    interview.status = wasJoined ? 'completed' : 'canceled';
+    await interview.save();
+    return;
+  }
+
+  // meetingType 'session' covers one-on-one Session and group MentorshipSession.
+  const Session = require('../../models/Session');
+  const MentorshipSession = require('../../models/MentorshipSession');
+  const session =
+    (await Session.findById(meeting.linkedId)) ||
+    (await MentorshipSession.findById(meeting.linkedId));
+  if (!session) return;
+  if (session.status === 'Completed' || session.status === 'Cancelled' || session.status === 'Past Session') return;
+  session.status = wasJoined ? 'Completed' : 'Past Session';
+  await session.save();
+};
 
 const runCleanup = async () => {
   const now = Date.now();
 
   const activeMeetings = await Meeting.find({ status: { $in: ['active', 'scheduled'] } }).lean();
   for (const meeting of activeMeetings) {
+    // Time-bound scheduled meetings (sessions/interviews) use their schedule window.
+    if (meeting.meetingType === 'session' || meeting.meetingType === 'interview') {
+      const window = effectiveWindow(meeting);
+      const phase = getMeetingPhase(window, new Date(now));
+      if (phase.phase === 'ended') {
+        const isInterview = meeting.meetingType === 'interview';
+        const finalStatus = isInterview ? (meeting.hasStarted ? 'ended' : 'canceled') : (meeting.hasStarted ? 'ended' : 'expired');
+
+        if (meeting.recording && meeting.recording.egressId) {
+          try {
+            await stopRoomRecording({ egressId: meeting.recording.egressId });
+          } catch (err) {
+            console.warn(`[meetings] cleanup: stop egress failed for ${meeting.roomId}: ${err.message}`);
+          }
+        }
+
+        // Keep the LiveKit room alive; only block new tokens by closing the meeting record.
+        await Meeting.updateOne(
+          { _id: meeting._id },
+          {
+            $set: {
+              status: finalStatus,
+              endTime: new Date(now),
+              'recording.isRecording': false,
+            },
+          },
+        );
+
+        await finalizeLinkedSource(meeting);
+
+        await Participant.updateMany(
+          { meetingId: meeting._id, status: 'joined' },
+          { $set: { status: 'left', leftAt: new Date(now) } },
+        );
+
+        deleteRoomState(meeting.roomId);
+        console.log(`[meetings] Cleanup: finalized ${meeting.roomId} (${meeting.title})`);
+      }
+      continue;
+    }
+
+    // Generic meetings keep the previous grace-based behavior.
     const startTimeMs = meeting.startTime ? new Date(meeting.startTime).getTime() : null;
     const createdAtMs = new Date(meeting.createdAt || Date.now()).getTime();
     const started = startTimeMs ? Math.max(startTimeMs, createdAtMs) : createdAtMs;
-    
+
     const plannedMs = (Number(meeting.duration) || 60) * 60 * 1000;
     const overdue = now - started > plannedMs + GRACE_SECONDS * 1000;
 

@@ -3,11 +3,13 @@ import { X, Calendar, Clock, Video, Link as LinkIcon, Target, FileText, CheckCir
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Avatar from './Avatar';
-import { joinSessionMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
+import { joinSessionMeeting, openMeeting, meetingPlatformLabel, canJoinSession, canJoinInTimeWindow, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 export const SessionDetailsModal = ({ isOpen, onClose, session }) => {
   const navigate = useNavigate();
   const [joining, setJoining] = useState(false);
+  const meetingNow = useMeetingClock();
 
   const handleJoin = async () => {
     setJoining(true);
@@ -105,14 +107,14 @@ export const SessionDetailsModal = ({ isOpen, onClose, session }) => {
               </div>
             )}
 
-            {session.status === 'Scheduled' && (
+            {(session.status === 'Scheduled' || session.status === 'Upcoming' || session.status === 'Ongoing' || session.status === 'Active') && (
               <div className="pt-4 border-t border-gray-100">
                 <button
                   onClick={handleJoin}
-                  disabled={joining}
+                  disabled={joining || (session.meetingType === 'frontx' && !canJoinSession(session, meetingNow))}
                   className="w-full flex items-center justify-center gap-2 py-3 bg-gray-900 text-white rounded-xl text-sm font-semibold hover:bg-purple-600 transition-colors shadow-md disabled:opacity-60"
                 >
-                  <LinkIcon className="w-4 h-4" /> {joining ? 'Opening…' : 'Join Meeting'}
+                  <LinkIcon className="w-4 h-4" /> {joining ? 'Opening…' : (session.meetingType === 'frontx' ? (sessionJoinState(session, meetingNow).label || 'Join Meeting') : 'Open')}
                 </button>
               </div>
             )}

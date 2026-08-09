@@ -19,29 +19,18 @@ const generateRoomId = () => `fm-${crypto.randomBytes(4).toString('hex')}`;
 const createError = (message, statusCode = 400) =>
   Object.assign(new Error(message), { statusCode });
 
-const isSessionExpired = (dateStr, timeStr, durationMinutes) => {
-  if (!dateStr || !timeStr) return false;
-  const duration = durationMinutes || 30;
-  
-  const dateObj = new Date(dateStr);
-  const timeMatch = String(timeStr).match(/(\d+):(\d+)\s*(AM|PM)?/i);
-  if (!timeMatch) return false;
-  
-  let hours = parseInt(timeMatch[1], 10);
-  const mins = parseInt(timeMatch[2], 10);
-  const ampm = timeMatch[3];
-  
-  if (ampm) {
-    if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
-    if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
-  }
-  
-  dateObj.setHours(hours, mins, 0, 0);
-  const endTime = new Date(dateObj.getTime() + duration * 60000);
-  return new Date() > endTime;
-};
+const {
+  getScheduleInfo,
+  effectiveWindow,
+  getMeetingPhase,
+  assertJoinableWindow,
+  hasParticipated,
+  finalStatusFor,
+  EXPIRED_MSG,
+  NOT_STARTED_MSG,
+} = require('../lib/meetingTime');
 
-const CLOSED_MEETING_STATUSES = ['ended', 'cancelled', 'expired'];
+const CLOSED_MEETING_STATUSES = ['ended', 'cancelled', 'canceled', 'expired'];
 
 const removeClosedMeeting = async (meetingId) => {
   await Promise.all([
@@ -102,6 +91,8 @@ const createMeeting = async ({ user, body, skipNotifications = false }) => {
     meetingType = 'general',
     duration = 60,
     startTime,
+    scheduleStart,
+    scheduleEnd,
     participants = [],
     settings = {},
     linkedId,
@@ -123,6 +114,8 @@ const createMeeting = async ({ user, body, skipNotifications = false }) => {
     startTime: startTime ? new Date(startTime) : new Date(),
     endTime: null,
     status: 'scheduled',
+    scheduleStart: scheduleStart || null,
+    scheduleEnd: scheduleEnd || null,
     linkedId: linkedId || null,
   });
 
@@ -174,6 +167,8 @@ const createFrontxMeeting = async ({
   meetingType = 'general',
   duration = 60,
   startTime,
+  scheduleStart,
+  scheduleEnd,
   participantIds = [],
   linkedId,
 }) => {
@@ -184,6 +179,8 @@ const createFrontxMeeting = async ({
       meetingType,
       duration,
       startTime: startTime ? new Date(startTime) : new Date(),
+      scheduleStart: scheduleStart || null,
+      scheduleEnd: scheduleEnd || null,
       participants: participantIds,
       linkedId,
     },
@@ -402,15 +399,16 @@ const getOrCreateSessionMeeting = async ({ user, sessionId }) => {
     throw createError('You are not part of this session', 403);
   }
 
-  if (isSessionExpired(session.date, session.time, session.duration)) {
-    throw createError('This session has already ended', 403);
-  }
-
   if (session.meetingType === 'external') {
     if (!session.meetingLink) {
       throw createError('This session does not have an external meeting link', 400);
     }
     return { meetingType: 'external', platform: session.platform, externalUrl: session.meetingLink };
+  }
+
+  const window = effectiveWindow(session);
+  if (window && window.start) {
+    assertJoinableWindow(window);
   }
 
   let meeting = await Meeting.findOne({ meetingType: 'session', linkedId: session._id });
@@ -426,11 +424,17 @@ const getOrCreateSessionMeeting = async ({ user, sessionId }) => {
         meetingType: 'session',
         duration: session.duration || 60,
         startTime: session.date,
+        scheduleStart: window && window.start,
+        scheduleEnd: window && window.end,
         participants: [session.alumni, session.student],
         linkedId: session._id,
       },
     });
     session.roomId = meeting.roomId;
+    if (window && window.start && !session.scheduleStart) {
+      session.scheduleStart = window.start;
+      session.scheduleEnd = window.end;
+    }
     await session.save();
   }
 
@@ -448,15 +452,16 @@ const getOrCreateMentorshipMeeting = async ({ user, sessionId }) => {
     throw createError('You are not part of this session', 403);
   }
 
-  if (isSessionExpired(session.sessionDate, session.sessionTime, session.sessionDuration)) {
-    throw createError('This session has already ended', 409);
-  }
-
   if (session.meetingType === 'external') {
     if (!session.meetingLink) {
       throw createError('This session does not have an external meeting link', 400);
     }
     return { meetingType: 'external', platform: session.meetingPlatform, externalUrl: session.meetingLink };
+  }
+
+  const window = effectiveWindow(session);
+  if (window && window.start) {
+    assertJoinableWindow(window);
   }
 
   let meeting = await Meeting.findOne({ meetingType: 'session', linkedId: session._id });
@@ -472,11 +477,17 @@ const getOrCreateMentorshipMeeting = async ({ user, sessionId }) => {
         meetingType: 'session',
         duration: session.sessionDuration || 60,
         startTime: session.sessionDate,
+        scheduleStart: window && window.start,
+        scheduleEnd: window && window.end,
         participants: [session.alumniId, ...(session.selectedStudents || [])],
         linkedId: session._id,
       },
     });
     session.roomId = meeting.roomId;
+    if (window && window.start && !session.scheduleStart) {
+      session.scheduleStart = window.start;
+      session.scheduleEnd = window.end;
+    }
     await session.save();
   }
 
@@ -494,7 +505,7 @@ const getOrCreateInterviewMeeting = async ({ user, interviewId }) => {
     throw createError('You are not part of this interview', 403);
   }
 
-  if (interview.status === 'cancelled') {
+  if (interview.status === 'cancelled' || interview.status === 'canceled') {
     throw createError('This interview has been cancelled', 403);
   }
   if (interview.status === 'completed') {
@@ -506,6 +517,11 @@ const getOrCreateInterviewMeeting = async ({ user, interviewId }) => {
       throw createError('This interview does not have an external meeting link', 400);
     }
     return { meetingType: 'external', platform: interview.platform, externalUrl: interview.meetingLink };
+  }
+
+  const window = effectiveWindow(interview);
+  if (window && window.start) {
+    assertJoinableWindow(window);
   }
 
   let meeting = await Meeting.findOne({ meetingType: 'interview', linkedId: interview._id });
@@ -521,11 +537,17 @@ const getOrCreateInterviewMeeting = async ({ user, interviewId }) => {
         meetingType: 'interview',
         duration: interview.duration || 30,
         startTime: interview.date,
+        scheduleStart: window && window.start,
+        scheduleEnd: window && window.end,
         participants: [interview.recruiter, interview.student],
         linkedId: interview._id,
       },
     });
     interview.roomId = meeting.roomId;
+    if (window && window.start && !interview.scheduleStart) {
+      interview.scheduleStart = window.start;
+      interview.scheduleEnd = window.end;
+    }
     await interview.save();
   }
 

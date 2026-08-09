@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { MeetingTypeSelector } from '../MeetingTypeSelector';
 import { joinInterviewMeeting, openMeeting, meetingPlatformLabel, interviewJoinState } from '../../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../../meeting/hooks/useMeetingClock';
 
 const Github = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -85,6 +86,7 @@ const Applicants = () => {
   const [profileData, setProfileData] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [joiningDrive, setJoiningDrive] = useState(false);
+  const meetingNow = useMeetingClock();
 
   // Modals
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -781,7 +783,7 @@ const Applicants = () => {
                       </h3>
                       <div className="space-y-3">
                         {profileData.interviews.map((iv) => {
-                          const joinState = interviewJoinState(iv);
+                          const joinState = interviewJoinState(iv, meetingNow);
                           return (
                             <div key={iv._id} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                               <div className="flex items-center justify-between gap-2 mb-2">

@@ -14,7 +14,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Avatar from './Avatar';
-import { joinSessionMeeting, joinMentorshipMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
+import { joinSessionMeeting, joinMentorshipMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 // SECTION 1 — WELCOME SECTION
 export const WelcomeSection = ({ userName = "Nure" }) => {
@@ -150,6 +151,9 @@ const normalizeSession = (s, type) => {
       date: s.sessionDate,
       time: s.sessionTime,
       duration: s.sessionDuration,
+      scheduleStart: s.scheduleStart,
+      scheduleEnd: s.scheduleEnd,
+      hasStarted: s.hasStarted,
       status: s.status,
       description: s.sessionDescription,
       _sessionType: 'group'
@@ -196,29 +200,7 @@ export const UpcomingSessions = () => {
     }
   };
 
-  const isSessionEnded = (session) => {
-    const dateStr = session.date || session.sessionDate;
-    const timeStr = session.time || session.sessionTime;
-    const duration = session.duration || session.sessionDuration || 30;
-    if (!dateStr || !timeStr) return false;
-    
-    const dateObj = new Date(dateStr);
-    const timeMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-    if (!timeMatch) return false;
-    
-    let hours = parseInt(timeMatch[1], 10);
-    const mins = parseInt(timeMatch[2], 10);
-    const ampm = timeMatch[3];
-    
-    if (ampm) {
-      if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
-      if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
-    }
-    
-    dateObj.setHours(hours, mins, 0, 0);
-    const endTime = new Date(dateObj.getTime() + duration * 60000);
-    return new Date() > endTime;
-  };
+  const meetingNow = useMeetingClock();
 
   const fetchSessions = async () => {
     try {
@@ -244,7 +226,7 @@ export const UpcomingSessions = () => {
         all = all.concat(data.map(s => normalizeSession(s, 'group')));
       }
 
-      const upcoming = all.filter(s => s.status === 'Upcoming');
+      const upcoming = all.filter(s => s.status === 'Upcoming' || s.status === 'Scheduled' || s.status === 'Ongoing' || s.status === 'Active');
       upcoming.sort((a, b) => getSessionStartTime(a) - getSessionStartTime(b));
       setSessions(upcoming.slice(0, 1));
     } catch (error) {
@@ -315,10 +297,10 @@ export const UpcomingSessions = () => {
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleJoin(sessions[0]); }}
-                disabled={joiningId === sessions[0]._id || isSessionEnded(sessions[0])}
+                disabled={joiningId === sessions[0]._id || (sessions[0].meetingType === 'frontx' && !canJoinSession(sessions[0], meetingNow))}
                 className="px-6 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg text-center disabled:opacity-60 disabled:from-gray-400 disabled:to-gray-500"
               >
-                {isSessionEnded(sessions[0]) ? 'Session Ended' : (joiningId === sessions[0]._id ? 'Opening...' : 'Join Session')}
+                {sessions[0].meetingType === 'frontx' ? (sessionJoinState(sessions[0], meetingNow).label || 'Join Session') : 'Open'}{joiningId === sessions[0]._id && '…'}
               </button>
             </div>
           </motion.div>

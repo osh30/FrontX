@@ -4,6 +4,7 @@ const Deadline = require('../models/Deadline');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 const meetingService = require('../meetings/services/meetingService');
+const { computeScheduleWindow } = require('../meetings/lib/meetingTime');
 
 // @desc    Create a new session
 // @route   POST /api/sessions
@@ -50,6 +51,12 @@ const createSession = async (req, res) => {
       status: 'Scheduled'
     });
 
+    const schedule = computeScheduleWindow({ date, time, duration });
+    if (schedule && schedule.start) {
+      session.scheduleStart = schedule.start;
+      session.scheduleEnd = schedule.end;
+    }
+
     await session.save();
 
     if (effectiveMeetingType === 'frontx') {
@@ -61,7 +68,9 @@ const createSession = async (req, res) => {
           title,
           meetingType: 'session',
           duration: duration || 60,
-          startTime: date,
+          startTime: schedule ? schedule.start : date,
+          scheduleStart: session.scheduleStart,
+          scheduleEnd: session.scheduleEnd,
           participantIds: [req.user.id, studentId],
           linkedId: session._id
         });

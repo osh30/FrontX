@@ -7,6 +7,7 @@ import {
   Clock, FileText, Bell, Building2, Video
 } from 'lucide-react';
 import { joinInterviewMeeting, openMeeting, canJoinInterview } from '../../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../../meeting/hooks/useMeetingClock';
 
 const API_URL = API_BASE;
 
@@ -38,6 +39,7 @@ const RecruiterHome = ({ user }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const meetingNow = useMeetingClock();
 
   const handleJoinInterview = async (int) => {
     setJoining(true);
@@ -236,7 +238,7 @@ const RecruiterHome = ({ user }) => {
                     <p className="text-xs text-gray-500">{int.student?.name || 'Student'} &middot; {new Date(int.date).toLocaleDateString()}</p>
                   </div>
                   <span className="text-xs text-gray-500 font-medium shrink-0">{int.time}</span>
-                  {canJoinInterview(int) && (
+                  {canJoinInterview(int, meetingNow) && (
                     <button onClick={() => handleJoinInterview(int)} disabled={joining}
                       className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transition-all disabled:opacity-60 shrink-0">
                       <Video className="w-3 h-3" /> {joining ? 'Opening…' : 'Join'}

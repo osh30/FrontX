@@ -9,6 +9,7 @@ import {
   Building2, User, Link as LinkIcon, Star
 } from 'lucide-react';
 import { joinInterviewMeeting, openMeeting, meetingPlatformLabel, interviewJoinState, canJoinInterview } from '../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 const API_URL = API_BASE;
 
@@ -27,6 +28,7 @@ const StudentInterviews = () => {
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
   const [joining, setJoining] = useState(false);
+  const meetingNow = useMeetingClock();
   const navigate = useNavigate();
 
   const handleJoinInterview = async (interview) => {
@@ -308,7 +310,7 @@ const StudentInterviews = () => {
               </span>
 
               <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
-                {canJoinInterview(int) && (
+                {canJoinInterview(int, meetingNow) && (
                   <button onClick={() => handleJoinInterview(int)} disabled={joining}
                     className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 transition-all disabled:opacity-60">
                     <Video className="w-3 h-3" /> {joining ? 'Opening…' : 'Join'}
@@ -369,13 +371,13 @@ const StudentInterviews = () => {
                   <span className="text-sm font-semibold capitalize">{selectedInterview.status}</span>
                 </div>
 
-                {canJoinInterview(selectedInterview) && (
+                {canJoinInterview(selectedInterview, meetingNow) && (
                   <button
                     onClick={() => handleJoinInterview(selectedInterview)}
                     disabled={joining}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-60"
                   >
-                    <Video className="w-4 h-4" /> {joining ? 'Opening room…' : interviewJoinState(selectedInterview).label}
+                    <Video className="w-4 h-4" /> {joining ? 'Opening room…' : interviewJoinState(selectedInterview, meetingNow).label}
                   </button>
                 )}
 

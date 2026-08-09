@@ -80,8 +80,24 @@ const interviewSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['scheduled', 'completed', 'cancelled', 'rescheduled'],
+    enum: ['scheduled', 'active', 'completed', 'cancelled', 'canceled', 'rescheduled'],
     default: 'scheduled'
+  },
+  scheduleStart: {
+    type: Date,
+    default: null
+  },
+  scheduleEnd: {
+    type: Date,
+    default: null
+  },
+  hasStarted: {
+    type: Boolean,
+    default: false
+  },
+  firstJoinedAt: {
+    type: Date,
+    default: null
   },
   previousDate: Date,
   previousTime: String,

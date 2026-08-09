@@ -68,8 +68,24 @@ const mentorshipSessionSchema = new mongoose.Schema({
   }],
   status: {
     type: String,
-    enum: ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'],
+    enum: ['Upcoming', 'Ongoing', 'Active', 'Completed', 'Cancelled', 'Past Session'],
     default: 'Upcoming'
+  },
+  scheduleStart: {
+    type: Date,
+    default: null
+  },
+  scheduleEnd: {
+    type: Date,
+    default: null
+  },
+  hasStarted: {
+    type: Boolean,
+    default: false
+  },
+  firstJoinedAt: {
+    type: Date,
+    default: null
   },
   // Sub-documents / Array of objects for attendance
   attendance: [{

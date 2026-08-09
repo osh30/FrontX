@@ -18,7 +18,8 @@ import { AlumniAnalyticsPage } from './AlumniAnalyticsPage';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import Avatar from './Avatar';
-import { joinMentorshipMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
+import { joinMentorshipMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 // Common Animations
 const fadeInUp = {
@@ -331,29 +332,7 @@ export const MentorshipSessions = ({ isPreview, onViewAll }) => {
     }
   };
 
-  const isSessionEnded = (session) => {
-    const dateStr = session.date || session.sessionDate;
-    const timeStr = session.time || session.sessionTime;
-    const duration = session.duration || session.sessionDuration || 30;
-    if (!dateStr || !timeStr) return false;
-    
-    const dateObj = new Date(dateStr);
-    const timeMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-    if (!timeMatch) return false;
-    
-    let hours = parseInt(timeMatch[1], 10);
-    const mins = parseInt(timeMatch[2], 10);
-    const ampm = timeMatch[3];
-    
-    if (ampm) {
-      if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
-      if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
-    }
-    
-    dateObj.setHours(hours, mins, 0, 0);
-    const endTime = new Date(dateObj.getTime() + duration * 60000);
-    return new Date() > endTime;
-  };
+  const meetingNow = useMeetingClock();
 
   const fetchSessions = async () => {
     try {
@@ -381,7 +360,9 @@ export const MentorshipSessions = ({ isPreview, onViewAll }) => {
 
   const displaySessions = isPreview 
     ? sessions.filter(s => s.status === 'Upcoming').slice(0, 3) 
-    : sessions.filter(s => s.status === (tab === 'upcoming' ? 'Upcoming' : 'Completed'));
+    : sessions.filter(s => (tab === 'upcoming'
+        ? (s.status === 'Upcoming' || s.status === 'Ongoing' || s.status === 'Active')
+        : s.status === 'Completed' || s.status === 'Past Session'));
 
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-6">
@@ -460,10 +441,10 @@ export const MentorshipSessions = ({ isPreview, onViewAll }) => {
                 <button onClick={() => setSelectedSession(session)} className="px-3 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center justify-center">
                   <Eye className="w-4 h-4" />
                 </button>
-                {session.status === 'Upcoming' && (
+                {(session.status === 'Upcoming' || session.status === 'Ongoing' || session.status === 'Active') && (
                   <>
-                    <button onClick={() => handleJoin(session)} disabled={joiningSession === session._id || isSessionEnded(session)} className="flex-1 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:bg-gray-100 disabled:text-gray-500">
-                      <Video className="w-4 h-4" /> {isSessionEnded(session) ? 'Ended' : (joiningSession === session._id ? 'Opening...' : 'Join')}
+                    <button onClick={() => handleJoin(session)} disabled={joiningSession === session._id || (session.meetingType === 'frontx' && !canJoinSession(session, meetingNow))} className="flex-1 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:bg-gray-100 disabled:text-gray-500">
+                      <Video className="w-4 h-4" /> {session.meetingType === 'frontx' ? (sessionJoinState(session, meetingNow).label || 'Join') : 'Open'}{joiningSession === session._id && '…'}
                     </button>
                   </>
                 )}

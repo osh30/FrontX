@@ -1,6 +1,7 @@
 const Meeting = require('../../models/Meeting');
+const { effectiveWindow, getMeetingPhase, EXPIRED_MSG } = require('../lib/meetingTime');
 
-const CLOSED_STATUSES = ['ended', 'cancelled', 'expired'];
+const CLOSED_STATUSES = ['ended', 'cancelled', 'canceled', 'expired'];
 
 const validateParticipant = async ({ user, roomId }) => {
   if (!user || !user.id) {
@@ -25,6 +26,15 @@ const validateParticipant = async ({ user, roomId }) => {
 
   if (!isHost && !isInvited) {
     return { valid: false, message: 'You are not a participant of this meeting', statusCode: 403 };
+  }
+
+  // Enforce the scheduled window only for time-bound session/interview meetings.
+  if (meeting.meetingType === 'session' || meeting.meetingType === 'interview') {
+    const window = effectiveWindow(meeting);
+    const phase = getMeetingPhase(window);
+    if (phase.phase === 'ended') {
+      return { valid: false, message: EXPIRED_MSG, statusCode: 403 };
+    }
   }
 
   return {

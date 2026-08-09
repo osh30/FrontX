@@ -8,6 +8,7 @@ const Notification = require('../models/Notification');
 const Deadline = require('../models/Deadline');
 const { upload, uploadToCloudinary, deleteFromCloudinary } = require('../middleware/uploadMiddleware');
 const meetingService = require('../meetings/services/meetingService');
+const { computeScheduleWindow } = require('../meetings/lib/meetingTime');
 
 // ─── Middleware: ensure only recruiters access these handlers ───
 const requireRecruiter = (req, res) => {
@@ -832,6 +833,8 @@ const scheduleInterview = async (req, res) => {
       notes: notes || ''
     });
 
+    const schedule = computeScheduleWindow({ date, time, duration });
+
     if (effectiveMeetingType === 'frontx') {
       try {
         const roomId = await meetingService.createFrontxMeeting({
@@ -841,11 +844,17 @@ const scheduleInterview = async (req, res) => {
           title,
           meetingType: 'interview',
           duration: duration || 30,
-          startTime: date,
+          startTime: schedule ? schedule.start : date,
+          scheduleStart: schedule ? schedule.start : null,
+          scheduleEnd: schedule ? schedule.end : null,
           participantIds: [req.user.id, studentId],
           linkedId: interview._id
         });
         interview.roomId = roomId;
+        if (schedule && schedule.start) {
+          interview.scheduleStart = schedule.start;
+          interview.scheduleEnd = schedule.end;
+        }
         await interview.save();
       } catch (err) {
         console.warn(`[recruiter] FrontX room creation deferred for interview ${interview._id}: ${err.message}`);
@@ -962,23 +971,52 @@ const rescheduleInterview = async (req, res) => {
 
     await interview.save();
 
-    if (interview.meetingType === 'frontx' && !interview.roomId) {
-      try {
-        const roomId = await meetingService.createFrontxMeeting({
-          hostId: req.user.id,
-          hostName: 'Recruiter',
-          hostRole: 'recruiter',
-          title: interview.title,
-          meetingType: 'interview',
-          duration: interview.duration || 30,
-          startTime: interview.date,
-          participantIds: [req.user.id, interview.student],
-          linkedId: interview._id
-        });
-        interview.roomId = roomId;
-        await interview.save();
-      } catch (err) {
-        console.warn(`[recruiter] FrontX room creation deferred for interview ${interview._id}: ${err.message}`);
+    const schedule = computeScheduleWindow({ date: interview.date, time: interview.time, duration: interview.duration });
+    if (schedule && schedule.start) {
+      interview.scheduleStart = schedule.start;
+      interview.scheduleEnd = schedule.end;
+      await interview.save();
+    }
+
+    if (interview.meetingType === 'frontx') {
+      const Meeting = require('../models/Meeting');
+      if (interview.roomId) {
+        await Meeting.updateOne(
+          { roomId: interview.roomId },
+          {
+            $set: {
+              startTime: schedule ? schedule.start : interview.date,
+              scheduleStart: schedule ? schedule.start : null,
+              scheduleEnd: schedule ? schedule.end : null,
+              duration: Number(interview.duration) || 30,
+              status: 'scheduled',
+            },
+          },
+        ).catch(() => {});
+      } else {
+        try {
+          const roomId = await meetingService.createFrontxMeeting({
+            hostId: req.user.id,
+            hostName: 'Recruiter',
+            hostRole: 'recruiter',
+            title: interview.title,
+            meetingType: 'interview',
+            duration: interview.duration || 30,
+            startTime: schedule ? schedule.start : interview.date,
+            scheduleStart: schedule ? schedule.start : null,
+            scheduleEnd: schedule ? schedule.end : null,
+            participantIds: [req.user.id, interview.student],
+            linkedId: interview._id
+          });
+          interview.roomId = roomId;
+          if (schedule && schedule.start) {
+            interview.scheduleStart = schedule.start;
+            interview.scheduleEnd = schedule.end;
+          }
+          await interview.save();
+        } catch (err) {
+          console.warn(`[recruiter] FrontX room creation deferred for interview ${interview._id}: ${err.message}`);
+        }
       }
     }
 

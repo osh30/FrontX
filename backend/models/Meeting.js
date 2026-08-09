@@ -14,11 +14,15 @@ const MeetingSchema = new mongoose.Schema(
     duration: { type: Number, default: 60 },
     startTime: { type: Date, required: true },
     endTime: { type: Date, default: null },
+    scheduleStart: { type: Date, default: null },
+    scheduleEnd: { type: Date, default: null },
     status: {
       type: String,
-      enum: ['scheduled', 'active', 'ended', 'cancelled', 'expired'],
+      enum: ['scheduled', 'active', 'ended', 'cancelled', 'canceled', 'expired'],
       default: 'scheduled',
     },
+    hasStarted: { type: Boolean, default: false },
+    firstJoinedAt: { type: Date, default: null },
     linkedId: { type: mongoose.Schema.Types.ObjectId, default: null },
     settings: { type: mongoose.Schema.Types.ObjectId, ref: 'MeetingSetting', default: null },
     recording: {

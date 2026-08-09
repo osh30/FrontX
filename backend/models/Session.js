@@ -59,8 +59,24 @@ const sessionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Scheduled', 'Upcoming', 'Ongoing', 'Completed', 'Cancelled'],
+    enum: ['Scheduled', 'Upcoming', 'Ongoing', 'Active', 'Completed', 'Cancelled', 'Past Session'],
     default: 'Scheduled'
+  },
+  scheduleStart: {
+    type: Date,
+    default: null
+  },
+  scheduleEnd: {
+    type: Date,
+    default: null
+  },
+  hasStarted: {
+    type: Boolean,
+    default: false
+  },
+  firstJoinedAt: {
+    type: Date,
+    default: null
   },
   // Feedback fields
   feedbackStrengths: {

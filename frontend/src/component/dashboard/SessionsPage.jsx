@@ -4,7 +4,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Video, Users, GraduationCap, ExternalLink } from 'lucide-react';
 import { io } from 'socket.io-client';
-import { joinSessionMeeting, joinMentorshipMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
+import { joinSessionMeeting, joinMentorshipMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 const normalizeSession = (s, type) => {
   if (type === 'group') {
@@ -20,6 +21,9 @@ const normalizeSession = (s, type) => {
       date: s.sessionDate,
       time: s.sessionTime,
       duration: s.sessionDuration,
+      scheduleStart: s.scheduleStart,
+      scheduleEnd: s.scheduleEnd,
+      hasStarted: s.hasStarted,
       status: s.status,
       description: s.sessionDescription,
       agenda: s.agenda,
@@ -38,6 +42,7 @@ const SessionsPage = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState(null);
+  const meetingNow = useMeetingClock();
 
   const handleJoin = async (session) => {
     setJoiningId(session._id);
@@ -106,8 +111,8 @@ const SessionsPage = () => {
     );
   }
 
-  const upcoming = sessions.filter(s => s.status === 'Scheduled' || s.status === 'Upcoming');
-  const past = sessions.filter(s => s.status === 'Completed' || s.status === 'Cancelled');
+  const upcoming = sessions.filter(s => s.status === 'Scheduled' || s.status === 'Upcoming' || s.status === 'Ongoing' || s.status === 'Active');
+  const past = sessions.filter(s => s.status === 'Completed' || s.status === 'Cancelled' || s.status === 'Past Session');
 
   return (
     <div className="p-8 max-w-7xl mx-auto w-full">
@@ -199,10 +204,10 @@ const SessionsPage = () => {
                         {(session.meetingType === 'frontx' || session.meetingLink) && (
                           <button
                             onClick={() => handleJoin(session)}
-                            disabled={joiningId === session._id}
+                            disabled={joiningId === session._id || (session.meetingType === 'frontx' && !canJoinSession(session, meetingNow))}
                             className="px-6 py-2 rounded-xl text-sm font-medium transition-all shadow-sm bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg flex items-center gap-1.5 disabled:opacity-60"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" /> {joiningId === session._id ? 'Opening…' : 'Join'}
+                            <ExternalLink className="w-3.5 h-3.5" /> {joiningId === session._id ? 'Opening…' : (session.meetingType === 'frontx' ? (sessionJoinState(session, meetingNow).label || 'Join') : 'Open')}
                           </button>
                         )}
                       </div>

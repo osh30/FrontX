@@ -4,6 +4,7 @@ const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
 const User = require('../models/User');
 const meetingService = require('../meetings/services/meetingService');
+const { computeScheduleWindow } = require('../meetings/lib/meetingTime');
 
 // @desc    Create a new mentorship group session
 // @route   POST /api/mentorship-sessions
@@ -59,6 +60,8 @@ const createMentorshipSession = async (req, res) => {
 
     await session.save();
 
+    const schedule = computeScheduleWindow({ date: sessionDate, time: sessionTime, duration: sessionDuration });
+
     if (effectiveMeetingType === 'frontx') {
       try {
         const roomId = await meetingService.createFrontxMeeting({
@@ -68,11 +71,17 @@ const createMentorshipSession = async (req, res) => {
           title: sessionTitle,
           meetingType: 'session',
           duration: sessionDuration || 60,
-          startTime: sessionDate,
+          startTime: schedule ? schedule.start : sessionDate,
+          scheduleStart: schedule ? schedule.start : null,
+          scheduleEnd: schedule ? schedule.end : null,
           participantIds: [req.user.id, ...(selectedStudents || [])],
           linkedId: session._id
         });
         session.roomId = roomId;
+        if (schedule && schedule.start) {
+          session.scheduleStart = schedule.start;
+          session.scheduleEnd = schedule.end;
+        }
         await session.save();
       } catch (err) {
         console.warn(`[mentorship-sessions] FrontX room creation deferred for ${session._id}: ${err.message}`);

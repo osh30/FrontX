@@ -11,14 +11,17 @@ import {
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import Avatar from './Avatar';
-import { joinSessionMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
+import { joinSessionMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 const statusConfig = {
   'Upcoming': { bg: 'bg-purple-100 text-purple-700 border-purple-200', icon: Clock },
   'Scheduled': { bg: 'bg-purple-100 text-purple-700 border-purple-200', icon: Clock },
   'Ongoing': { bg: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: Play },
+  'Active': { bg: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: Play },
   'Completed': { bg: 'bg-blue-100 text-blue-700 border-blue-200', icon: CheckCircle },
-  'Cancelled': { bg: 'bg-red-100 text-red-700 border-red-200', icon: X }
+  'Cancelled': { bg: 'bg-red-100 text-red-700 border-red-200', icon: X },
+  'Past Session': { bg: 'bg-gray-100 text-gray-700 border-gray-200', icon: Clock }
 };
 
 const StudentSessionDetailsPage = () => {
@@ -513,10 +516,10 @@ const StudentSessionDetailsPage = () => {
                 {(meetingType === 'frontx' || platform) && <div className="flex items-center gap-2 text-white/70"><Video className="w-4 h-4 text-emerald-300" /><span className="text-sm font-medium">{meetingPlatformLabel(session)}</span></div>}
               </div>
               <div className="flex flex-wrap gap-3 mt-6">
-                {(meetingType === 'frontx' || meetingLink) && (status === 'Upcoming' || status === 'Scheduled' || isLive || status === 'Ongoing') && (
-                  <button onClick={handleJoinMeeting} disabled={joiningMeeting}
-                    className={`inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-bold shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-60 ${isLive || status === 'Ongoing' ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-gradient-to-r from-purple-600 to-blue-500 text-white'}`}>
-                    <ExternalLink className="w-5 h-5" /> {joiningMeeting ? 'Opening…' : 'Join Meeting'}
+                {(meetingType === 'frontx' || meetingLink) && (status === 'Upcoming' || status === 'Scheduled' || status === 'Ongoing' || status === 'Active' || isLive) && (
+                  <button onClick={handleJoinMeeting} disabled={joiningMeeting || (meetingType === 'frontx' && !canJoinSession(session, now))}
+                    className={`inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm font-bold shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-60 ${isLive || status === 'Ongoing' || status === 'Active' ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-gradient-to-r from-purple-600 to-blue-500 text-white'}`}>
+                    <ExternalLink className="w-5 h-5" /> {joiningMeeting ? 'Opening…' : (meetingType === 'frontx' ? (sessionJoinState(session, now).label || 'Join Meeting') : 'Open')}
                   </button>
                 )}
                 {sessionStart && (status === 'Upcoming' || status === 'Scheduled') && (
@@ -979,11 +982,11 @@ const StudentSessionDetailsPage = () => {
             <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><Zap className="w-4 h-4 text-amber-600" /> Quick Actions</h3>
               <div className="space-y-3">
-                {(meetingType === 'frontx' || meetingLink) && (status === 'Upcoming' || status === 'Scheduled' || isLive || status === 'Ongoing') && (
-                  <button onClick={handleJoinMeeting} disabled={joiningMeeting}
-                    className={`flex items-center gap-3 w-full p-3.5 rounded-2xl text-sm font-bold transition-all shadow-sm hover:shadow-md disabled:opacity-60 ${isLive || status === 'Ongoing' ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}>
-                    <div className={`p-2 rounded-xl ${isLive || status === 'Ongoing' ? 'bg-emerald-200' : 'bg-purple-200'}`}><ExternalLink className="w-4 h-4" /></div>
-                    {joiningMeeting ? 'Opening…' : 'Join Meeting'}
+                {(meetingType === 'frontx' || meetingLink) && (status === 'Upcoming' || status === 'Scheduled' || status === 'Ongoing' || status === 'Active' || isLive) && (
+                  <button onClick={handleJoinMeeting} disabled={joiningMeeting || (meetingType === 'frontx' && !canJoinSession(session, now))}
+                    className={`flex items-center gap-3 w-full p-3.5 rounded-2xl text-sm font-bold transition-all shadow-sm hover:shadow-md disabled:opacity-60 ${isLive || status === 'Ongoing' || status === 'Active' ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'}`}>
+                    <div className={`p-2 rounded-xl ${isLive || status === 'Ongoing' || status === 'Active' ? 'bg-emerald-200' : 'bg-purple-200'}`}><ExternalLink className="w-4 h-4" /></div>
+                    {joiningMeeting ? 'Opening…' : (meetingType === 'frontx' ? (sessionJoinState(session, now).label || 'Join Meeting') : 'Open')}
                   </button>
                 )}
                 {sessionStart && (status === 'Upcoming' || status === 'Scheduled') && (

@@ -39,9 +39,40 @@ const persistJoin = async (roomCode, user, role) => {
     const Participant = require('../../models/Participant');
     const meeting = await Meeting.findOne({ roomId: roomCode });
     if (!meeting) return;
+    const now = new Date();
+
+    // Track the first actual LiveKit connection so lifecycle statuses can tell
+    // "attended" sessions/interviews apart from never-joined ones.
+    if (!meeting.hasStarted) {
+      await Meeting.updateOne(
+        { _id: meeting._id },
+        { $set: { hasStarted: true }, $setOnInsert: { firstJoinedAt: now } },
+      );
+      if (meeting.linkedId) {
+        let src = null;
+        if (meeting.meetingType === 'interview') {
+          src = await require('../../models/Interview').findOne({ _id: meeting.linkedId });
+        } else {
+          // meetingType 'session' is shared by one-on-one Session and group MentorshipSession.
+          src = (await require('../../models/Session').findOne({ _id: meeting.linkedId })) ||
+            (await require('../../models/MentorshipSession').findOne({ _id: meeting.linkedId }));
+        }
+        if (src && !src.hasStarted) {
+          src.hasStarted = true;
+          if (!src.firstJoinedAt) src.firstJoinedAt = now;
+          if (meeting.meetingType === 'session' && (src.status === 'Upcoming' || src.status === 'Scheduled')) {
+            src.status = 'Ongoing';
+          } else if (meeting.meetingType === 'interview' && src.status === 'scheduled') {
+            src.status = 'active';
+          }
+          await src.save();
+        }
+      }
+    }
+
     await Participant.findOneAndUpdate(
       { meetingId: meeting._id, userId: user.id },
-      { $set: { status: 'joined', joinedAt: new Date() }, $setOnInsert: { role: role || 'participant' } },
+      { $set: { status: 'joined', joinedAt: now }, $setOnInsert: { role: role || 'participant' } },
       { upsert: true, new: true },
     );
   } catch (err) {

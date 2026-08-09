@@ -5,7 +5,8 @@ import { X, Calendar, Clock, Video, Users, List, FileText, CheckCircle, Ban } fr
 import Avatar from './Avatar';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { joinMentorshipMeeting, openMeeting, meetingPlatformLabel } from '../../meeting/lib/sessionJoin';
+import { joinMentorshipMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState } from '../../meeting/lib/sessionJoin';
+import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
 
 export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, isAlumni, onRefresh }) => {
   if (!isOpen || !session) return null;
@@ -16,6 +17,7 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
   const [attendance, setAttendance] = useState(session.attendance || []);
   const [loading, setLoading] = useState(false);
   const [joining, setJoining] = useState(false);
+  const meetingNow = useMeetingClock();
 
   const handleJoin = async () => {
     setJoining(true);
@@ -285,13 +287,13 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
                   <Ban className="w-4 h-4" /> Cancel Session
                 </button>
               )}
-              {session.status === 'Upcoming' && (
+              {(session.status === 'Upcoming' || session.status === 'Ongoing' || session.status === 'Active') && (
                 <button
                   onClick={handleJoin}
-                  disabled={joining}
+                  disabled={joining || (session.meetingType !== 'external' && !canJoinSession(session, meetingNow))}
                   className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-60"
                 >
-                  <Video className="w-4 h-4" /> {joining ? 'Opening…' : 'Join Meeting'}
+                  <Video className="w-4 h-4" /> {joining ? 'Opening…' : (session.meetingType === 'external' ? 'Open' : (sessionJoinState(session, meetingNow).label || 'Join Meeting'))}
                 </button>
               )}
             </>
