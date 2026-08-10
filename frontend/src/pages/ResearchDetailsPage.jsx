@@ -150,7 +150,13 @@ const ResearchDetailsPage = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full"></div></div>;
   if (!post) return <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Research topic not found.</div>;
 
-  const isExpired = post.deadline && new Date(post.deadline) < new Date();
+  const checkIsExpired = (deadlineStr) => {
+    if (!deadlineStr) return false;
+    const d = new Date(deadlineStr);
+    d.setHours(23, 59, 59, 999);
+    return d.getTime() < new Date().getTime();
+  };
+  const isExpired = post.isExpired || checkIsExpired(post.deadline);
 
   const responsibilityOptions = ['Literature Review', 'Data Collection', 'Data Analysis', 'Report Writing', 'Research Writing', 'Development', 'Testing', 'UI/UX Design', 'Presentation'];
   const outcomeOptions = ['Conference Paper', 'Research Publication', 'Journal Publication', 'Portfolio Project', 'Certificate', 'Recommendation Letter'];

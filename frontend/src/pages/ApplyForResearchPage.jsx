@@ -126,7 +126,13 @@ const ApplyForResearchPage = () => {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full"></div></div>;
 
-  const isExpired = (topic?.deadline && new Date(topic.deadline) < new Date()) || closed;
+  const checkIsExpired = (deadlineStr) => {
+    if (!deadlineStr) return false;
+    const d = new Date(deadlineStr);
+    d.setHours(23, 59, 59, 999);
+    return d.getTime() < new Date().getTime();
+  };
+  const isExpired = topic?.isExpired || checkIsExpired(topic?.deadline) || closed;
 
   if (isExpired) {
     return (
