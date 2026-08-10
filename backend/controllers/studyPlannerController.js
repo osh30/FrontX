@@ -76,91 +76,61 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
     h.name.toLowerCase().includes('midterm') || h.name.toLowerCase().includes('mid-term') || h.name.toLowerCase().includes('mid term')
   );
 
-  // Only major non-class periods (exams, or breaks longer than 2 days) skip whole 7-day teaching weeks.
-  // Single-day holidays (e.g. May Day, Bengali New Year) occur within class weeks and do NOT skip the entire 7-day teaching week.
-  const majorNonClassPeriods = parsedHolidays.filter(h => {
-    const days = Math.round((h.endDate - h.startDate) / (1000 * 60 * 60 * 24)) + 1;
-    const isExam = h.type === 'exam' || h.name.toLowerCase().includes('exam') || h.name.toLowerCase().includes('midterm') || h.name.toLowerCase().includes('final');
-    const isMajorBreak = (h.type === 'break' || h.type === 'holiday') && days >= 3;
-    return isExam || isMajorBreak;
-  });
+  let preMidtermStart = new Date(start);
+  let postMidtermStart;
 
-  const hasExplicitMidterm = !!midtermObj;
-  let midtermAutoInserted = hasExplicitMidterm;
+  if (midtermObj) {
+    postMidtermStart = new Date(midtermObj.endDate);
+    postMidtermStart.setDate(postMidtermStart.getDate() + 1);
+    postMidtermStart.setHours(0, 0, 0, 0);
+  } else {
+    const defaultMid = new Date(start);
+    defaultMid.setDate(start.getDate() + 49); // 7 weeks pre-midterm
+    postMidtermStart = new Date(defaultMid);
+    postMidtermStart.setDate(defaultMid.getDate() + 14); // 2 weeks midterm break
+  }
 
   const teachingWeeks = [];
-  let curr = new Date(start);
 
-  while (teachingWeeks.length < targetWeeks) {
-    const wStart = new Date(curr);
-    wStart.setHours(0, 0, 0, 0);
-
+  // 1. Generate 7 Pre-Midterm Class Weeks (Weeks 1 to 7)
+  let currPre = new Date(preMidtermStart);
+  for (let i = 1; i <= 7; i++) {
+    const wStart = new Date(currPre);
     const wEnd = new Date(wStart);
     wEnd.setDate(wStart.getDate() + 6);
     wEnd.setHours(23, 59, 59, 999);
 
-    // If explicit Midterm Exam exists and we hit Midterm Exam or we completed 7 pre-midterm weeks
-    if (midtermObj && (wEnd >= midtermObj.startDate || teachingWeeks.length === 7) && curr < midtermObj.endDate) {
-      // Jump past Midterm Examination period
-      const postMidtermStart = new Date(midtermObj.endDate);
-      postMidtermStart.setDate(postMidtermStart.getDate() + 1);
-      postMidtermStart.setHours(0, 0, 0, 0);
-      curr = postMidtermStart;
-      continue;
-    }
+    teachingWeeks.push({
+      weekNumber: i,
+      startDate: wStart,
+      endDate: wEnd,
+      label: `Class Week ${i} (Pre-Midterm)`
+    });
 
-    // Auto-insert Midterm Exam week ONCE after 7 teaching weeks if not explicitly provided
-    if (!midtermAutoInserted && teachingWeeks.length === 7) {
-      midtermAutoInserted = true;
-      majorNonClassPeriods.push({
-        name: 'Midterm Exam Week',
-        startDate: new Date(wStart),
-        endDate: new Date(wEnd),
-        type: 'exam'
-      });
-      // Skip midterm exam week from class teaching weeks
-      curr.setDate(curr.getDate() + 7);
-      continue;
-    }
+    currPre.setDate(currPre.getDate() + 7);
+  }
 
-    // Check overlap with major non-class periods (exams & multi-day breaks)
-    const overlapping = majorNonClassPeriods.find(b => b.startDate <= wEnd && b.endDate >= wStart);
+  // 2. Generate 7 Post-Midterm / Pre-Final Class Weeks (Weeks 8 to 14)
+  let currPost = new Date(postMidtermStart);
+  for (let i = 8; i <= 14; i++) {
+    const wStart = new Date(currPost);
+    const wEnd = new Date(wStart);
+    wEnd.setDate(wStart.getDate() + 6);
+    wEnd.setHours(23, 59, 59, 999);
 
-    if (overlapping) {
-      // Skip this week as it overlaps with an exam or major break
-      const nextAvailable = new Date(overlapping.endDate);
-      nextAvailable.setDate(nextAvailable.getDate() + 1);
-      nextAvailable.setHours(0, 0, 0, 0);
+    teachingWeeks.push({
+      weekNumber: i,
+      startDate: wStart,
+      endDate: wEnd,
+      label: `Class Week ${i} (Post-Midterm/Pre-Final)`
+    });
 
-      const plusSeven = new Date(wStart);
-      plusSeven.setDate(plusSeven.getDate() + 7);
-
-      curr = nextAvailable > plusSeven ? nextAvailable : plusSeven;
-    } else {
-      // Valid class teaching week
-      const weekNum = teachingWeeks.length + 1;
-      const phaseLabel = weekNum <= 7
-        ? `Class Week ${weekNum} (Pre-Midterm)`
-        : `Class Week ${weekNum} (Post-Midterm/Pre-Final)`;
-
-      teachingWeeks.push({
-        weekNumber: weekNum,
-        startDate: wStart,
-        endDate: wEnd,
-        label: phaseLabel
-      });
-
-      curr.setDate(curr.getDate() + 7);
-    }
-
-    // Safety check to avoid infinite loops
-    if (curr > new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000)) {
-      break;
-    }
+    currPost.setDate(currPost.getDate() + 7);
   }
 
   return teachingWeeks;
 };
+
 
 
 
