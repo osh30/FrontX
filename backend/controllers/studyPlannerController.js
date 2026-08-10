@@ -59,23 +59,41 @@ const extractTextFromBuffer = async (buffer) => {
   return data.text;
 };
 
-// Calculate 14 teaching weeks excluding holidays and breaks
+// Calculate 14 teaching weeks excluding holidays, breaks, midterm exam week, and final exam week
 const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks = 14) => {
   const start = new Date(startDate);
   start.setHours(0, 0, 0, 0);
+
+  const semEnd = new Date(endDate);
+  semEnd.setHours(23, 59, 59, 999);
 
   const parsedHolidays = (holidays || []).map(h => {
     const s = new Date(h.startDate);
     s.setHours(0, 0, 0, 0);
     const e = new Date(h.endDate);
     e.setHours(23, 59, 59, 999);
-    return { name: h.name, startDate: s, endDate: e, type: h.type || 'holiday' };
+    return {
+      name: h.name,
+      startDate: s,
+      endDate: e,
+      type: h.type || (h.name.toLowerCase().includes('exam') ? 'exam' : 'holiday')
+    };
   });
+
+  // Check if an explicit Midterm Exam entry exists in holidays array
+  const hasExplicitMidterm = parsedHolidays.some(h =>
+    h.name.toLowerCase().includes('midterm') || h.name.toLowerCase().includes('mid-term') || h.name.toLowerCase().includes('mid term')
+  );
 
   const teachingWeeks = [];
   let curr = new Date(start);
 
   while (teachingWeeks.length < targetWeeks) {
+    // Hard ceiling: Do NOT schedule teaching weeks past the semester end date
+    if (curr >= semEnd) {
+      break;
+    }
+
     const wStart = new Date(curr);
     wStart.setHours(0, 0, 0, 0);
 
@@ -83,11 +101,24 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
     wEnd.setDate(wStart.getDate() + 6);
     wEnd.setHours(23, 59, 59, 999);
 
-    // Check overlap with holidays/breaks
+    // Auto-insert Midterm Exam week after 7 teaching weeks if not explicitly provided
+    if (!hasExplicitMidterm && teachingWeeks.length === 7) {
+      parsedHolidays.push({
+        name: 'Midterm Exam Week',
+        startDate: new Date(wStart),
+        endDate: new Date(wEnd),
+        type: 'exam'
+      });
+      // Skip midterm exam week from class teaching weeks
+      curr.setDate(curr.getDate() + 7);
+      continue;
+    }
+
+    // Check overlap with holidays/breaks/exams
     const overlappingHoliday = parsedHolidays.find(h => h.startDate <= wEnd && h.endDate >= wStart);
 
     if (overlappingHoliday) {
-      // Skip this week as it overlaps with a holiday/break
+      // Skip this week as it overlaps with a holiday, break, or exam week
       const nextAvailable = new Date(overlappingHoliday.endDate);
       nextAvailable.setDate(nextAvailable.getDate() + 1);
       nextAvailable.setHours(0, 0, 0, 0);
@@ -97,24 +128,29 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
 
       curr = nextAvailable > plusSeven ? nextAvailable : plusSeven;
     } else {
-      // Valid teaching week
+      // Valid class teaching week
+      const weekNum = teachingWeeks.length + 1;
+      const phaseLabel = weekNum <= 7 ? `Class Week ${weekNum} (Pre-Midterm)` : `Class Week ${weekNum} (Post-Midterm)`;
+
       teachingWeeks.push({
-        weekNumber: teachingWeeks.length + 1,
+        weekNumber: weekNum,
         startDate: wStart,
-        endDate: wEnd,
-        label: `Teaching Week ${teachingWeeks.length + 1}`
+        endDate: wEnd > semEnd ? semEnd : wEnd,
+        label: phaseLabel
       });
 
       curr.setDate(curr.getDate() + 7);
     }
 
-    if (teachingWeeks.length === 0 && curr > new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000)) {
+    // Safety check to avoid infinite loops
+    if (curr > new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000)) {
       break;
     }
   }
 
   return teachingWeeks;
 };
+
 
 // Calculate week date ranges from semester start date (fallback)
 const calculateWeekDates = (semesterStartDate, weeks) => {
@@ -757,15 +793,27 @@ Extract the following information and return ONLY a valid JSON object in this ex
   "endDate": "YYYY-MM-DD",
   "holidays": [
     {
-      "name": "<holiday or break name e.g. Eid-ul-Fitr / Midterm Break>",
+      "name": "<e.g. Midterm Examination Week / Final Examination Week / Eid-ul-Fitr / Puja / Mid-Semester Break>",
       "startDate": "YYYY-MM-DD",
       "endDate": "YYYY-MM-DD",
-      "type": "holiday"
+      "type": "exam" or "holiday" or "break"
+    }
+  ],
+  "teachingWeeks": [
+    {
+      "weekNumber": 1,
+      "startDate": "YYYY-MM-DD",
+      "endDate": "YYYY-MM-DD",
+      "label": "Class Week 1"
     }
   ]
 }
 
-Make sure date strings are in YYYY-MM-DD format. Return ONLY the JSON object, no explanation.`;
+CRITICAL RULES:
+1. Midterm Examination Week and Final Examination Week are NOT class teaching weeks. Extract Midterm Exam and Final Exam date ranges into the "holidays" array with type "exam".
+2. Also extract all holiday breaks (Eid, Puja, Mid-Semester Break, etc.) into the "holidays" array.
+3. If the calendar PDF explicitly lists the 14 actual class teaching week date ranges (excluding exam weeks), extract them into "teachingWeeks".
+4. Make sure date strings are in YYYY-MM-DD format. Return ONLY the JSON object, no explanation.`;
 
     const aiResult = await model.generateContent(`${prompt}\n\nCalendar PDF Text:\n"""\n${extractedText}\n"""`);
     let responseText = aiResult.response.text();
@@ -781,7 +829,9 @@ Make sure date strings are in YYYY-MM-DD format. Return ONLY the JSON object, no
       return res.status(400).json({ message: 'Failed to parse structure from calendar PDF. Please fill in details manually.' });
     }
 
-    const teachingWeeks = calculateTeachingWeeks(parsed.startDate, parsed.endDate, parsed.holidays || []);
+    const teachingWeeks = (parsed.teachingWeeks && parsed.teachingWeeks.length === 14)
+      ? parsed.teachingWeeks
+      : calculateTeachingWeeks(parsed.startDate, parsed.endDate, parsed.holidays || []);
 
     res.json({
       academicPeriod: parsed.academicPeriod || 'Spring 2026',
@@ -791,6 +841,7 @@ Make sure date strings are in YYYY-MM-DD format. Return ONLY the JSON object, no
       holidays: parsed.holidays || [],
       teachingWeeks
     });
+
   } catch (error) {
     console.error('Parse calendar PDF error:', error);
     res.status(500).json({ message: 'Failed to parse academic calendar PDF', error: error.message });

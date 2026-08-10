@@ -85,8 +85,8 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
     }
   };
 
-  const addHoliday = () => {
-    setHolidays([...holidays, { name: '', startDate: '', endDate: '', type: 'holiday' }]);
+  const addHoliday = (name = '', type = 'holiday') => {
+    setHolidays([...holidays, { name, startDate: '', endDate: '', type }]);
   };
 
   const updateHoliday = (idx, field, val) => {
@@ -98,6 +98,7 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
   const removeHoliday = (idx) => {
     setHolidays(holidays.filter((_, i) => i !== idx));
   };
+
 
   const handlePublish = async (e) => {
     e.preventDefault();
@@ -265,17 +266,26 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
                   </div>
                 </div>
 
-                {/* Holidays / Breaks Section */}
+                {/* Holidays / Breaks / Exams Section */}
                 <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Holidays & University Breaks ({holidays.length})</label>
-                      <p className="text-[11px] text-gray-500">Eid, Puja, mid-semester breaks, etc. (excluded from 14 teaching weeks)</p>
+                      <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Exams, Holidays & Breaks ({holidays.length})</label>
+                      <p className="text-[11px] text-gray-500">Midterm & Final Exam weeks, Eid, Puja, etc. (excluded from 14 teaching weeks)</p>
                     </div>
-                    <button type="button" onClick={addHoliday} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                      <Plus className="w-3.5 h-3.5" /> Add Holiday/Break
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button type="button" onClick={() => addHoliday('Midterm Examination Week', 'exam')} className="text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200 transition-colors flex items-center gap-1">
+                        <Plus className="w-3 h-3" /> Midterm Exam
+                      </button>
+                      <button type="button" onClick={() => addHoliday('Final Examination Week', 'exam')} className="text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-2.5 py-1 rounded-lg border border-purple-200 transition-colors flex items-center gap-1">
+                        <Plus className="w-3 h-3" /> Final Exam
+                      </button>
+                      <button type="button" onClick={() => addHoliday('', 'holiday')} className="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors flex items-center gap-1">
+                        <Plus className="w-3 h-3" /> Holiday/Break
+                      </button>
+                    </div>
                   </div>
+
 
                   {holidays.length === 0 ? (
                     <p className="text-xs text-gray-400 italic p-3 bg-gray-50 rounded-xl">No holidays added yet. Click above to add holiday breaks.</p>
@@ -413,32 +423,60 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
                           </div>
                         </div>
 
-                        {/* Holidays */}
+                        {/* Holidays & Exam Periods */}
                         {selectedCal.holidays && selectedCal.holidays.length > 0 && (
                           <div>
-                            <h5 className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Holidays & Breaks</h5>
+                            <h5 className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Exams, Holidays & Breaks</h5>
                             <div className="flex flex-wrap gap-2">
-                              {selectedCal.holidays.map((h, i) => (
-                                <span key={i} className="px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg text-xs font-medium text-amber-800">
-                                  {h.name} ({fmtDate(h.startDate)} - {fmtDate(h.endDate)})
-                                </span>
-                              ))}
+                              {selectedCal.holidays.map((h, i) => {
+                                const isExam = h.type === 'exam' || h.name.toLowerCase().includes('exam') || h.name.toLowerCase().includes('midterm');
+                                return (
+                                  <span
+                                    key={i}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${
+                                      isExam
+                                        ? 'bg-purple-50 border-purple-200 text-purple-800'
+                                        : 'bg-amber-50 border-amber-200 text-amber-800'
+                                    }`}
+                                  >
+                                    {isExam ? '📝 ' : '🌴 '}{h.name} ({fmtDate(h.startDate)} - {fmtDate(h.endDate)})
+                                  </span>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
 
                         {/* Teaching Weeks */}
                         <div>
-                          <h5 className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Calculated 14 Teaching Weeks</h5>
+                          <div className="flex items-center justify-between mb-2">
+                            <h5 className="text-xs font-bold text-gray-600 uppercase tracking-wide">Calculated 14 Class Teaching Weeks</h5>
+                            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                              7 Pre-Midterm + 7 Post-Midterm
+                            </span>
+                          </div>
                           <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
-                            {(selectedCal.teachingWeeks || []).map((w) => (
-                              <div key={w.weekNumber} className="bg-white p-2.5 rounded-xl border border-gray-100 flex items-center justify-between text-xs">
-                                <span className="font-bold text-gray-800">Week {w.weekNumber}</span>
-                                <span className="text-gray-500">{fmtDate(w.startDate)} — {fmtDate(w.endDate)}</span>
+                            {(selectedCal.teachingWeeks || []).map((w, idx) => (
+                              <div key={w.weekNumber || idx}>
+                                <div className="bg-white p-2.5 rounded-xl border border-gray-100 flex items-center justify-between text-xs hover:border-indigo-200 transition-colors">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md">Week {w.weekNumber}</span>
+                                    <span className="text-xs font-medium text-gray-600">
+                                      {w.label || (w.weekNumber <= 7 ? `Class Week ${w.weekNumber} (Pre-Midterm)` : `Class Week ${w.weekNumber} (Post-Midterm)`)}
+                                    </span>
+                                  </div>
+                                  <span className="text-gray-500 font-mono text-[11px]">{fmtDate(w.startDate)} — {fmtDate(w.endDate)}</span>
+                                </div>
+                                {w.weekNumber === 7 && (
+                                  <div className="my-1.5 p-2 bg-purple-50 border border-purple-200 rounded-xl text-center text-xs font-semibold text-purple-800 flex items-center justify-center gap-1.5">
+                                    <span>📝</span> Midterm Examination Period (Excludes regular classes)
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
                         </div>
+
                       </>
                     ) : (
                       <div className="p-8 text-center text-gray-400 text-xs">Select a calendar on the left to view details.</div>
