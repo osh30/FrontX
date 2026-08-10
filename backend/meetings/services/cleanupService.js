@@ -148,6 +148,64 @@ const runCleanup = async () => {
 
   sweepInactiveRooms(STALE_ROOM_IDLE_MS);
 
+  // Recovery sweep for Interviews and Sessions that got stuck or never had a meeting created
+  // (e.g. if the sweep crashed previously, or if it's an offline/external event that is past due).
+  try {
+    const Interview = require('../../models/Interview');
+    const Session = require('../../models/Session');
+    const MentorshipSession = require('../../models/MentorshipSession');
+
+    // Sweep stuck Interviews
+    const activeInterviews = await Interview.find({ status: { $in: ['scheduled', 'active'] } }).lean();
+    for (const interview of activeInterviews) {
+      const window = effectiveWindow(interview);
+      const phase = getMeetingPhase(window, new Date(now));
+      if (phase.phase === 'ended') {
+        // If it's ended, we check if there's an associated meeting to determine if it was joined.
+        const meeting = await Meeting.findOne({ meetingType: 'interview', linkedId: interview._id }).lean();
+        const wasJoined = interview.hasStarted || (meeting && meeting.hasStarted);
+        
+        // For Offline interviews, we shouldn't automatically mark as completed if they didn't have a digital track, 
+        // BUT if the user explicitly clicked "Join" (which sets hasStarted), or if they expect Offline to complete?
+        // The rule: "Only mark as completed if someone joined. If no one joined, keep the existing status (e.g. 'scheduled')"
+        if (wasJoined) {
+          await Interview.updateOne({ _id: interview._id }, { $set: { status: 'completed' } });
+          console.log(`[meetings] Recovery: Marked interview ${interview._id} as completed.`);
+        }
+      }
+    }
+
+    // Sweep stuck Sessions
+    const activeSessions = await Session.find({ status: { $in: ['Upcoming', 'Ongoing', 'Scheduled'] } }).lean();
+    for (const session of activeSessions) {
+      const window = effectiveWindow(session);
+      const phase = getMeetingPhase(window, new Date(now));
+      if (phase.phase === 'ended') {
+        const meeting = await Meeting.findOne({ meetingType: 'session', linkedId: session._id }).lean();
+        const wasJoined = session.hasStarted || (meeting && meeting.hasStarted);
+        const nextStatus = wasJoined ? 'Completed' : 'Past Session';
+        await Session.updateOne({ _id: session._id }, { $set: { status: nextStatus } });
+        console.log(`[meetings] Recovery: Marked session ${session._id} as ${nextStatus}.`);
+      }
+    }
+
+    // Sweep stuck MentorshipSessions
+    const activeMentorships = await MentorshipSession.find({ status: { $in: ['Upcoming', 'Ongoing', 'Scheduled'] } }).lean();
+    for (const session of activeMentorships) {
+      const window = effectiveWindow(session);
+      const phase = getMeetingPhase(window, new Date(now));
+      if (phase.phase === 'ended') {
+        const meeting = await Meeting.findOne({ meetingType: 'session', linkedId: session._id }).lean();
+        const wasJoined = session.hasStarted || (meeting && meeting.hasStarted);
+        const nextStatus = wasJoined ? 'Completed' : 'Past Session';
+        await MentorshipSession.updateOne({ _id: session._id }, { $set: { status: nextStatus } });
+        console.log(`[meetings] Recovery: Marked mentorship session ${session._id} as ${nextStatus}.`);
+      }
+    }
+  } catch (err) {
+    console.error(`[meetings] Recovery sweep failed: ${err.message}`);
+  }
+
   return { autoEnded: activeMeetings.length > 0 };
 };
 
