@@ -103,8 +103,6 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
   const handlePublish = async (e) => {
     e.preventDefault();
     if (!academicPeriod.trim()) return toast.error('Please enter an academic period (e.g. Spring 2026)');
-    if (!startDate || !endDate) return toast.error('Start and End dates are required');
-    if (new Date(endDate) <= new Date(startDate)) return toast.error('End date must be after start date');
 
     setPublishing(true);
     try {
@@ -112,12 +110,11 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
       const res = await axios.post(`${API}/api/study-planner/calendars`, {
         academicPeriod: academicPeriod.trim(),
         title: title.trim() || `${academicPeriod.trim()} Academic Calendar`,
-        startDate,
-        endDate,
         holidays
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
 
       toast.success(`Academic Calendar published for ${res.data.academicPeriod}!`);
       setShowPublishForm(false);
@@ -242,29 +239,7 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase mb-1.5 block">Semester Start Date *</label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase mb-1.5 block">Semester End Date *</label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      min={startDate || undefined}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-200"
-                      required
-                    />
-                  </div>
-                </div>
+
 
                 {/* Holidays / Breaks / Exams Section */}
                 <div className="space-y-3 pt-2">

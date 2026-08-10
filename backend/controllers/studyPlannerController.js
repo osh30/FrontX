@@ -739,20 +739,47 @@ exports.getAcademicCalendars = async (req, res) => {
 exports.publishAcademicCalendar = async (req, res) => {
   try {
     const { academicPeriod, title, startDate, endDate, holidays, customTeachingWeeks } = req.body;
-    if (!academicPeriod || !startDate || !endDate) {
-      return res.status(400).json({ message: 'Academic period, start date, and end date are required.' });
+    if (!academicPeriod) {
+      return res.status(400).json({ message: 'Academic period (e.g. January 2026) is required.' });
+    }
+
+    // Infer startDate and endDate from customTeachingWeeks or holidays if not explicitly passed
+    let effectiveStartDate = startDate;
+    let effectiveEndDate = endDate;
+
+    if (!effectiveStartDate || !effectiveEndDate) {
+      const allDates = (holidays || []).flatMap(h => [new Date(h.startDate), new Date(h.endDate)]).filter(d => !isNaN(d));
+      if (customTeachingWeeks && customTeachingWeeks.length > 0) {
+        customTeachingWeeks.forEach(w => {
+          allDates.push(new Date(w.startDate));
+          allDates.push(new Date(w.endDate));
+        });
+      }
+
+      if (allDates.length > 0) {
+        allDates.sort((a, b) => a - b);
+        if (!effectiveStartDate) effectiveStartDate = allDates[0];
+        if (!effectiveEndDate) effectiveEndDate = allDates[allDates.length - 1];
+      } else {
+        if (!effectiveStartDate) effectiveStartDate = new Date();
+        if (!effectiveEndDate) {
+          const defaultEnd = new Date(effectiveStartDate);
+          defaultEnd.setDate(defaultEnd.getDate() + 140);
+          effectiveEndDate = defaultEnd;
+        }
+      }
     }
 
     const calculatedWeeks = (customTeachingWeeks && customTeachingWeeks.length > 0)
       ? customTeachingWeeks
-      : calculateTeachingWeeks(startDate, endDate, holidays || []);
+      : calculateTeachingWeeks(effectiveStartDate, effectiveEndDate, holidays || []);
 
     const calendarData = {
       userId: req.user.id,
       academicPeriod: String(academicPeriod).trim(),
       title: title ? String(title).trim() : `${academicPeriod} Academic Calendar`,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: new Date(effectiveStartDate),
+      endDate: new Date(effectiveEndDate),
       holidays: holidays || [],
       teachingWeeks: calculatedWeeks,
       isPublished: true
@@ -768,13 +795,12 @@ exports.publishAcademicCalendar = async (req, res) => {
     // Also sync semester dates to study planner if semester matches
     const planner = await StudyPlanner.findOne({ userId: req.user.id });
     if (planner) {
-      planner.semester = String(academicPeriod).trim();
-      planner.semesterStartDate = new Date(startDate);
-      planner.semesterEndDate = new Date(endDate);
+      planner.semesterStartDate = calendar.startDate;
+      planner.semesterEndDate = calendar.endDate;
       await planner.save();
     }
 
-    res.json(calendar);
+    res.status(201).json(calendar);
   } catch (error) {
     console.error('Publish academic calendar error:', error);
     res.status(500).json({ message: 'Failed to publish academic calendar', error: error.message });
@@ -841,15 +867,25 @@ CRITICAL RULES:
       return res.status(400).json({ message: 'Failed to parse structure from calendar PDF. Please fill in details manually.' });
     }
 
+    let effectiveStartDate = parsed.startDate;
+    let effectiveEndDate = parsed.endDate;
+
+    if (!effectiveStartDate && parsed.holidays?.length > 0) {
+      effectiveStartDate = parsed.holidays[0].startDate;
+    }
+    if (!effectiveEndDate && parsed.holidays?.length > 0) {
+      effectiveEndDate = parsed.holidays[parsed.holidays.length - 1].endDate;
+    }
+
     const teachingWeeks = (parsed.teachingWeeks && parsed.teachingWeeks.length === 14)
       ? parsed.teachingWeeks
-      : calculateTeachingWeeks(parsed.startDate, parsed.endDate, parsed.holidays || []);
+      : calculateTeachingWeeks(effectiveStartDate || '2026-04-11', effectiveEndDate || '2026-09-13', parsed.holidays || []);
 
     res.json({
       academicPeriod: parsed.academicPeriod || 'Spring 2026',
       title: parsed.title || `${parsed.academicPeriod || 'Spring 2026'} Academic Calendar`,
-      startDate: parsed.startDate,
-      endDate: parsed.endDate,
+      startDate: effectiveStartDate,
+      endDate: effectiveEndDate,
       holidays: parsed.holidays || [],
       teachingWeeks
     });
