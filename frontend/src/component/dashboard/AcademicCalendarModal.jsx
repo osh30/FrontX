@@ -1,5 +1,6 @@
 import { API_URL } from '../../config/api';
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, Upload, Loader, CheckCircle, Plus, Trash2, X, AlertTriangle, FileText, Sparkles, ChevronRight, Eye
@@ -146,12 +147,12 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-black/70 backdrop-blur-md overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
@@ -159,8 +160,9 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+        className="w-full max-w-4xl max-h-[90vh] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col my-auto"
       >
+
         {/* Header */}
         <div className="p-6 bg-gradient-to-br from-[#0F172A] to-[#1E3A8A] text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -447,8 +449,10 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
           )}
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
 
 export default AcademicCalendarModal;
+

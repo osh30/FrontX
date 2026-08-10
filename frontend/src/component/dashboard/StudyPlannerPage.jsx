@@ -1,6 +1,8 @@
 import { API_URL } from '../../config/api';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import {
   Calendar, BookOpen, FileText, Upload, Download, CheckCircle, AlertTriangle,
   Clock, Loader, ChevronRight, ArrowLeft, Plus, Trash2, GraduationCap, Eye,
@@ -587,12 +589,12 @@ const AddCourseModal = ({ onClose, onAddCourse, addingCourse }) => {
     }
   };
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
       onClick={onClose}
     >
       <motion.div
@@ -652,7 +654,10 @@ const AddCourseModal = ({ onClose, onAddCourse, addingCourse }) => {
           </div>
         </form>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
+  );
+
   );
 };
 
