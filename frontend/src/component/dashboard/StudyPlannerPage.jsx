@@ -657,9 +657,8 @@ const AddCourseModal = ({ onClose, onAddCourse, addingCourse }) => {
     </motion.div>,
     document.body
   );
-
-  );
 };
+
 
 /* ───────────────── MARK DISTRIBUTION + GRADES ───────────────── */
 const MarkDistributionSection = () => {
