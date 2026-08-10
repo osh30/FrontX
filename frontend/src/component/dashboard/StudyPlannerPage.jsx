@@ -9,6 +9,7 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import StudyPlannerAISection from './StudyPlannerAISection';
+import AcademicCalendarModal from './AcademicCalendarModal';
 
 const API = API_URL;
 
@@ -61,6 +62,8 @@ const StudyPlannerPage = () => {
   const [stats, setStats] = useState(null);
   const [generatingReminders, setGeneratingReminders] = useState(false);
   const [addingCourse, setAddingCourse] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+
 
   useEffect(() => {
     fetchPlanner();
@@ -168,6 +171,7 @@ const StudyPlannerPage = () => {
           onBack={() => setSelectedCourse(null)}
           onRefresh={() => { fetchPlanner(); fetchStats(); }}
           onDeleteCourse={handleDeleteCourse}
+          onOpenCalendarModal={() => setShowCalendarModal(true)}
         />
       ) : (
         <DashboardView
@@ -180,11 +184,23 @@ const StudyPlannerPage = () => {
           onAddCourse={handleAddCourse}
           addingCourse={addingCourse}
           onDeleteCourse={handleDeleteCourse}
+          onOpenCalendarModal={() => setShowCalendarModal(true)}
         />
       )}
+
+      <AcademicCalendarModal
+        isOpen={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        activePeriod={planner?.semester || ''}
+        onCalendarPublished={() => {
+          fetchPlanner();
+          fetchStats();
+        }}
+      />
     </div>
   );
 };
+
 
 /* ───────────────── SETUP VIEW ───────────────── */
 const SetupView = ({ onComplete }) => {
@@ -373,7 +389,11 @@ const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateRe
               </p>
             )}
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
+            <button onClick={onOpenCalendarModal}
+              className="px-4 py-2.5 bg-white/20 backdrop-blur-md border border-white/20 text-white rounded-xl text-sm font-semibold hover:bg-white/30 transition-all flex items-center gap-2 shadow-lg">
+              <Calendar className="w-4 h-4" /> Academic Calendar
+            </button>
             <button onClick={onGenerateReminders} disabled={generatingReminders}
               className="px-4 py-2.5 bg-white/10 backdrop-blur-md border border-white/10 text-white rounded-xl text-sm font-medium hover:bg-white/20 transition-all flex items-center gap-2">
               {generatingReminders ? <Loader className="w-4 h-4 animate-spin" /> : <BellIcon className="w-4 h-4" />} Generate Reminders
@@ -382,21 +402,52 @@ const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateRe
         </div>
       </div>
 
-      {/* Current Week Banner */}
-      {stats && stats.currentWeek > 0 && planner.semesterStartDate && (
+
+      {/* Global Academic Calendar Banner */}
+      {planner.academicCalendar ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-r from-indigo-500/10 to-blue-500/10 border border-indigo-200 rounded-2xl p-5 mb-8 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center shrink-0">
-            <Calendar className="w-6 h-6 text-white" />
+          className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-200 rounded-2xl p-5 mb-8 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
+              <Calendar className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase rounded-md">
+                  Active Calendar
+                </span>
+                <span className="text-xs font-bold text-gray-700">{planner.academicCalendar.academicPeriod}</span>
+              </div>
+              <p className="font-bold text-gray-900">{planner.academicCalendar.title}</p>
+              <p className="text-xs text-gray-500">
+                {planner.academicCalendar.teachingWeeks?.length || 14} Teaching Weeks calculated (holidays & breaks excluded)
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-gray-900">Current Academic Week: <span className="text-indigo-600">Week {stats.currentWeek}</span></p>
-            <p className="text-xs text-gray-500">
-              {stats.unlocked} weeks unlocked, {stats.locked} weeks locked
-            </p>
+          <button onClick={onOpenCalendarModal} className="px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold hover:bg-emerald-50 transition-colors shadow-sm">
+            View / Change Calendar
+          </button>
+        </motion.div>
+      ) : (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-200 rounded-2xl p-5 mb-8 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-500 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-gray-900">No Academic Calendar Published for {planner.semester || 'Your Semester'}</p>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Publish an Academic Calendar once to automatically calculate 14 teaching weeks for all your courses.
+              </p>
+            </div>
           </div>
+          <button onClick={onOpenCalendarModal} className="px-4 py-2.5 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700 transition-colors shadow-md shrink-0">
+            Publish Academic Calendar
+          </button>
         </motion.div>
       )}
+
 
       {/* Stats Bar */}
       {stats && stats.totalWeeks > 0 && (
@@ -707,12 +758,18 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, o
       setCourse(res.data.course);
       onRefresh();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to upload outline');
+      if (err.response?.data?.calendarMissing) {
+        toast.error(err.response.data.message, { duration: 6000 });
+        if (onOpenCalendarModal) onOpenCalendarModal();
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to upload outline');
+      }
     } finally {
       setUploadingOutline(false);
       if (outlineInputRef.current) outlineInputRef.current.value = '';
     }
   };
+
 
   const handleWeekNoteUpload = async (weekId, e) => {
     const file = e.target.files?.[0];

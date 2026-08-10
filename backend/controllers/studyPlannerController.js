@@ -2,6 +2,7 @@ const axios = require('axios');
 const { PDFParse } = require('pdf-parse');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const StudyPlanner = require('../models/StudyPlanner');
+const AcademicCalendar = require('../models/AcademicCalendar');
 const Notification = require('../models/Notification');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../middleware/uploadMiddleware');
 
@@ -58,7 +59,64 @@ const extractTextFromBuffer = async (buffer) => {
   return data.text;
 };
 
-// Calculate week date ranges from semester start date
+// Calculate 14 teaching weeks excluding holidays and breaks
+const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks = 14) => {
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+
+  const parsedHolidays = (holidays || []).map(h => {
+    const s = new Date(h.startDate);
+    s.setHours(0, 0, 0, 0);
+    const e = new Date(h.endDate);
+    e.setHours(23, 59, 59, 999);
+    return { name: h.name, startDate: s, endDate: e, type: h.type || 'holiday' };
+  });
+
+  const teachingWeeks = [];
+  let curr = new Date(start);
+
+  while (teachingWeeks.length < targetWeeks) {
+    const wStart = new Date(curr);
+    wStart.setHours(0, 0, 0, 0);
+
+    const wEnd = new Date(wStart);
+    wEnd.setDate(wStart.getDate() + 6);
+    wEnd.setHours(23, 59, 59, 999);
+
+    // Check overlap with holidays/breaks
+    const overlappingHoliday = parsedHolidays.find(h => h.startDate <= wEnd && h.endDate >= wStart);
+
+    if (overlappingHoliday) {
+      // Skip this week as it overlaps with a holiday/break
+      const nextAvailable = new Date(overlappingHoliday.endDate);
+      nextAvailable.setDate(nextAvailable.getDate() + 1);
+      nextAvailable.setHours(0, 0, 0, 0);
+
+      const plusSeven = new Date(wStart);
+      plusSeven.setDate(plusSeven.getDate() + 7);
+
+      curr = nextAvailable > plusSeven ? nextAvailable : plusSeven;
+    } else {
+      // Valid teaching week
+      teachingWeeks.push({
+        weekNumber: teachingWeeks.length + 1,
+        startDate: wStart,
+        endDate: wEnd,
+        label: `Teaching Week ${teachingWeeks.length + 1}`
+      });
+
+      curr.setDate(curr.getDate() + 7);
+    }
+
+    if (teachingWeeks.length === 0 && curr > new Date(start.getTime() + 365 * 24 * 60 * 60 * 1000)) {
+      break;
+    }
+  }
+
+  return teachingWeeks;
+};
+
+// Calculate week date ranges from semester start date (fallback)
 const calculateWeekDates = (semesterStartDate, weeks) => {
   const start = new Date(semesterStartDate);
   start.setHours(0, 0, 0, 0);
@@ -111,12 +169,31 @@ exports.getPlanner = async (req, res) => {
     }
 
     const plannerObj = planner.toObject();
-    const currentWeek = getCurrentWeekNumber(planner.semesterStartDate);
+
+    // Attach active published academic calendar
+    let academicCalendar = null;
+    if (planner.semester) {
+      academicCalendar = await AcademicCalendar.findOne({
+        userId: req.user.id,
+        academicPeriod: planner.semester,
+        isPublished: true
+      }).lean();
+    }
+    if (!academicCalendar) {
+      academicCalendar = await AcademicCalendar.findOne({
+        userId: req.user.id,
+        isPublished: true
+      }).sort({ createdAt: -1 }).lean();
+    }
+
+    plannerObj.academicCalendar = academicCalendar || null;
+    const effectiveStartDate = academicCalendar ? academicCalendar.startDate : planner.semesterStartDate;
+    const currentWeek = getCurrentWeekNumber(effectiveStartDate);
 
     // Enrich each week with lock status
     for (const course of plannerObj.courses) {
       for (const week of course.weeks) {
-        week.locked = week.status !== 'completed' && !isWeekUnlocked(week.startDate, planner.semesterStartDate);
+        week.locked = week.status !== 'completed' && !isWeekUnlocked(week.startDate, effectiveStartDate);
         week.isActive = !week.locked && week.status === 'pending' &&
           week.startDate && new Date().setHours(0,0,0,0) >= new Date(week.startDate).setHours(0,0,0,0) &&
           week.endDate && new Date().setHours(0,0,0,0) <= new Date(week.endDate).setHours(0,0,0,0);
@@ -320,7 +397,30 @@ Return ONLY the JSON array, no explanation.`;
       }
     }
 
-    // Auto-map week dates from semester start date
+    // Auto-map week dates from published Academic Calendar
+    let academicCal = null;
+    if (planner.semester) {
+      academicCal = await AcademicCalendar.findOne({
+        userId: req.user.id,
+        academicPeriod: planner.semester,
+        isPublished: true
+      });
+    }
+    if (!academicCal) {
+      academicCal = await AcademicCalendar.findOne({
+        userId: req.user.id,
+        isPublished: true
+      }).sort({ createdAt: -1 });
+    }
+
+    if (!academicCal) {
+      await planner.save();
+      return res.status(400).json({
+        message: `No published Academic Calendar found for ${planner.semester || 'your academic period'}. Please publish or select an Academic Calendar before generating the study plan.`,
+        calendarMissing: true
+      });
+    }
+
     const rawWeeks = weeks.map(w => ({
       weekNumber: w.weekNumber,
       topic: w.topic || `Week ${w.weekNumber}`,
@@ -330,9 +430,15 @@ Return ONLY the JSON array, no explanation.`;
       geminiVerification: { matched: false, confidence: 0, feedback: '', verifiedAt: null }
     }));
 
-    const weeksWithDates = planner.semesterStartDate
-      ? calculateWeekDates(planner.semesterStartDate, rawWeeks)
-      : rawWeeks;
+    // Map the 14 topics directly to the 14 teaching weeks of the published Academic Calendar
+    const weeksWithDates = rawWeeks.map((w, idx) => {
+      const tWeek = academicCal.teachingWeeks && academicCal.teachingWeeks[idx];
+      return {
+        ...w,
+        startDate: tWeek ? tWeek.startDate : null,
+        endDate: tWeek ? tWeek.endDate : null
+      };
+    });
 
     course.weeks = weeksWithDates;
     course.weeksGenerated = true;
@@ -344,7 +450,8 @@ Return ONLY the JSON array, no explanation.`;
       io.emit('planner_updated', { userId: req.user.id });
     }
 
-    res.json({ course, weeksGenerated: true });
+    res.json({ course, weeksGenerated: true, academicCalendarUsed: academicCal.title });
+
   } catch (error) {
     console.error('Outline upload error:', error);
     res.status(500).json({ message: 'Failed to process course outline', error: error.message });
@@ -563,3 +670,145 @@ exports.getStats = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch stats', error: error.message });
   }
 };
+
+// ═══════════════════════════════════════════════════════
+// ACADEMIC CALENDAR CONTROLLER METHODS
+// ═══════════════════════════════════════════════════════
+
+// @desc    Get all published academic calendars for the user
+// @route   GET /api/study-planner/calendars
+exports.getAcademicCalendars = async (req, res) => {
+  try {
+    const calendars = await AcademicCalendar.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    res.json(calendars);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch academic calendars', error: error.message });
+  }
+};
+
+// @desc    Publish/save a global academic calendar
+// @route   POST /api/study-planner/calendars
+exports.publishAcademicCalendar = async (req, res) => {
+  try {
+    const { academicPeriod, title, startDate, endDate, holidays, customTeachingWeeks } = req.body;
+    if (!academicPeriod || !startDate || !endDate) {
+      return res.status(400).json({ message: 'Academic period, start date, and end date are required.' });
+    }
+
+    const calculatedWeeks = (customTeachingWeeks && customTeachingWeeks.length > 0)
+      ? customTeachingWeeks
+      : calculateTeachingWeeks(startDate, endDate, holidays || []);
+
+    const calendarData = {
+      userId: req.user.id,
+      academicPeriod: String(academicPeriod).trim(),
+      title: title ? String(title).trim() : `${academicPeriod} Academic Calendar`,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      holidays: holidays || [],
+      teachingWeeks: calculatedWeeks,
+      isPublished: true
+    };
+
+    // Upsert by userId + academicPeriod
+    const calendar = await AcademicCalendar.findOneAndUpdate(
+      { userId: req.user.id, academicPeriod: String(academicPeriod).trim() },
+      calendarData,
+      { new: true, upsert: true }
+    );
+
+    // Also sync semester dates to study planner if semester matches
+    const planner = await StudyPlanner.findOne({ userId: req.user.id });
+    if (planner) {
+      planner.semester = String(academicPeriod).trim();
+      planner.semesterStartDate = new Date(startDate);
+      planner.semesterEndDate = new Date(endDate);
+      await planner.save();
+    }
+
+    res.json(calendar);
+  } catch (error) {
+    console.error('Publish academic calendar error:', error);
+    res.status(500).json({ message: 'Failed to publish academic calendar', error: error.message });
+  }
+};
+
+// @desc    Parse Academic Calendar PDF via Gemini and compute teaching weeks
+// @route   POST /api/study-planner/calendars/parse-pdf
+exports.parseAcademicCalendarPdf = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'PDF file is required.' });
+
+    const buffer = Buffer.from(req.file.buffer);
+    const extractedText = await extractTextFromBuffer(buffer);
+
+    if (extractedText.trim().length < 20) {
+      return res.status(400).json({ message: 'Could not extract enough text from the calendar PDF.' });
+    }
+
+    const model = initGemini();
+    const prompt = `You are an academic calendar assistant. Below is text extracted from a university academic calendar PDF.
+
+Extract the following information and return ONLY a valid JSON object in this exact format:
+{
+  "academicPeriod": "<e.g. Spring 2026 or January 2026 or 6th Semester>",
+  "title": "<calendar title>",
+  "startDate": "YYYY-MM-DD",
+  "endDate": "YYYY-MM-DD",
+  "holidays": [
+    {
+      "name": "<holiday or break name e.g. Eid-ul-Fitr / Midterm Break>",
+      "startDate": "YYYY-MM-DD",
+      "endDate": "YYYY-MM-DD",
+      "type": "holiday"
+    }
+  ]
+}
+
+Make sure date strings are in YYYY-MM-DD format. Return ONLY the JSON object, no explanation.`;
+
+    const aiResult = await model.generateContent(`${prompt}\n\nCalendar PDF Text:\n"""\n${extractedText}\n"""`);
+    let responseText = aiResult.response.text();
+
+    if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```(json)?\n/i, '').replace(/\n```$/i, '');
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(responseText);
+    } catch (e) {
+      return res.status(400).json({ message: 'Failed to parse structure from calendar PDF. Please fill in details manually.' });
+    }
+
+    const teachingWeeks = calculateTeachingWeeks(parsed.startDate, parsed.endDate, parsed.holidays || []);
+
+    res.json({
+      academicPeriod: parsed.academicPeriod || 'Spring 2026',
+      title: parsed.title || `${parsed.academicPeriod || 'Spring 2026'} Academic Calendar`,
+      startDate: parsed.startDate,
+      endDate: parsed.endDate,
+      holidays: parsed.holidays || [],
+      teachingWeeks
+    });
+  } catch (error) {
+    console.error('Parse calendar PDF error:', error);
+    res.status(500).json({ message: 'Failed to parse academic calendar PDF', error: error.message });
+  }
+};
+
+// @desc    Delete an academic calendar
+// @route   DELETE /api/study-planner/calendars/:id
+exports.deleteAcademicCalendar = async (req, res) => {
+  try {
+    const calendar = await AcademicCalendar.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    if (!calendar) return res.status(404).json({ message: 'Calendar not found' });
+    res.json({ message: 'Academic calendar deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete calendar', error: error.message });
+  }
+};
+
+exports.calculateTeachingWeeks = calculateTeachingWeeks;
+
+

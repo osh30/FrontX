@@ -17,4 +17,11 @@ router.post('/courses/:courseId/weeks/:weekId/note', protect, upload.single('fil
 router.post('/reminders', protect, controller.generateReminders);
 router.get('/courses/:courseId/ai-resources', protect, aiResourceController.getCourseResources);
 
+// Academic Calendar Routes
+router.get('/calendars', protect, controller.getAcademicCalendars);
+router.post('/calendars', protect, controller.publishAcademicCalendar);
+router.post('/calendars/parse-pdf', protect, upload.single('file'), controller.parseAcademicCalendarPdf);
+router.delete('/calendars/:id', protect, controller.deleteAcademicCalendar);
+
 module.exports = router;
+
