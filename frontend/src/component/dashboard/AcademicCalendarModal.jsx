@@ -185,8 +185,8 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
             /* Publish Form */
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-indigo-600" /> Publish Academic Calendar
+                <h3 className="font-bold text-gray-900 text-lg">
+                  Publish Academic Calendar
                 </h3>
                 <button onClick={() => setShowPublishForm(false)} className="text-xs font-semibold text-gray-500 hover:text-gray-700">
                   Cancel & View Published
@@ -197,12 +197,13 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
               <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                   <h4 className="font-bold text-indigo-950 text-sm flex items-center gap-1.5">
-                    <FileText className="w-4 h-4 text-indigo-600" /> Upload Calendar PDF (AI Auto-Extract)
+                    <FileText className="w-4 h-4 text-indigo-600" /> Upload Calendar PDF
                   </h4>
                   <p className="text-xs text-indigo-700/80 mt-1">
                     Upload your official university calendar PDF to automatically extract dates & holiday breaks.
                   </p>
                 </div>
+
                 <div>
                   <input type="file" accept=".pdf" ref={pdfInputRef} onChange={handlePdfUpload} className="hidden" />
                   <button
