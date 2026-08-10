@@ -366,7 +366,8 @@ const SetupView = ({ onComplete }) => {
 };
 
 /* ───────────────── DASHBOARD VIEW ───────────────── */
-const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateReminders, generatingReminders, onAddCourse, addingCourse, onDeleteCourse }) => {
+const DashboardView = ({ planner, stats, onSelectCourse, onRefresh, onGenerateReminders, generatingReminders, onAddCourse, addingCourse, onDeleteCourse, onOpenCalendarModal }) => {
+
   const [showAddCourse, setShowAddCourse] = useState(false);
   const canAddCourse = planner.courses.length < 7;
 
@@ -724,7 +725,8 @@ const MarkDistributionSection = () => {
 };
 
 /* ───────────────── COURSE DETAIL VIEW ───────────────── */
-const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, onDeleteCourse }) => {
+const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, onDeleteCourse, onOpenCalendarModal }) => {
+
   const [course, setCourse] = useState(initialCourse);
   const [uploadingOutline, setUploadingOutline] = useState(false);
   const [uploadingWeekId, setUploadingWeekId] = useState(null);
