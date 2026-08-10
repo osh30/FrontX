@@ -64,37 +64,34 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
   const start = new Date(startDate);
   start.setHours(0, 0, 0, 0);
 
-  const semEnd = new Date(endDate);
-  semEnd.setHours(23, 59, 59, 999);
+  const parsedHolidays = (holidays || []).map(h => ({
+    name: h.name,
+    startDate: new Date(new Date(h.startDate).setHours(0, 0, 0, 0)),
+    endDate: new Date(new Date(h.endDate).setHours(23, 59, 59, 999)),
+    type: h.type || (h.name.toLowerCase().includes('exam') ? 'exam' : 'holiday')
+  }));
 
-  const parsedHolidays = (holidays || []).map(h => {
-    const s = new Date(h.startDate);
-    s.setHours(0, 0, 0, 0);
-    const e = new Date(h.endDate);
-    e.setHours(23, 59, 59, 999);
-    return {
-      name: h.name,
-      startDate: s,
-      endDate: e,
-      type: h.type || (h.name.toLowerCase().includes('exam') ? 'exam' : 'holiday')
-    };
-  });
-
-  // Check if an explicit Midterm Exam entry exists in holidays array
-  const hasExplicitMidterm = parsedHolidays.some(h =>
+  // Identify explicit Midterm Exam object if provided
+  const midtermObj = parsedHolidays.find(h =>
     h.name.toLowerCase().includes('midterm') || h.name.toLowerCase().includes('mid-term') || h.name.toLowerCase().includes('mid term')
   );
+
+  // Only major non-class periods (exams, or breaks longer than 2 days) skip whole 7-day teaching weeks.
+  // Single-day holidays (e.g. May Day, Bengali New Year) occur within class weeks and do NOT skip the entire 7-day teaching week.
+  const majorNonClassPeriods = parsedHolidays.filter(h => {
+    const days = Math.round((h.endDate - h.startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const isExam = h.type === 'exam' || h.name.toLowerCase().includes('exam') || h.name.toLowerCase().includes('midterm') || h.name.toLowerCase().includes('final');
+    const isMajorBreak = (h.type === 'break' || h.type === 'holiday') && days >= 3;
+    return isExam || isMajorBreak;
+  });
+
+  const hasExplicitMidterm = !!midtermObj;
   let midtermAutoInserted = hasExplicitMidterm;
 
   const teachingWeeks = [];
   let curr = new Date(start);
 
   while (teachingWeeks.length < targetWeeks) {
-    // Hard ceiling: Do NOT schedule teaching weeks past the semester end date
-    if (curr >= semEnd) {
-      break;
-    }
-
     const wStart = new Date(curr);
     wStart.setHours(0, 0, 0, 0);
 
@@ -102,10 +99,20 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
     wEnd.setDate(wStart.getDate() + 6);
     wEnd.setHours(23, 59, 59, 999);
 
+    // If explicit Midterm Exam exists and we hit Midterm Exam or we completed 7 pre-midterm weeks
+    if (midtermObj && (wEnd >= midtermObj.startDate || teachingWeeks.length === 7) && curr < midtermObj.endDate) {
+      // Jump past Midterm Examination period
+      const postMidtermStart = new Date(midtermObj.endDate);
+      postMidtermStart.setDate(postMidtermStart.getDate() + 1);
+      postMidtermStart.setHours(0, 0, 0, 0);
+      curr = postMidtermStart;
+      continue;
+    }
+
     // Auto-insert Midterm Exam week ONCE after 7 teaching weeks if not explicitly provided
     if (!midtermAutoInserted && teachingWeeks.length === 7) {
       midtermAutoInserted = true;
-      parsedHolidays.push({
+      majorNonClassPeriods.push({
         name: 'Midterm Exam Week',
         startDate: new Date(wStart),
         endDate: new Date(wEnd),
@@ -116,12 +123,12 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
       continue;
     }
 
-    // Check overlap with holidays/breaks/exams
-    const overlappingHoliday = parsedHolidays.find(h => h.startDate <= wEnd && h.endDate >= wStart);
+    // Check overlap with major non-class periods (exams & multi-day breaks)
+    const overlapping = majorNonClassPeriods.find(b => b.startDate <= wEnd && b.endDate >= wStart);
 
-    if (overlappingHoliday) {
-      // Skip this week as it overlaps with a holiday, break, or exam week
-      const nextAvailable = new Date(overlappingHoliday.endDate);
+    if (overlapping) {
+      // Skip this week as it overlaps with an exam or major break
+      const nextAvailable = new Date(overlapping.endDate);
       nextAvailable.setDate(nextAvailable.getDate() + 1);
       nextAvailable.setHours(0, 0, 0, 0);
 
@@ -139,7 +146,7 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
       teachingWeeks.push({
         weekNumber: weekNum,
         startDate: wStart,
-        endDate: wEnd > semEnd ? semEnd : wEnd,
+        endDate: wEnd,
         label: phaseLabel
       });
 
@@ -152,9 +159,9 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
     }
   }
 
-
   return teachingWeeks;
 };
+
 
 
 // Calculate week date ranges from semester start date (fallback)
