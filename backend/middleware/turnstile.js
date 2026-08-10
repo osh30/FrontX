@@ -14,7 +14,7 @@ const verifyTurnstileToken = async (token, remoteIp = '') => {
 
   try {
     const params = new URLSearchParams({ secret: secretKey, response: token });
-    if (remoteIp) params.append('remoteip', remoteIp);
+    // Intentionally omitting remoteIp as it can cause validation failures if the IP is internal (e.g., ::1)
 
     const { data } = await axios.post(TURNSTILE_VERIFY_URL, params.toString(), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -24,8 +24,10 @@ const verifyTurnstileToken = async (token, remoteIp = '') => {
     if (data && data.success === true) {
       return { success: true };
     }
+    console.error('Turnstile verification failed with error codes:', data['error-codes']);
     return { success: false, error: (data['error-codes'] || []).join(', ') || 'Verification failed.' };
   } catch (err) {
+    console.error('Turnstile verification request failed:', err.message || err);
     return { success: false, error: 'Turnstile verification request failed.' };
   }
 };

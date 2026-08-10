@@ -4,7 +4,7 @@ const MeetingNotification = require('../../models/MeetingNotification');
 const { deleteRoom } = require('../livekit/roomService');
 const { stopRoomRecording } = require('../livekit/egressService');
 const { getRoomState, deleteRoomState, sweepInactiveRooms } = require('../socket/meetingNamespace');
-const { effectiveWindow, getMeetingPhase } = require('../lib/meetingTime');
+const { effectiveWindow, getMeetingPhase, hasParticipated } = require('../lib/meetingTime');
 
 const GRACE_SECONDS = 5 * 60;
 const STALE_ROOM_IDLE_MS = 15 * 60 * 1000;
@@ -22,8 +22,13 @@ const finalizeLinkedSource = async (meeting) => {
     const interview = await Interview.findById(meeting.linkedId);
     if (!interview) return;
     if (interview.status === 'completed' || interview.status === 'cancelled' || interview.status === 'canceled') return;
-    interview.status = wasJoined ? 'completed' : 'canceled';
-    await interview.save();
+    
+    // Only mark as completed if someone joined. If no one joined, keep the existing status
+    // (e.g. 'scheduled') so that "Scheduled, Cancelled, Rescheduled" statuses work normally.
+    if (wasJoined) {
+      interview.status = 'completed';
+      await interview.save();
+    }
     return;
   }
 
