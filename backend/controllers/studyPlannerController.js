@@ -84,6 +84,7 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
   const hasExplicitMidterm = parsedHolidays.some(h =>
     h.name.toLowerCase().includes('midterm') || h.name.toLowerCase().includes('mid-term') || h.name.toLowerCase().includes('mid term')
   );
+  let midtermAutoInserted = hasExplicitMidterm;
 
   const teachingWeeks = [];
   let curr = new Date(start);
@@ -101,8 +102,9 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
     wEnd.setDate(wStart.getDate() + 6);
     wEnd.setHours(23, 59, 59, 999);
 
-    // Auto-insert Midterm Exam week after 7 teaching weeks if not explicitly provided
-    if (!hasExplicitMidterm && teachingWeeks.length === 7) {
+    // Auto-insert Midterm Exam week ONCE after 7 teaching weeks if not explicitly provided
+    if (!midtermAutoInserted && teachingWeeks.length === 7) {
+      midtermAutoInserted = true;
       parsedHolidays.push({
         name: 'Midterm Exam Week',
         startDate: new Date(wStart),
@@ -130,7 +132,9 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
     } else {
       // Valid class teaching week
       const weekNum = teachingWeeks.length + 1;
-      const phaseLabel = weekNum <= 7 ? `Class Week ${weekNum} (Pre-Midterm)` : `Class Week ${weekNum} (Post-Midterm)`;
+      const phaseLabel = weekNum <= 7
+        ? `Class Week ${weekNum} (Pre-Midterm)`
+        : `Class Week ${weekNum} (Post-Midterm/Pre-Final)`;
 
       teachingWeeks.push({
         weekNumber: weekNum,
@@ -147,6 +151,7 @@ const calculateTeachingWeeks = (startDate, endDate, holidays = [], targetWeeks =
       break;
     }
   }
+
 
   return teachingWeeks;
 };

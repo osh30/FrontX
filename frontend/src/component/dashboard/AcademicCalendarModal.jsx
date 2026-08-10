@@ -462,7 +462,8 @@ const AcademicCalendarModal = ({ isOpen, onClose, activePeriod = '', onCalendarP
                                   <div className="flex items-center gap-2">
                                     <span className="font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md">Week {w.weekNumber}</span>
                                     <span className="text-xs font-medium text-gray-600">
-                                      {w.label || (w.weekNumber <= 7 ? `Class Week ${w.weekNumber} (Pre-Midterm)` : `Class Week ${w.weekNumber} (Post-Midterm)`)}
+                                      {w.label || (w.weekNumber <= 7 ? `Class Week ${w.weekNumber} (Pre-Midterm)` : `Class Week ${w.weekNumber} (Post-Midterm/Pre-Final)`)}
+
                                     </span>
                                   </div>
                                   <span className="text-gray-500 font-mono text-[11px]">{fmtDate(w.startDate)} — {fmtDate(w.endDate)}</span>
