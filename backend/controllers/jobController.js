@@ -2,6 +2,8 @@ const Job = require('../models/Job');
 const Opportunity = require('../models/Opportunity');
 const Notification = require('../models/Notification');
 const Activity = require('../models/Activity');
+const StudyPlanner = require('../models/StudyPlanner');
+const { syncPlannerWeekStatuses } = require('./studyPlannerController');
 
 const OPPORTUNITY_TO_JOB_TYPE = {
   'Government Job': 'full-time',
@@ -23,8 +25,27 @@ const getJobs = async (req, res) => {
     const skip = (page - 1) * limit;
     const userRole = req.user?.role || null;
 
+    // Check if student's career access is restricted due to missed Study Planner note deadline
+    if (req.user && req.user.id) {
+      const planner = await StudyPlanner.findOne({ userId: req.user.id });
+      if (planner) {
+        const { careerAccessRestricted, restrictionMessage } = await syncPlannerWeekStatuses(planner, req.user.id);
+        if (careerAccessRestricted) {
+          return res.json({
+            jobs: [],
+            total: 0,
+            page: 1,
+            pages: 0,
+            careerAccessRestricted: true,
+            restrictionMessage
+          });
+        }
+      }
+    }
+
     // Build query for Job model
     let query = { isActive: true };
+
 
     if (req.query.jobType) {
       query.jobType = req.query.jobType;

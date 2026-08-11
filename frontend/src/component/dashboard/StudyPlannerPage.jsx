@@ -913,23 +913,31 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, o
 const WeekCard = ({ week, courseId, uploading, onUpload }) => {
   const fileInputRef = useRef(null);
   const isCompleted = week.status === 'completed';
+  const isMissed = week.status === 'missed';
+  const isNotApplicable = week.status === 'not-applicable';
+  const isUpcoming = week.status === 'upcoming';
   const isVerified = week.geminiVerification?.matched;
   const hasNote = !!week.notePdfUrl;
-  const isLocked = week.locked === true;
-  const isActive = week.isActive === true;
+  const isLocked = week.locked === true && !isMissed && !isCompleted;
+  const isActive = week.isActive === true || week.status === 'pending';
 
   const getStatusBarColor = () => {
     if (isCompleted) return 'bg-emerald-500';
+    if (isMissed) return 'bg-red-500';
+    if (isNotApplicable) return 'bg-gray-300';
     if (isActive) return 'bg-indigo-500';
     if (isLocked) return 'bg-gray-300';
     return 'bg-amber-400';
   };
 
   const getStatusBadge = () => {
-    if (isCompleted) return { text: 'Completed', classes: 'bg-emerald-50 text-emerald-700' };
-    if (isActive) return { text: 'Active', classes: 'bg-indigo-50 text-indigo-700' };
-    if (isLocked) return { text: 'Locked', classes: 'bg-gray-100 text-gray-500' };
-    return { text: 'Pending', classes: 'bg-amber-50 text-amber-700' };
+    if (isCompleted) return { text: 'Completed', classes: 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold' };
+    if (isMissed) return { text: 'Missed', classes: 'bg-red-50 text-red-700 font-bold border border-red-200' };
+    if (isNotApplicable) return { text: 'Not Applicable', classes: 'bg-gray-100 text-gray-500 border border-gray-200' };
+    if (isUpcoming) return { text: 'Upcoming', classes: 'bg-slate-100 text-slate-600 border border-slate-200' };
+    if (isActive) return { text: 'Pending', classes: 'bg-amber-50 text-amber-700 border border-amber-200 font-semibold' };
+    if (isLocked) return { text: 'Locked', classes: 'bg-gray-100 text-gray-500 border border-gray-200' };
+    return { text: 'Pending', classes: 'bg-amber-50 text-amber-700 border border-amber-200' };
   };
 
   const statusBadge = getStatusBadge();
@@ -938,6 +946,8 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
         isCompleted ? 'border-emerald-200 shadow-emerald-50' :
+        isMissed ? 'border-red-200 bg-red-50/10 shadow-red-50 ring-1 ring-red-200' :
+        isNotApplicable ? 'border-gray-200 opacity-60 bg-gray-50/50' :
         isActive ? 'border-indigo-200 shadow-indigo-50 ring-1 ring-indigo-100' :
         isLocked ? 'border-gray-200 opacity-75' : 'border-gray-100'
       }`}>
@@ -949,41 +959,57 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
           {/* Week number */}
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
             isCompleted ? 'bg-emerald-100 text-emerald-600' :
+            isMissed ? 'bg-red-100 text-red-600' :
+            isNotApplicable ? 'bg-gray-100 text-gray-400' :
             isActive ? 'bg-indigo-100 text-indigo-600' :
             isLocked ? 'bg-gray-100 text-gray-500' :
             'bg-amber-100 text-amber-600'
           }`}>
-            {isLocked ? <Lock className="w-5 h-5" /> : <span className="text-lg font-bold">{week.weekNumber}</span>}
+            {isLocked && !isMissed ? <Lock className="w-5 h-5" /> : <span className="text-lg font-bold">{week.weekNumber}</span>}
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <h3 className="font-bold text-gray-900 text-sm">Week {week.weekNumber}</h3>
-              <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${statusBadge.classes}`}>
+              <span className={`px-2 py-0.5 rounded-md text-[10px] ${statusBadge.classes}`}>
                 {statusBadge.text}
               </span>
-              {isActive && (
+              {isActive && !isCompleted && !isMissed && !isNotApplicable && (
                 <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500 text-white animate-pulse">
-                  This Week
+                  Current Week
                 </span>
               )}
             </div>
             <p className="text-xs text-gray-600 mb-1">{week.topic}</p>
 
-            {/* Date range */}
-            {week.startDate && week.endDate && (
+            {/* Date range & Deadline */}
+            {isNotApplicable ? (
+              <p className="text-[11px] text-gray-500 italic mt-1">
+                Skipped — Course added after this week.
+              </p>
+            ) : week.startDate && week.endDate && (
               <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                 <span className="flex items-center gap-1 text-[11px] text-gray-500">
                   <Calendar className="w-3 h-3" />
                   {fmtDate(week.startDate)} — {fmtDate(week.endDate)}
                 </span>
                 {week.endDate && !isCompleted && !hasNote && (
-                  <span className="flex items-center gap-1 text-[11px] text-gray-500">
+                  <span className={`flex items-center gap-1 text-[11px] ${isMissed ? 'text-red-600 font-bold' : 'text-gray-500'}`}>
                     <Clock className="w-3 h-3" />
-                    Deadline: {fmtDate(week.endDate)}
+                    Deadline: {fmtDate(week.endDate)} {isMissed && '(Passed)'}
                   </span>
                 )}
+              </div>
+            )}
+
+            {/* Missed Warning */}
+            {isMissed && !hasNote && (
+              <div className="flex items-center gap-2 mt-2 px-3 py-1.5 rounded-lg text-xs bg-red-50 text-red-700 border border-red-200">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                <span className="font-medium">
+                  Upload Missing Note Required. Uploading will automatically restore Career Opportunities.
+                </span>
               </div>
             )}
 
@@ -1002,7 +1028,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
             )}
 
             {/* Locked message */}
-            {isLocked && week.startDate && (
+            {isLocked && !isMissed && !isNotApplicable && week.startDate && (
               <p className="text-[11px] text-gray-500 mt-1.5 italic">
                 <Lock className="w-3 h-3 inline mr-1" />
                 Unlocks on {fmtDateLong(week.startDate)}
@@ -1018,17 +1044,21 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
                 <Eye className="w-3.5 h-3.5" /> View Note
               </a>
             )}
-            {!isLocked && (
+            {!isNotApplicable && (!isLocked || isMissed) && (
               <>
                 <input type="file" accept=".pdf" ref={fileInputRef} onChange={onUpload} className="hidden" />
                 <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
                   className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
                     isCompleted
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                      : isMissed
+                      ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200 font-bold'
                       : 'bg-gray-900 text-white hover:bg-indigo-600'
                   } disabled:opacity-50`}>
                   {uploading ? <Loader className="w-3.5 h-3.5 animate-spin" /> :
-                    hasNote ? <><Upload className="w-3.5 h-3.5" /> Re-upload</> : <><Upload className="w-3.5 h-3.5" /> Upload Note</>}
+                    hasNote ? <><Upload className="w-3.5 h-3.5" /> Re-upload</> :
+                    isMissed ? <><Upload className="w-3.5 h-3.5" /> Upload Missing Note</> :
+                    <><Upload className="w-3.5 h-3.5" /> Upload Note</>}
                 </button>
               </>
             )}
@@ -1038,6 +1068,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
     </motion.div>
   );
 };
+
 
 const BellIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

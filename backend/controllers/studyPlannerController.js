@@ -177,6 +177,147 @@ const isWeekUnlocked = (weekStartDate, semesterStartDate) => {
   return now >= weekStart;
 };
 
+// Dynamically evaluate and sync week statuses, deadlines, notifications, and career access restriction
+const syncPlannerWeekStatuses = async (planner, userId) => {
+  if (!planner || !planner.courses || planner.courses.length === 0) {
+    return { planner, careerAccessRestricted: false, restrictionMessage: '' };
+  }
+
+  const now = new Date();
+  let modified = false;
+  let hasUnresolvedMissedWeek = false;
+
+  for (const course of planner.courses) {
+    if (!course.weeks || course.weeks.length === 0) continue;
+
+    const courseAddedDate = course.addedAt ? new Date(course.addedAt) : new Date(planner.createdAt || now);
+
+    // Determine which week index/number corresponds to when the course was added
+    let addedAtWeekNumber = 1;
+    for (const week of course.weeks) {
+      if (week.startDate && week.endDate) {
+        const wStart = new Date(week.startDate);
+        const wEnd = new Date(week.endDate);
+        wEnd.setHours(23, 59, 59, 999);
+
+        if (courseAddedDate >= wStart && courseAddedDate <= wEnd) {
+          addedAtWeekNumber = week.weekNumber;
+          break;
+        } else if (courseAddedDate > wEnd) {
+          addedAtWeekNumber = week.weekNumber + 1;
+        }
+      }
+    }
+
+    for (const week of course.weeks) {
+      // 1. Set deadline to week.endDate if not explicitly set
+      if (!week.deadline && week.endDate) {
+        const dl = new Date(week.endDate);
+        dl.setHours(23, 59, 59, 999);
+        week.deadline = dl;
+        modified = true;
+      }
+
+      const deadlineDate = week.deadline || (week.endDate ? new Date(week.endDate) : null);
+
+      // Rule 1: Weeks prior to courseAddedAt MUST NOT be treated as missed/pending. Status = 'not-applicable'
+      if (week.weekNumber < addedAtWeekNumber || (week.endDate && new Date(week.endDate) < courseAddedDate && !week.notePdfUrl)) {
+        if (week.status !== 'not-applicable') {
+          week.status = 'not-applicable';
+          modified = true;
+        }
+        continue;
+      }
+
+      // Rule 2: Note already uploaded -> 'completed'
+      if (week.notePdfUrl || week.status === 'completed') {
+        if (week.status !== 'completed') {
+          week.status = 'completed';
+          modified = true;
+        }
+        continue;
+      }
+
+      // Rule 3: Deadline passed without note upload -> 'missed'
+      if (deadlineDate && now > deadlineDate) {
+        if (week.status !== 'missed') {
+          week.status = 'missed';
+          week.missedAt = week.missedAt || now;
+          modified = true;
+        }
+
+        // Send Missed Deadline Notification (stored in MongoDB, avoid duplicates)
+        if (!week.notificationSent && userId) {
+          try {
+            await Notification.create({
+              user: userId,
+              title: 'Note Upload Deadline Missed',
+              message: `You didn't upload your Week ${week.weekNumber} study note for ${course.courseCode} before the deadline. Please upload your note as soon as possible to keep your Study Planner and career features active.`,
+              type: 'system',
+              relatedId: course._id
+            });
+            week.notificationSent = true;
+            modified = true;
+          } catch (notifErr) {
+            console.error('Failed to create missed notification:', notifErr.message);
+          }
+        }
+
+        // Mark that there is an unresolved missed week
+        hasUnresolvedMissedWeek = true;
+        continue;
+      }
+
+      // Rule 4: Active current week vs Future week
+      const wStart = week.startDate ? new Date(week.startDate) : null;
+      if (wStart && now >= wStart && deadlineDate && now <= deadlineDate) {
+        if (week.status !== 'pending') {
+          week.status = 'pending';
+          modified = true;
+        }
+
+        // Check if deadline is approaching (within 48h) and send reminder notification ONCE
+        const msUntilDeadline = deadlineDate - now;
+        if (msUntilDeadline > 0 && msUntilDeadline <= 48 * 60 * 60 * 1000 && !week.reminderSent && userId) {
+          try {
+            const formattedDate = deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            await Notification.create({
+              user: userId,
+              title: 'Note Upload Deadline Approaching',
+              message: `Your Week ${week.weekNumber} note upload deadline for ${course.courseCode} is approaching. Please upload your study note before ${formattedDate}.`,
+              type: 'system',
+              relatedId: course._id
+            });
+            week.reminderSent = true;
+            modified = true;
+          } catch (remErr) {
+            console.error('Failed to create reminder notification:', remErr.message);
+          }
+        }
+      } else if (wStart && now < wStart) {
+        if (week.status !== 'upcoming') {
+          week.status = 'upcoming';
+          modified = true;
+        }
+      }
+    }
+  }
+
+  if (modified) {
+    await planner.save();
+  }
+
+  return {
+    planner,
+    careerAccessRestricted: hasUnresolvedMissedWeek,
+    restrictionMessage: hasUnresolvedMissedWeek
+      ? 'Career Opportunities are temporarily unavailable because your required Study Planner note has not been submitted. Upload the missing note to restore access.'
+      : ''
+  };
+};
+
+exports.syncPlannerWeekStatuses = syncPlannerWeekStatuses;
+
 // @desc    Get or create study planner for current user
 // @route   GET /api/study-planner
 exports.getPlanner = async (req, res) => {
@@ -185,6 +326,9 @@ exports.getPlanner = async (req, res) => {
     if (!planner) {
       planner = await StudyPlanner.create({ userId: req.user.id, semester: '', courses: [] });
     }
+
+    // Sync statuses and notifications based on courseAddedAt and dates
+    const { careerAccessRestricted, restrictionMessage } = await syncPlannerWeekStatuses(planner, req.user.id);
 
     const plannerObj = planner.toObject();
 
@@ -208,17 +352,20 @@ exports.getPlanner = async (req, res) => {
     const effectiveStartDate = academicCalendar ? academicCalendar.startDate : planner.semesterStartDate;
     const currentWeek = getCurrentWeekNumber(effectiveStartDate);
 
-    // Enrich each week with lock status
+    // Enrich each week with lock status and active state
     for (const course of plannerObj.courses) {
       for (const week of course.weeks) {
-        week.locked = week.status !== 'completed' && !isWeekUnlocked(week.startDate, effectiveStartDate);
-        week.isActive = !week.locked && week.status === 'pending' &&
+        week.locked = week.status !== 'completed' && week.status !== 'not-applicable' && !isWeekUnlocked(week.startDate, effectiveStartDate);
+        week.isActive = !week.locked && (week.status === 'pending' || week.status === 'missed') &&
           week.startDate && new Date().setHours(0,0,0,0) >= new Date(week.startDate).setHours(0,0,0,0) &&
           week.endDate && new Date().setHours(0,0,0,0) <= new Date(week.endDate).setHours(0,0,0,0);
       }
     }
 
     plannerObj.currentWeek = currentWeek;
+    plannerObj.careerAccessRestricted = careerAccessRestricted;
+    plannerObj.restrictionMessage = restrictionMessage;
+
     res.json(plannerObj);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch planner', error: error.message });
@@ -306,6 +453,7 @@ exports.addCourse = async (req, res) => {
       courseCode: String(courseCode).trim(),
       courseName: String(courseName).trim(),
       credit,
+      addedAt: new Date(),
       outlinePdfUrl: null,
       weeks: [],
       outlineUploaded: false,
@@ -313,6 +461,7 @@ exports.addCourse = async (req, res) => {
     });
 
     await planner.save();
+    await syncPlannerWeekStatuses(planner, req.user.id);
 
     const io = req.app.get('io');
     if (io) {
@@ -325,6 +474,7 @@ exports.addCourse = async (req, res) => {
     res.status(500).json({ message: 'Failed to add course', error: error.message });
   }
 };
+
 
 // @desc    Delete a course from the planner
 // @route   DELETE /api/study-planner/courses/:courseId
@@ -458,10 +608,12 @@ Return ONLY the JSON array, no explanation.`;
       };
     });
 
+    course.addedAt = course.addedAt || new Date();
     course.weeks = weeksWithDates;
     course.weeksGenerated = true;
 
     await planner.save();
+    await syncPlannerWeekStatuses(planner, req.user.id);
 
     const io = req.app.get('io');
     if (io) {
@@ -490,7 +642,7 @@ exports.uploadWeekNote = async (req, res) => {
     if (!week) return res.status(404).json({ message: 'Week not found.' });
 
     // Smart week unlock check
-    if (week.startDate && !isWeekUnlocked(week.startDate, planner.semesterStartDate)) {
+    if (week.startDate && week.status !== 'completed' && week.status !== 'missed' && !isWeekUnlocked(week.startDate, planner.semesterStartDate)) {
       return res.status(403).json({ message: `This week is locked. Upload will be available from ${new Date(week.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}.` });
     }
 
@@ -499,6 +651,7 @@ exports.uploadWeekNote = async (req, res) => {
     const result = await uploadToCloudinary(req.file, 'frontx/study-planner/notes');
     week.notePdfUrl = result.secure_url;
     week.noteUploadedAt = new Date();
+    week.status = 'completed'; // Uploading note completes the requirement
 
     const buffer = Buffer.from(req.file.buffer);
     const extractedText = await extractTextFromBuffer(buffer);
@@ -535,10 +688,6 @@ Only check topic relevance. Nothing else.`;
         feedback: verification.feedback || '',
         verifiedAt: new Date()
       };
-
-      if (verification.matched) {
-        week.status = 'completed';
-      }
     } catch (aiErr) {
       console.error('Gemini verification error:', aiErr);
       week.geminiVerification = {
@@ -551,12 +700,16 @@ Only check topic relevance. Nothing else.`;
 
     await planner.save();
 
+    // Re-evaluate planner week statuses to automatically clear restriction if all missed notes uploaded
+    await syncPlannerWeekStatuses(planner, req.user.id);
+
     const io = req.app.get('io');
     if (io) {
       io.emit('planner_updated', { userId: req.user.id });
     }
 
     res.json({ week, courseName: course.courseName });
+
   } catch (error) {
     console.error('Week note upload error:', error);
     res.status(500).json({ message: 'Failed to upload note', error: error.message });

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase, Search, MapPin, Clock, Calendar, Building2,
   ChevronDown, X, Loader2, CheckCircle, ExternalLink,
-  Wifi, Home, Map, Tag
+  Wifi, Home, Map, Tag, AlertTriangle, BookOpen
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -58,12 +58,27 @@ const CompanyLogo = ({ name, size = 48 }) => {
 const OpportunityCard = ({ opp, index, appliedIds }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const badge = JOB_TYPE_BADGES[opp.jobType] || JOB_TYPE_BADGES['full-time'];
-  const workMode = WORK_MODE_MAP[opp.jobType] || 'On-site';
-  const isApplied = appliedIds.has(opp._id);
-  const isExpired = opp.deadline && new Date(opp.deadline) < new Date();
 
-  const formatDate = (dateStr) => {
+  const handleApply = (e) => {
+    e.stopPropagation();
+    const basePath = location.pathname.startsWith('/admin')
+      ? '/admin/career'
+      : location.pathname.startsWith('/recruiter')
+      ? '/recruiter/career'
+      : '/dashboard/career';
+    navigate(`${basePath}/apply/${opp._id}`);
+  };
+
+  const handleView = () => {
+    const basePath = location.pathname.startsWith('/admin')
+      ? '/admin/career'
+      : location.pathname.startsWith('/recruiter')
+      ? '/recruiter/career'
+      : '/dashboard/career';
+    navigate(`${basePath}/${opp._id}`);
+  };
+
+  const isApplied = appliedIds.has(opp._id);
     if (!dateStr) return 'No deadline';
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
@@ -315,10 +330,41 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
         </div>
       </motion.div>
 
+      {/* Restriction Alert Banner */}
+      {restricted && (
+        <motion.div variants={fadeUp} className="mb-8 p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200 flex items-start gap-4 shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-400" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-amber-100 text-base">Career Opportunities Temporarily Restricted</h3>
+            <p className="text-sm mt-1 text-amber-200/90 leading-relaxed">
+              {restrictionMsg || 'Career Opportunities are temporarily unavailable because your required Study Planner note has not been submitted. Upload the missing note to restore access.'}
+            </p>
+            <div className="mt-4">
+              <button
+                onClick={() => navigate('/dashboard/planner')}
+                className="px-4 py-2 bg-amber-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-amber-400 transition-colors shadow-md flex items-center gap-1.5"
+              >
+                <BookOpen className="w-3.5 h-3.5" /> Go to Study Planner & Upload Missing Note
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Cards */}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-10 h-10 rounded-full border-2 border-slate-200 border-t-blue-500 animate-spin" />
+        </div>
+      ) : restricted ? (
+        <div className="text-center py-16 bg-slate-900/40 rounded-2xl border border-slate-800 p-8">
+          <AlertTriangle className="w-12 h-12 text-amber-400/80 mx-auto mb-3" />
+          <p className="text-slate-200 font-bold text-base">Access Restricted</p>
+          <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+            Please submit your pending/missed Study Planner note to unlock Career Opportunities.
+          </p>
         </div>
       ) : displayJobs.length === 0 ? (
         <div className="text-center py-20">
@@ -327,6 +373,7 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
           <p className="text-xs text-slate-400 mt-1">Check back later for new opportunities.</p>
         </div>
       ) : (
+
         <motion.div
           variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
