@@ -79,137 +79,75 @@ const OpportunityCard = ({ opp, index, appliedIds }) => {
   };
 
   const isApplied = appliedIds.has(opp._id);
-    if (!dateStr) return 'No deadline';
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
-
-  const workModeIcon = workMode === 'Remote' ? Wifi : workMode === 'Hybrid' ? Home : Map;
-
-  const handleViewDetails = () => {
-    navigate(`${location.pathname}/${opp._id}`);
-  };
 
   return (
     <motion.div
       variants={fadeUp}
       custom={index}
-      className="relative overflow-hidden rounded-[18px] p-[1px] group"
+      onClick={handleView}
+      className="group relative bg-[#0D1527] border border-slate-800 hover:border-blue-500/30 rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-950/20 flex flex-col justify-between"
     >
-      <div className="absolute inset-0 rounded-[18px] bg-gradient-to-br from-white/[0.08] via-white/[0.04] to-white/[0.07] group-hover:from-white/[0.14] group-hover:via-white/[0.07] group-hover:to-white/[0.12] transition-all duration-500" />
-      <div
-        className="relative rounded-[calc(18px-1px)] p-5 h-full flex flex-col"
-        style={{
-          background: 'linear-gradient(165deg, rgba(11,17,32,0.97) 0%, rgba(15,27,45,0.95) 35%, rgba(17,29,51,0.96) 65%, rgba(13,22,37,0.98) 100%)',
-        }}
-      >
-        {/* Shimmer sweep */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[calc(18px-1px)]">
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              background: 'linear-gradient(115deg, transparent 20%, rgba(148,163,184,0.5) 40%, rgba(255,255,255,0.7) 50%, rgba(148,163,184,0.5) 60%, transparent 80%)',
-              backgroundSize: '250% 100%',
-              animation: 'shimmerSweep 8s ease-in-out infinite',
-            }}
-          />
+      <div>
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <CompanyLogo name={opp.companyName || opp.company} size={44} />
+            <div>
+              <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
+                {opp.title}
+              </h3>
+              <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                <Building2 className="w-3 h-3 text-slate-500" />
+                {opp.companyName || opp.company}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="relative z-10 flex flex-col flex-1">
-          {/* Top: Company Logo + Type Badge */}
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <CompanyLogo name={opp.company} size={48} />
-              <div className="min-w-0">
-                <h3 className="text-white font-bold text-[15px] leading-snug line-clamp-1 mb-0.5">
-                  {opp.title}
-                </h3>
-                <p className="text-slate-400 text-[13px] font-medium truncate flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 shrink-0" />
-                  {opp.company}
-                </p>
-              </div>
-            </div>
-            <span className={`shrink-0 text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg tracking-wider border ${badge.bg} ${badge.text} ${badge.border}`}>
-              {badge.label}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {opp.opportunityType && (
+            <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
+              <Tag className="w-3 h-3" />
+              {opp.opportunityType}
             </span>
-          </div>
-
-          {/* Description */}
-          {opp.description && (
-            <p className="text-slate-500 text-[12px] leading-relaxed line-clamp-2 mb-3">
-              {opp.description}
-            </p>
           )}
-
-          {/* Info Row: Location + Work Mode + Deadline */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
-            {opp.location && (
-              <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                <MapPin className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate max-w-[120px]">{opp.location}</span>
-              </span>
-            )}
-            <span className="flex items-center gap-1.5 text-[11px] text-slate-500">
-              {(() => { const Icon = workModeIcon; return <Icon className="w-3.5 h-3.5 shrink-0" />; })()}
-              {workMode}
+          {opp.location && (
+            <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/60 text-slate-300 flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-slate-400" />
+              {opp.location}
             </span>
-            <span className={`flex items-center gap-1.5 text-[11px] ${isExpired ? 'text-red-400' : 'text-slate-500'}`}>
-              <Calendar className="w-3.5 h-3.5 shrink-0" />
-              {formatDate(opp.deadline)}
-            </span>
-          </div>
-
-          {/* Skill Tags */}
-          {opp.requirements && opp.requirements.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {opp.requirements.slice(0, 5).map((skill, i) => (
-                <span
-                  key={i}
-                  className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.06] text-slate-400 border border-white/[0.06]"
-                >
-                  {skill}
-                </span>
-              ))}
-              {opp.requirements.length > 5 && (
-                <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.04] text-slate-600">
-                  +{opp.requirements.length - 5}
-                </span>
-              )}
-            </div>
           )}
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Bottom: Apply Button */}
-          <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between">
-            <span className="text-[10px] text-slate-600">
-              {opp.createdAt ? `Posted ${new Date(opp.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+          {opp.employmentMode && (
+            <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/60 text-slate-300 flex items-center gap-1">
+              <Clock className="w-3 h-3 text-slate-400" />
+              {opp.employmentMode}
             </span>
-            {isApplied ? (
-              <span className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <CheckCircle className="w-4 h-4" />
-                Applied ✓
-              </span>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={handleViewDetails}
-                disabled={isExpired}
-                className="relative px-5 py-2 rounded-xl text-[13px] font-bold text-white overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(99,102,241,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: 'linear-gradient(135deg, #6366F1 0%, #3B82F6 50%, #06B6D4 100%)' }}
-              >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  View Details
-                </span>
-              </motion.button>
-            )}
-          </div>
+          )}
         </div>
+      </div>
+
+      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between mt-2">
+        <div>
+          {opp.salary ? (
+            <span className="text-xs font-bold text-emerald-400">{opp.salary}</span>
+          ) : (
+            <span className="text-xs text-slate-500">Salary Negotiable</span>
+          )}
+        </div>
+        <button
+          onClick={handleApply}
+          disabled={isApplied}
+          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+            isApplied
+              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default'
+              : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-900/30'
+          }`}
+        >
+          {isApplied ? <><CheckCircle className="w-3.5 h-3.5" /> Applied</> : 'Apply Now'}
+        </button>
       </div>
     </motion.div>
   );
+};
 };
 
 const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
