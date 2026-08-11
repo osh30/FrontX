@@ -86,7 +86,7 @@ const SettingsPage = ({ user }) => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wider">Phone Number</label>
-                  <input type="tel" placeholder="+1 (555) 000-0000" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none transition-all" />
+                  <input type="tel" placeholder="+880 1700-000000" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none transition-all" />
                 </div>
               </div>
 
