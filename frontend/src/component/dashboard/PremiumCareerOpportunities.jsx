@@ -148,9 +148,9 @@ const OpportunityCard = ({ opp, index, appliedIds }) => {
     </motion.div>
   );
 };
-};
 
 const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
+
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
