@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, BookOpen, FileText, Upload, Download, CheckCircle, AlertTriangle,
   Clock, Loader, ChevronRight, ArrowLeft, Plus, Trash2, GraduationCap, Eye,
-  BarChart3, Target, X, ChevronDown, ClipboardList, Lock, Unlock
+  BarChart3, Target, X, ChevronDown, ClipboardList, Lock, Unlock, Globe
 } from 'lucide-react';
+
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import StudyPlannerAISection from './StudyPlannerAISection';
@@ -731,9 +732,11 @@ const MarkDistributionSection = () => {
 /* ───────────────── COURSE DETAIL VIEW ───────────────── */
 const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, onDeleteCourse, onOpenCalendarModal }) => {
 
+
   const [course, setCourse] = useState(initialCourse);
   const [uploadingOutline, setUploadingOutline] = useState(false);
   const [uploadingWeekId, setUploadingWeekId] = useState(null);
+  const [publishingWeekId, setPublishingWeekId] = useState(null);
   const outlineInputRef = useRef(null);
 
   const refreshCourse = useCallback(async () => {
@@ -776,7 +779,6 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, o
     }
   };
 
-
   const handleWeekNoteUpload = async (weekId, e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -800,6 +802,24 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, o
       toast.error(err.response?.data?.message || 'Failed to upload note');
     } finally {
       setUploadingWeekId(null);
+    }
+  };
+
+  const handlePublishNote = async (weekId) => {
+    setPublishingWeekId(weekId);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API}/api/study-planner/courses/${course._id}/weeks/${weekId}/publish`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(res.data.message || 'Note published successfully. Other students can now view it in Learnings.');
+      await refreshCourse();
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to publish note', err);
+      toast.error(err.response?.data?.message || 'Failed to publish study note');
+    } finally {
+      setPublishingWeekId(null);
     }
   };
 
@@ -897,6 +917,8 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, o
                 courseId={course._id}
                 uploading={uploadingWeekId === week._id}
                 onUpload={(e) => handleWeekNoteUpload(week._id, e)}
+                publishing={publishingWeekId === week._id}
+                onPublish={() => handlePublishNote(week._id)}
               />
             ))}
           </div>
@@ -910,7 +932,7 @@ const CourseDetailView = ({ course: initialCourse, planner, onBack, onRefresh, o
 };
 
 /* ───────────────── WEEK CARD ───────────────── */
-const WeekCard = ({ week, courseId, uploading, onUpload }) => {
+const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }) => {
   const fileInputRef = useRef(null);
   const isCompleted = week.status === 'completed';
   const isMissed = week.status === 'missed';
@@ -918,11 +940,13 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
   const isUpcoming = week.status === 'upcoming';
   const isVerified = week.geminiVerification?.matched;
   const hasNote = !!week.notePdfUrl;
+  const isPublished = week.isPublished === true;
   const isLocked = week.locked === true && !isMissed && !isCompleted;
   const isActive = week.isActive === true || week.status === 'pending';
 
   const getStatusBarColor = () => {
-    if (isCompleted) return 'bg-emerald-500';
+    if (isPublished) return 'bg-emerald-500';
+    if (isCompleted) return 'bg-indigo-500';
     if (isMissed) return 'bg-red-500';
     if (isNotApplicable) return 'bg-gray-300';
     if (isActive) return 'bg-indigo-500';
@@ -931,7 +955,8 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
   };
 
   const getStatusBadge = () => {
-    if (isCompleted) return { text: 'Completed', classes: 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold' };
+    if (isPublished) return { text: 'Published ✓', classes: 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold' };
+    if (isCompleted) return { text: 'Uploaded', classes: 'bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold' };
     if (isMissed) return { text: 'Missed', classes: 'bg-red-50 text-red-700 font-bold border border-red-200' };
     if (isNotApplicable) return { text: 'Not Applicable', classes: 'bg-gray-100 text-gray-500 border border-gray-200' };
     if (isUpcoming) return { text: 'Upcoming', classes: 'bg-slate-100 text-slate-600 border border-slate-200' };
@@ -945,7 +970,8 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
-        isCompleted ? 'border-emerald-200 shadow-emerald-50' :
+        isPublished ? 'border-emerald-300 shadow-emerald-50' :
+        isCompleted ? 'border-indigo-200 shadow-indigo-50' :
         isMissed ? 'border-red-200 bg-red-50/10 shadow-red-50 ring-1 ring-red-200' :
         isNotApplicable ? 'border-gray-200 opacity-60 bg-gray-50/50' :
         isActive ? 'border-indigo-200 shadow-indigo-50 ring-1 ring-indigo-100' :
@@ -958,7 +984,8 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
         <div className="flex-1 p-5 flex flex-col md:flex-row items-start md:items-center gap-4">
           {/* Week number */}
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-            isCompleted ? 'bg-emerald-100 text-emerald-600' :
+            isPublished ? 'bg-emerald-100 text-emerald-700' :
+            isCompleted ? 'bg-indigo-100 text-indigo-600' :
             isMissed ? 'bg-red-100 text-red-600' :
             isNotApplicable ? 'bg-gray-100 text-gray-400' :
             isActive ? 'bg-indigo-100 text-indigo-600' :
@@ -1037,7 +1064,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
             {hasNote && (
               <a href={week.notePdfUrl} target="_blank" rel="noopener noreferrer"
                 className="px-3 py-2 bg-gray-50 text-gray-600 rounded-xl text-xs font-semibold hover:bg-gray-100 transition-colors border border-gray-200 flex items-center gap-1">
@@ -1050,7 +1077,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
                 <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
                   className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
                     isCompleted
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                      ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100'
                       : isMissed
                       ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200 font-bold'
                       : 'bg-gray-900 text-white hover:bg-indigo-600'
@@ -1060,6 +1087,25 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
                     isMissed ? <><Upload className="w-3.5 h-3.5" /> Upload Missing Note</> :
                     <><Upload className="w-3.5 h-3.5" /> Upload Note</>}
                 </button>
+
+                {isPublished ? (
+                  <span className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5 shadow-sm">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Published ✓
+                  </span>
+                ) : (
+                  <button
+                    onClick={onPublish}
+                    disabled={!hasNote || publishing}
+                    title={!hasNote ? "Upload a study note first to enable publishing to Learnings" : "Publish your note so all FrontX students can view it in Learnings"}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm ${
+                      !hasNote
+                        ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white cursor-pointer shadow-indigo-200'
+                    } disabled:opacity-60`}
+                  >
+                    {publishing ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <><Globe className="w-3.5 h-3.5" /> Publish</>}
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -1068,6 +1114,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload }) => {
     </motion.div>
   );
 };
+
 
 
 const BellIcon = ({ className }) => (

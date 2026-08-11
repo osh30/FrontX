@@ -14,6 +14,7 @@ router.post('/courses', protect, controller.addCourse);
 router.delete('/courses/:courseId', protect, controller.deleteCourse);
 router.post('/courses/:courseId/outline', protect, upload.single('file'), controller.uploadOutline);
 router.post('/courses/:courseId/weeks/:weekId/note', protect, upload.single('file'), controller.uploadWeekNote);
+router.post('/courses/:courseId/weeks/:weekId/publish', protect, controller.publishWeekNote);
 router.post('/reminders', protect, controller.generateReminders);
 router.get('/courses/:courseId/ai-resources', protect, aiResourceController.getCourseResources);
 

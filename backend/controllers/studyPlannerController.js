@@ -1046,6 +1046,95 @@ exports.deleteAcademicCalendar = async (req, res) => {
   }
 };
 
+// @desc    Publish a student's uploaded week note to Learnings section
+// @route   POST /api/study-planner/courses/:courseId/weeks/:weekId/publish
+// @access  Private (Students)
+exports.publishWeekNote = async (req, res) => {
+
+  try {
+    const { courseId, weekId } = req.params;
+    const planner = await StudyPlanner.findOne({ userId: req.user.id });
+    if (!planner) {
+      return res.status(404).json({ message: "Study planner not found." });
+    }
+
+    const course = planner.courses.id(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course not found." });
+    }
+
+    const week = course.weeks.id(weekId);
+    if (!week) {
+      return res.status(404).json({ message: "Week not found." });
+    }
+
+    if (!week.notePdfUrl) {
+      return res.status(400).json({ message: "Please upload a study note before publishing." });
+    }
+
+    const user = await User.findById(req.user.id);
+    const ClassNote = require('../models/ClassNote');
+
+    // Create or update ClassNote record in MongoDB for Learnings section
+    let classNote = null;
+    if (week.publishedNoteId) {
+      classNote = await ClassNote.findById(week.publishedNoteId);
+    }
+
+    const titleText = `${course.courseCode} — Week ${week.weekNumber} Note`;
+    const topicText = week.topic || `Study note for Week ${week.weekNumber}`;
+    const userDept = user?.department || 'General';
+    const userSemester = planner.semester || 'Current Semester';
+
+    if (!classNote) {
+      classNote = new ClassNote({
+        studentId: req.user.id,
+        title: titleText,
+        subject: course.courseName,
+        description: topicText,
+        pdfUrl: week.notePdfUrl,
+        department: userDept,
+        course: course.courseCode,
+        semester: userSemester,
+        weekOrTopic: `Week ${week.weekNumber}`
+      });
+    } else {
+      classNote.title = titleText;
+      classNote.subject = course.courseName;
+      classNote.description = topicText;
+      classNote.pdfUrl = week.notePdfUrl;
+      classNote.department = userDept || classNote.department;
+      classNote.course = course.courseCode;
+      classNote.semester = userSemester || classNote.semester;
+      classNote.weekOrTopic = `Week ${week.weekNumber}`;
+    }
+
+    await classNote.save();
+
+    week.isPublished = true;
+    week.publishedAt = new Date();
+    week.publishedNoteId = classNote._id;
+
+    await planner.save();
+
+    // Emit socket event so Learnings section updates live for all students
+    const io = req.app.get('io');
+    if (io) {
+      const populatedNote = await ClassNote.findById(classNote._id).populate('studentId', 'name profilePicture department');
+      io.emit('new_note_uploaded', populatedNote || classNote);
+    }
+
+    res.json({
+      message: "Note published successfully. Other students can now view it in Learnings.",
+      week
+    });
+  } catch (error) {
+    console.error("Error publishing week note:", error);
+    res.status(500).json({ message: "Failed to publish study note", error: error.message });
+  }
+};
+
 exports.calculateTeachingWeeks = calculateTeachingWeeks;
+
 
 
