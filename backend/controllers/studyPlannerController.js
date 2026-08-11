@@ -180,12 +180,12 @@ const isWeekUnlocked = (weekStartDate, semesterStartDate) => {
 // Dynamically evaluate and sync week statuses, deadlines, notifications, and career access restriction
 const syncPlannerWeekStatuses = async (planner, userId) => {
   if (!planner || !planner.courses || planner.courses.length === 0) {
-    return { planner, careerAccessRestricted: false, restrictionMessage: '' };
+    return { planner, careerAccessRestricted: false, restrictionMessage: '', missedWeeks: [], primaryMissedWeek: null };
   }
 
   const now = new Date();
   let modified = false;
-  let hasUnresolvedMissedWeek = false;
+  const missedWeeks = [];
 
   for (const course of planner.courses) {
     if (!course.weeks || course.weeks.length === 0) continue;
@@ -263,8 +263,14 @@ const syncPlannerWeekStatuses = async (planner, userId) => {
           }
         }
 
-        // Mark that there is an unresolved missed week
-        hasUnresolvedMissedWeek = true;
+        missedWeeks.push({
+          courseId: course._id,
+          courseCode: course.courseCode,
+          courseName: course.courseName,
+          weekId: week._id,
+          weekNumber: week.weekNumber,
+          topic: week.topic
+        });
         continue;
       }
 
@@ -307,14 +313,23 @@ const syncPlannerWeekStatuses = async (planner, userId) => {
     await planner.save();
   }
 
+  const hasUnresolvedMissedWeek = missedWeeks.length > 0;
+  let restrictionMessage = '';
+  if (hasUnresolvedMissedWeek) {
+    const weekLabels = missedWeeks.map(m => `Week ${m.weekNumber}`).join(', ');
+    const noteWord = missedWeeks.length > 1 ? 'study notes have' : 'study note has';
+    restrictionMessage = `Your Career Opportunities access is temporarily locked because your ${weekLabels} ${noteWord} not been submitted.`;
+  }
+
   return {
     planner,
     careerAccessRestricted: hasUnresolvedMissedWeek,
-    restrictionMessage: hasUnresolvedMissedWeek
-      ? 'Career Opportunities are temporarily unavailable because your required Study Planner note has not been submitted. Upload the missing note to restore access.'
-      : ''
+    restrictionMessage,
+    missedWeeks,
+    primaryMissedWeek: missedWeeks[0] || null
   };
 };
+
 
 exports.syncPlannerWeekStatuses = syncPlannerWeekStatuses;
 

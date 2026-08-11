@@ -29,7 +29,7 @@ const getJobs = async (req, res) => {
     if (req.user && req.user.id) {
       const planner = await StudyPlanner.findOne({ userId: req.user.id });
       if (planner) {
-        const { careerAccessRestricted, restrictionMessage } = await syncPlannerWeekStatuses(planner, req.user.id);
+        const { careerAccessRestricted, restrictionMessage, missedWeeks, primaryMissedWeek } = await syncPlannerWeekStatuses(planner, req.user.id);
         if (careerAccessRestricted) {
           return res.json({
             jobs: [],
@@ -37,11 +37,14 @@ const getJobs = async (req, res) => {
             page: 1,
             pages: 0,
             careerAccessRestricted: true,
-            restrictionMessage
+            restrictionMessage,
+            missedWeeks: missedWeeks || [],
+            primaryMissedWeek: primaryMissedWeek || null
           });
         }
       }
     }
+
 
     // Build query for Job model
     let query = { isActive: true };
