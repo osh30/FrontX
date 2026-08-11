@@ -112,7 +112,6 @@ const SettingsPage = ({ user }) => {
               
               <div className="space-y-4">
                 {[
-                  { title: "Public Profile", desc: "Allow other students and mentors to view your profile." },
                   { title: "Show Email", desc: "Display your university email on your public profile." },
                   { title: "Show Online Status", desc: "Let others see when you are active on the platform." }
                 ].map((item, idx) => (
