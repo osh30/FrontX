@@ -13,7 +13,7 @@ import logo from '../../assets/logo/frontx-logo.svg';
 
 const SIDEBAR_KEY = 'frontx_dashboard_sidebar_collapsed';
 
-const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', collapsed, setCollapsed }) => {
+const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', collapsed, setCollapsed, unreadNotifCount = 0 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [internalCollapsed, setInternalCollapsed] = useState(() => {
     try { return localStorage.getItem(SIDEBAR_KEY) === 'true'; } catch { return false; }
@@ -38,6 +38,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', colla
     { id: 'resources', label: 'Resources', icon: BookOpen },
     { id: 'learnings', label: 'Learnings', icon: PlayCircle },
     { id: 'blog', label: 'Blog', icon: PenTool },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'community', label: 'Community', icon: MessageCircle },
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -162,6 +163,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', colla
         <div className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-0.5 scrollbar-thin">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
+            const isNotif = item.id === 'notifications';
             return (
               <motion.button
                 key={item.id}
@@ -193,7 +195,12 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', colla
                 {!isActive && (
                   <div className="absolute inset-0 rounded-xl bg-white/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                 )}
-                <item.icon className={`w-[18px] h-[18px] shrink-0 relative z-10 transition-colors duration-200 ${isActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-300'}`} />
+                <div className="relative shrink-0 flex items-center justify-center">
+                  <item.icon className={`w-[18px] h-[18px] shrink-0 relative z-10 transition-colors duration-200 ${isActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-300'}`} />
+                  {isNotif && unreadNotifCount > 0 && isCollapsed && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-[#0B1120] shadow-sm animate-pulse" />
+                  )}
+                </div>
                 <AnimatePresence>
                   {!isCollapsed && (
                     <motion.span
@@ -201,9 +208,14 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', colla
                       animate={{ opacity: 1, width: 'auto' }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.15 }}
-                      className="overflow-hidden whitespace-nowrap relative z-10"
+                      className="overflow-hidden whitespace-nowrap relative z-10 flex-1 text-left flex items-center justify-between"
                     >
-                      {item.label}
+                      <span>{item.label}</span>
+                      {isNotif && unreadNotifCount > 0 && (
+                        <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-red-500 text-white shadow-sm shadow-red-500/30">
+                          {unreadNotifCount > 99 ? '99+' : unreadNotifCount}
+                        </span>
+                      )}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -211,6 +223,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', colla
             );
           })}
         </div>
+
 
         {/* Bottom section */}
         <div className="relative z-10 border-t border-white/[0.05] px-3 py-4 space-y-2">

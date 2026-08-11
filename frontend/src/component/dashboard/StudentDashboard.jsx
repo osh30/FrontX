@@ -53,7 +53,7 @@ const StudentDashboard = ({ user }) => {
   const pathParts = location.pathname.split('/');
   const activeTab = pathParts.length > 2 && pathParts[2] ? pathParts[2] : 'dashboard';
 
-  const showRightPanel = activeTab !== 'profile' && activeTab !== 'settings' && activeTab !== 'progress' && activeTab !== 'mentorship' && activeTab !== 'messages' && activeTab !== 'collaboration' && activeTab !== 'sessions' && activeTab !== 'meetings' && activeTab !== 'career' && activeTab !== 'skills' && activeTab !== 'ai-skill-analysis' && activeTab !== 'resources' && activeTab !== 'community' && activeTab !== 'learnings' && activeTab !== 'blog' && activeTab !== 'interviews';
+  const showRightPanel = activeTab !== 'profile' && activeTab !== 'settings' && activeTab !== 'progress' && activeTab !== 'mentorship' && activeTab !== 'messages' && activeTab !== 'collaboration' && activeTab !== 'sessions' && activeTab !== 'meetings' && activeTab !== 'career' && activeTab !== 'skills' && activeTab !== 'ai-skill-analysis' && activeTab !== 'resources' && activeTab !== 'community' && activeTab !== 'learnings' && activeTab !== 'blog' && activeTab !== 'interviews' && activeTab !== 'notifications';
 
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(SIDEBAR_KEY) === 'true'; } catch { return false; }
@@ -63,6 +63,28 @@ const StudentDashboard = ({ user }) => {
   const [viewedUserId, setViewedUserId] = useState(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  // Initial fetch for unread notifications count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch(`${API_BASE}/notifications`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const unread = data.filter(n => !n.isRead).length;
+          setUnreadNotifCount(unread);
+        }
+      } catch (err) {
+        console.error('Error fetching initial unread notifications count', err);
+      }
+    };
+    fetchUnreadCount();
+  }, []);
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ students: [], alumni: [], resources: [] });
@@ -96,7 +118,6 @@ const StudentDashboard = ({ user }) => {
       setIsProfileEditable(false);
     }
   }, [location.search, activeTab]);
-
 
   const handleViewProfile = (userId) => {
     setViewedUserId(userId);
@@ -277,7 +298,7 @@ const StudentDashboard = ({ user }) => {
       case 'messages':
         return <GlobalChat user={user} />;
       case 'notifications':
-        return <NotificationsPage />;
+        return <NotificationsPage onUnreadCount={setUnreadNotifCount} />;
       case 'settings':
         return <SettingsPage user={user} />;
       case 'profile': {
@@ -306,6 +327,7 @@ const StudentDashboard = ({ user }) => {
         activeTab={activeTab} 
         collapsed={collapsed}
         setCollapsed={handleCollapseToggle}
+        unreadNotifCount={unreadNotifCount}
         setActiveTab={(tab) => {
           navigate(tab === 'dashboard' ? '/dashboard' : `/dashboard/${tab}`);
           if (tab === 'profile') {
@@ -314,6 +336,7 @@ const StudentDashboard = ({ user }) => {
           }
         }} 
       />
+
 
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 min-w-0 flex flex-col h-full relative z-10 overflow-hidden">

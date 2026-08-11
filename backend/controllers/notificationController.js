@@ -49,3 +49,18 @@ exports.markAllAsRead = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Delete a specific notification
+exports.deleteNotification = async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndDelete({ _id: req.params.id, user: req.user.id });
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+    res.json({ message: 'Notification deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
