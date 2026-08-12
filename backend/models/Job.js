@@ -61,6 +61,19 @@ const jobSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Opportunity',
     default: null
+  },
+  opportunityType: {
+    type: String,
+    enum: ['Government Job', 'Private Job', 'Internship', 'Remote Job', 'Part-Time Job', 'Scholarship', 'Competition', 'full-time'],
+    default: 'Private Job'
+  },
+  applicationUrl: {
+    type: String,
+    default: ''
+  },
+  eligibility: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true

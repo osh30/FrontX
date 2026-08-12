@@ -182,6 +182,9 @@ const seed15Scholarships = async () => {
             $set: {
               title: rec.title,
               company: rec.organization,
+              opportunityType: 'Scholarship',
+              applicationUrl: rec.applyLink,
+              eligibility: rec.eligibility,
               description: `${rec.description}\n\nDeadline Details: ${rec.deadlineText}`,
               jobType: 'full-time',
               deadline: rec.deadlineDate,
@@ -215,6 +218,9 @@ const seed15Scholarships = async () => {
           await Job.create({
             title: opp.title,
             company: opp.companyName,
+            opportunityType: 'Scholarship',
+            applicationUrl: opp.applicationUrl,
+            eligibility: opp.eligibility.experienceRequired,
             description: opp.description.about,
             requirements: [],
             location: 'International',

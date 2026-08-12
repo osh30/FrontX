@@ -190,7 +190,7 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
       if (!token) return;
       const params = new URLSearchParams();
       if (search) params.set('search', search);
-      if (!fullPage) params.set('limit', '50');
+      params.set('limit', limit ? String(limit) : '100');
       const res = await axios.get(`${API}/api/jobs?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -213,7 +213,7 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
     } finally {
       setLoading(false);
     }
-  }, [search, fullPage]);
+  }, [search, limit]);
 
   const fetchApplied = useCallback(async () => {
     try {
@@ -248,12 +248,18 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [fetchJobs, fetchApplied]);
 
+  const getOppType = (job) => {
+    if (job.opportunityType) return job.opportunityType;
+    if (job.company?.toLowerCase().includes('govt') || job.title?.toLowerCase().includes('govt')) return 'Government Job';
+    return 'Private Job';
+  };
+
   // Filter jobs by selected opportunity type
   const filteredJobs = jobs.filter((job) => {
     if (selectedType === 'All') return true;
-    const oppType = job.opportunityType || (job.company?.toLowerCase().includes('govt') ? 'Government Job' : 'Private Job');
+    const oppType = getOppType(job);
     if (selectedType === 'Government Job') return oppType === 'Government Job';
-    if (selectedType === 'Private Job') return oppType === 'Private Job' || oppType === 'full-time' || oppType === 'internship';
+    if (selectedType === 'Private Job') return oppType === 'Private Job' || (oppType !== 'Scholarship' && oppType !== 'Competition' && oppType !== 'Government Job');
     if (selectedType === 'Scholarship') return oppType === 'Scholarship';
     if (selectedType === 'Competition') return oppType === 'Competition';
     return oppType === selectedType;
@@ -266,25 +272,25 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
     {
       id: 'Government Job',
       label: 'Govt Jobs',
-      count: jobs.filter(j => (j.opportunityType || (j.company?.toLowerCase().includes('govt') ? 'Government Job' : '') ) === 'Government Job').length
+      count: jobs.filter(j => getOppType(j) === 'Government Job').length
     },
     {
       id: 'Private Job',
       label: 'Non-Govt / Private Jobs',
       count: jobs.filter(j => {
-        const t = j.opportunityType || '';
-        return t === 'Private Job' || t === 'full-time' || t === 'internship' || (!t && !j.company?.toLowerCase().includes('govt'));
+        const t = getOppType(j);
+        return t === 'Private Job' || (t !== 'Scholarship' && t !== 'Competition' && t !== 'Government Job');
       }).length
     },
     {
       id: 'Scholarship',
       label: 'Scholarships',
-      count: jobs.filter(j => j.opportunityType === 'Scholarship').length
+      count: jobs.filter(j => getOppType(j) === 'Scholarship').length
     },
     {
       id: 'Competition',
       label: 'Competitions',
-      count: jobs.filter(j => j.opportunityType === 'Competition').length
+      count: jobs.filter(j => getOppType(j) === 'Competition').length
     },
   ];
 

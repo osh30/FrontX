@@ -14,6 +14,9 @@ const OPPORTUNITY_TO_JOB_TYPE = {
 const buildJobFromOpportunity = (opp, userId) => ({
   title: opp.title?.trim() || '',
   company: opp.companyName || 'Admin Posted',
+  opportunityType: opp.opportunityType || 'Private Job',
+  applicationUrl: opp.applicationUrl || '',
+  eligibility: opp.eligibility?.experienceRequired || '',
   description: opp.description?.about || '',
   requirements: opp.skills || [],
   location: opp.location || '',
