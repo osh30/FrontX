@@ -216,7 +216,7 @@ app.post('/api/verify-turnstile', async (req, res) => {
 });
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/frontx_db')
   .then(async () => {
     console.log("✅ MongoDB Connected Successfully");
 
