@@ -37,11 +37,11 @@ const courseSchema = new mongoose.Schema({
 
 const studyPlannerSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-  semester: { type: String, required: true },
+  semester: { type: String, default: 'Spring 2026' },
   semesterStartDate: { type: Date, default: null },
   semesterEndDate: { type: Date, default: null },
   courses: [courseSchema],
-  isSetupComplete: { type: Boolean, default: false }
+  isSetupComplete: { type: Boolean, default: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model('StudyPlanner', studyPlannerSchema);

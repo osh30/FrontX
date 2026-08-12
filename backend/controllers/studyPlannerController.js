@@ -339,7 +339,11 @@ exports.getPlanner = async (req, res) => {
   try {
     let planner = await StudyPlanner.findOne({ userId: req.user.id });
     if (!planner) {
-      planner = await StudyPlanner.create({ userId: req.user.id, semester: '', courses: [] });
+      planner = await StudyPlanner.create({ userId: req.user.id, semester: 'Spring 2026', courses: [], isSetupComplete: true });
+    } else if (!planner.isSetupComplete || !planner.semester) {
+      planner.isSetupComplete = true;
+      if (!planner.semester) planner.semester = 'Spring 2026';
+      await planner.save();
     }
 
     // Sync statuses and notifications based on courseAddedAt and dates
