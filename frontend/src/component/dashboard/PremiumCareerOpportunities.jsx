@@ -250,7 +250,12 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
 
   const getOppType = (job) => {
     if (job.opportunityType) return job.opportunityType;
-    if (job.company?.toLowerCase().includes('govt') || job.title?.toLowerCase().includes('govt')) return 'Government Job';
+    const title = (job.title || '').toLowerCase();
+    const comp = (job.companyName || job.company || '').toLowerCase();
+    if (title.includes('scholarship') || comp.includes('scholarship') || comp.includes('daad') || comp.includes('fulbright') || comp.includes('chevening') || comp.includes('mext') || comp.includes('eiffel') || comp.includes('erasmus') || comp.includes('turkey') || comp.includes('korea') || comp.includes('swiss') || comp.includes('vanier') || comp.includes('gates') || comp.includes('aga khan')) {
+      return 'Scholarship';
+    }
+    if (comp.includes('govt') || title.includes('govt')) return 'Government Job';
     return 'Private Job';
   };
 

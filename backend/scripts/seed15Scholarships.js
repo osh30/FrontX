@@ -143,13 +143,25 @@ const SCHOLARSHIP_RECORDS = [
 
 const seed15Scholarships = async () => {
   try {
-    let adminUser = await User.findOne({ role: 'admin' });
+    let adminUser = await User.findOne({
+      $or: [
+        { role: 'admin' },
+        { role: 'Admin' },
+        { email: { $regex: 'admin', $options: 'i' } }
+      ]
+    });
     if (!adminUser) {
       adminUser = await User.findOne({});
     }
     if (!adminUser) {
-      console.log('⚠️ No admin/user found for scholarship seeding.');
-      return { inserted: 0, skipped: 0 };
+      adminUser = await User.create({
+        name: 'System Admin',
+        email: 'admin.system@std.uftb.ac.bd',
+        password: 'adminpassword123',
+        role: 'admin',
+        department: 'Educational Technology and Engineering',
+        status: 'approved'
+      });
     }
 
     const adminId = adminUser._id;
@@ -158,46 +170,13 @@ const seed15Scholarships = async () => {
 
     for (const rec of SCHOLARSHIP_RECORDS) {
       // Check for duplicate by title and companyName/organization
-      const existing = await Opportunity.findOne({
+      let existing = await Opportunity.findOne({
         title: rec.title,
         opportunityType: 'Scholarship'
       });
 
-      if (existing) {
-        // Update existing record safely without duplicating
-        existing.companyName = rec.organization;
-        existing.description = { about: `${rec.description}\n\nDeadline Details: ${rec.deadlineText}` };
-        existing.eligibility = { experienceRequired: rec.eligibility };
-        existing.deadline = rec.deadlineDate;
-        existing.applicationUrl = rec.applyLink;
-        existing.status = 'active';
-        existing.visibility = ['student', 'alumni'];
-        existing.createdByRole = 'admin';
-        await existing.save();
-
-        // Also sync to Job model
-        await Job.updateOne(
-          { linkedOpportunityId: existing._id },
-          {
-            $set: {
-              title: rec.title,
-              company: rec.organization,
-              opportunityType: 'Scholarship',
-              applicationUrl: rec.applyLink,
-              eligibility: rec.eligibility,
-              description: `${rec.description}\n\nDeadline Details: ${rec.deadlineText}`,
-              jobType: 'full-time',
-              deadline: rec.deadlineDate,
-              isActive: true
-            }
-          },
-          { upsert: false }
-        );
-
-        skippedCount++;
-      } else {
-        // Create new opportunity doc
-        const opp = await Opportunity.create({
+      if (!existing) {
+        existing = await Opportunity.create({
           recruiter: adminId,
           companyId: adminId,
           companyName: rec.organization,
@@ -212,31 +191,58 @@ const seed15Scholarships = async () => {
           createdByRole: 'admin',
           featured: true
         });
-
-        // Sync to Job model for Student/Alumni dashboard (/api/jobs)
-        try {
-          await Job.create({
-            title: opp.title,
-            company: opp.companyName,
-            opportunityType: 'Scholarship',
-            applicationUrl: opp.applicationUrl,
-            eligibility: opp.eligibility.experienceRequired,
-            description: opp.description.about,
-            requirements: [],
-            location: 'International',
-            salaryRange: { min: 0, max: 0, currency: 'USD' },
-            jobType: 'full-time',
-            experienceLevel: 'entry',
-            postedBy: adminId,
-            deadline: opp.deadline,
-            isActive: true,
-            linkedOpportunityId: opp._id
-          });
-        } catch (jobErr) {
-          console.error(`Job model sync error for ${rec.title}:`, jobErr.message);
-        }
-
         insertedCount++;
+      } else {
+        existing.companyName = rec.organization;
+        existing.description = { about: `${rec.description}\n\nDeadline Details: ${rec.deadlineText}` };
+        existing.eligibility = { experienceRequired: rec.eligibility };
+        existing.deadline = rec.deadlineDate;
+        existing.applicationUrl = rec.applyLink;
+        existing.status = 'active';
+        existing.visibility = ['student', 'alumni'];
+        existing.createdByRole = 'admin';
+        await existing.save();
+        skippedCount++;
+      }
+
+      // Ensure Job model has matching document
+      const jobExisting = await Job.findOne({
+        $or: [
+          { linkedOpportunityId: existing._id },
+          { title: rec.title }
+        ]
+      });
+
+      if (jobExisting) {
+        jobExisting.title = rec.title;
+        jobExisting.company = rec.organization;
+        jobExisting.opportunityType = 'Scholarship';
+        jobExisting.applicationUrl = rec.applyLink;
+        jobExisting.eligibility = rec.eligibility;
+        jobExisting.description = `${rec.description}\n\nDeadline Details: ${rec.deadlineText}`;
+        jobExisting.jobType = 'full-time';
+        jobExisting.deadline = rec.deadlineDate;
+        jobExisting.isActive = true;
+        jobExisting.linkedOpportunityId = existing._id;
+        await jobExisting.save();
+      } else {
+        await Job.create({
+          title: rec.title,
+          company: rec.organization,
+          opportunityType: 'Scholarship',
+          applicationUrl: rec.applyLink,
+          eligibility: rec.eligibility,
+          description: `${rec.description}\n\nDeadline Details: ${rec.deadlineText}`,
+          requirements: [],
+          location: 'International',
+          salaryRange: { min: 0, max: 0, currency: 'USD' },
+          jobType: 'full-time',
+          experienceLevel: 'entry',
+          postedBy: adminId,
+          deadline: rec.deadlineDate,
+          isActive: true,
+          linkedOpportunityId: existing._id
+        });
       }
     }
 

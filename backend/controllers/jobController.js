@@ -61,6 +61,17 @@ const getJobs = async (req, res) => {
       ];
     }
 
+    // Auto-ensure 15 scholarships exist in DB (e.g. MongoDB Atlas production)
+    try {
+      const oppScholarCount = await Opportunity.countDocuments({ opportunityType: 'Scholarship' });
+      if (oppScholarCount < 15) {
+        const seed15Scholarships = require('../scripts/seed15Scholarships');
+        await seed15Scholarships();
+      }
+    } catch (e) {
+      console.error('Auto seed scholarship check non-blocking error:', e.message);
+    }
+
     // Fetch from Job model
     const jobsRaw = await Job.find(query)
       .populate('postedBy', 'name email profile')
@@ -68,12 +79,24 @@ const getJobs = async (req, res) => {
       .sort('-createdAt')
       .lean();
 
-    const jobs = jobsRaw.map(j => ({
-      ...j,
-      opportunityType: j.linkedOpportunityId?.opportunityType || j.opportunityType || (j.company?.toLowerCase().includes('govt') || j.title?.toLowerCase().includes('govt') ? 'Government Job' : 'Private Job'),
-      eligibility: j.linkedOpportunityId?.eligibility?.experienceRequired || j.eligibility || '',
-      applicationUrl: j.linkedOpportunityId?.applicationUrl || j.applicationUrl || '',
-    }));
+    const jobs = jobsRaw.map(j => {
+      let oppType = j.opportunityType;
+      if (!oppType || oppType === 'full-time' || oppType === 'Private Job') {
+        if (j.linkedOpportunityId?.opportunityType) {
+          oppType = j.linkedOpportunityId.opportunityType;
+        } else if (j.title?.toLowerCase().includes('scholarship') || j.company?.toLowerCase().includes('scholarship') || j.company?.toLowerCase().includes('daad') || j.company?.toLowerCase().includes('fulbright') || j.company?.toLowerCase().includes('chevening') || j.company?.toLowerCase().includes('mext') || j.company?.toLowerCase().includes('eiffel') || j.company?.toLowerCase().includes('erasmus')) {
+          oppType = 'Scholarship';
+        } else if (j.company?.toLowerCase().includes('govt') || j.title?.toLowerCase().includes('govt')) {
+          oppType = 'Government Job';
+        }
+      }
+      return {
+        ...j,
+        opportunityType: oppType || 'Private Job',
+        eligibility: j.linkedOpportunityId?.eligibility?.experienceRequired || j.eligibility || '',
+        applicationUrl: j.linkedOpportunityId?.applicationUrl || j.applicationUrl || '',
+      };
+    });
 
     // Fetch published opportunities from the Opportunity model that haven't been synced:
     //   - Admin-posted (Flow 1) -> status 'active'
