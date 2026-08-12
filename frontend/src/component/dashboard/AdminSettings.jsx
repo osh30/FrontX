@@ -260,10 +260,7 @@ const AdminSettings = () => {
           {activeTab === 'appearance' && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
               <div>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-500" />
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Theme & Display Settings</h2>
-                </div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Theme & Display Settings</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                   Choose your preferred theme style for the FrontX Admin Portal.
                 </p>
@@ -303,11 +300,8 @@ const AdminSettings = () => {
 
                       {/* Live Mini Preview Box */}
                       <div className={`rounded-xl p-3 border ${t.bgPreview} transition-all`}>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                          <span className="text-[10px] text-slate-400 font-mono ml-auto">Preview</span>
+                        <div className="flex items-center justify-end mb-2">
+                          <span className="text-[10px] text-slate-400 font-mono">Preview</span>
                         </div>
                         <div className={`rounded-lg p-2.5 ${t.cardPreview} flex items-center justify-between`}>
                           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t.title}</span>
