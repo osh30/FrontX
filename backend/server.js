@@ -220,6 +220,14 @@ mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://
   .then(async () => {
     console.log("✅ MongoDB Connected Successfully");
 
+    // Auto-seed 20 Alumni accounts if missing
+    try {
+      const autoSeedAlumni = require('./scripts/autoSeedAlumni');
+      await autoSeedAlumni();
+    } catch (seedErr) {
+      console.error('Auto seed alumni failed (non-blocking):', seedErr.message);
+    }
+
     // Backfill: sync unsynced admin-created Opportunities to Job model
     try {
       const Opportunity = require('./models/Opportunity');
