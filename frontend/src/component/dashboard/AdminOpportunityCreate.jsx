@@ -93,7 +93,121 @@ const AdminOpportunityCreate = () => {
 
   const showToast = (message, type = 'success') => setToast({ message, type });
 
+  const getLabel = (field) => {
+    if (form.type === 'Scholarship') {
+      switch (field) {
+        case 'title': return 'Scholarship Title';
+        case 'organization': return 'Organization / Provider';
+        case 'description': return 'Short Description';
+        case 'eligibility': return 'Eligibility';
+        case 'deadline': return 'Application Deadline';
+        case 'applyLink': return 'Apply Link (URL)';
+        default: return field;
+      }
+    } else if (form.type === 'Competition') {
+      switch (field) {
+        case 'title': return 'Competition Title';
+        case 'organization': return 'Organizer';
+        case 'description': return 'Short Description';
+        case 'eligibility': return 'Eligibility / Who Can Participate';
+        case 'deadline': return 'Registration Deadline';
+        case 'applyLink': return 'Registration Link (URL)';
+        default: return field;
+      }
+    } else {
+      switch (field) {
+        case 'title': return 'Opportunity Title';
+        case 'organization': return 'Organization / Company';
+        case 'description': return 'Description';
+        case 'eligibility': return 'Eligibility / Requirements';
+        case 'deadline': return 'Application Deadline';
+        case 'applyLink': return 'Apply Link (URL)';
+        default: return field;
+      }
+    }
+  };
+
+  const getPlaceholder = (field) => {
+    if (form.type === 'Scholarship') {
+      switch (field) {
+        case 'title': return 'e.g. Full-Bright Postgraduate Scholarship';
+        case 'organization': return 'e.g. DAAD, Commonwealth Foundation';
+        case 'description': return 'Provide a brief summary of funding, benefits, and coverage...';
+        case 'eligibility': return 'Who is eligible? (e.g. ETE Seniors with CGPA >= 3.5)';
+        case 'applyLink': return 'https://scholarship-provider.org/apply';
+        default: return '';
+      }
+    } else if (form.type === 'Competition') {
+      switch (field) {
+        case 'title': return 'e.g. National EdTech Hackathon 2026';
+        case 'organization': return 'e.g. IEEE UFTB Student Branch, BASIS';
+        case 'description': return 'Provide a brief summary of competition tracks, prizes, and rules...';
+        case 'eligibility': return 'Who can participate? (e.g. Open to all undergraduate engineering students)';
+        case 'applyLink': return 'https://competition.org/register';
+        default: return '';
+      }
+    } else {
+      switch (field) {
+        case 'title': return 'e.g. Software Engineer Position';
+        case 'organization': return 'e.g. Google, Ministry of Education';
+        case 'description': return 'Describe the opportunity in detail...';
+        case 'eligibility': return 'Who is eligible? What are the requirements?';
+        case 'applyLink': return 'https://...';
+        default: return '';
+      }
+    }
+  };
+
+  const isValidUrl = (url) => {
+    if (!url) return false;
+    try {
+      const parsed = new URL(url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`);
+      return Boolean(parsed.hostname);
+    } catch {
+      return false;
+    }
+  };
+
   const handlePublish = async () => {
+    const isScholarshipOrComp = form.type === 'Scholarship' || form.type === 'Competition';
+
+    if (!form.title.trim()) {
+      showToast(`Missing required field: ${getLabel('title')}`, 'error');
+      return;
+    }
+    if (!form.organization.trim()) {
+      showToast(`Missing required field: ${getLabel('organization')}`, 'error');
+      return;
+    }
+    if (!form.description.trim()) {
+      showToast(`Missing required field: ${getLabel('description')}`, 'error');
+      return;
+    }
+    if (!form.eligibility.trim()) {
+      showToast(`Missing required field: ${getLabel('eligibility')}`, 'error');
+      return;
+    }
+    if (!form.deadline) {
+      showToast(`Missing required field: ${getLabel('deadline')}`, 'error');
+      return;
+    }
+    if (isNaN(new Date(form.deadline).getTime())) {
+      showToast('Invalid date format for deadline', 'error');
+      return;
+    }
+
+    if (isScholarshipOrComp) {
+      if (!form.applyLink || !form.applyLink.trim()) {
+        showToast(`Missing required field: ${getLabel('applyLink')}`, 'error');
+        return;
+      }
+    }
+
+    if (form.applyLink && form.applyLink.trim() && !isValidUrl(form.applyLink)) {
+      showToast('Please enter a valid URL (e.g. https://example.com)', 'error');
+      return;
+    }
+
     setSubmitting(true);
     try {
       await axios.post(`${API_URL}/admin/opportunities`, form);
@@ -101,9 +215,20 @@ const AdminOpportunityCreate = () => {
       setTimeout(() => navigate('/admin/opportunities'), 1200);
     } catch (err) {
       console.error('Create failed:', err);
-      showToast('Failed to create opportunity', 'error');
+      showToast(err.response?.data?.message || 'Failed to create opportunity', 'error');
       setSubmitting(false);
     }
+  };
+
+  const isFormValid = () => {
+    const isScholarshipOrComp = form.type === 'Scholarship' || form.type === 'Competition';
+    if (!form.title.trim() || !form.organization.trim() || !form.description.trim() || !form.eligibility.trim() || !form.deadline) {
+      return false;
+    }
+    if (isScholarshipOrComp && !form.applyLink.trim()) {
+      return false;
+    }
+    return true;
   };
 
   const inputClass = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 shadow-sm transition-all";
@@ -176,48 +301,56 @@ const AdminOpportunityCreate = () => {
 
               {/* Title */}
               <div>
-                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Opportunity Title</label>
+                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                  {getLabel('title')} <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Software Engineer Position"
+                  placeholder={getPlaceholder('title')}
                   className={inputClass}
                 />
               </div>
 
               {/* Organization */}
               <div>
-                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Organization / Company</label>
+                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                  {getLabel('organization')} <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={form.organization}
                   onChange={(e) => setForm({ ...form, organization: e.target.value })}
-                  placeholder="e.g. Google, Ministry of Education"
+                  placeholder={getPlaceholder('organization')}
                   className={inputClass}
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Description</label>
+                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                  {getLabel('description')} <span className="text-red-500">*</span>
+                </label>
                 <textarea
-                  rows={5}
+                  rows={form.type === 'Scholarship' || form.type === 'Competition' ? 4 : 5}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="Describe the opportunity in detail..."
+                  placeholder={getPlaceholder('description')}
                   className={`${inputClass} resize-none`}
                 />
               </div>
 
               {/* Eligibility */}
               <div>
-                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Eligibility / Requirements</label>
+                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                  {getLabel('eligibility')} <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   rows={3}
                   value={form.eligibility}
                   onChange={(e) => setForm({ ...form, eligibility: e.target.value })}
-                  placeholder="Who is eligible? What are the requirements?"
+                  placeholder={getPlaceholder('eligibility')}
                   className={`${inputClass} resize-none`}
                 />
               </div>
@@ -225,7 +358,9 @@ const AdminOpportunityCreate = () => {
               {/* Deadline + Apply Link */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Application Deadline</label>
+                  <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                    {getLabel('deadline')} <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="date"
                     value={form.deadline}
@@ -234,28 +369,32 @@ const AdminOpportunityCreate = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Apply Link (URL)</label>
+                  <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>
+                    {getLabel('applyLink')} {(form.type === 'Scholarship' || form.type === 'Competition') && <span className="text-red-500">*</span>}
+                  </label>
                   <input
                     type="url"
                     value={form.applyLink}
                     onChange={(e) => setForm({ ...form, applyLink: e.target.value })}
-                    placeholder="https://..."
+                    placeholder={getPlaceholder('applyLink')}
                     className={inputClass}
                   />
                 </div>
               </div>
 
-              {/* Attachment */}
-              <div>
-                <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Attachment (Optional PDF/Image URL)</label>
-                <input
-                  type="text"
-                  value={form.attachment}
-                  onChange={(e) => setForm({ ...form, attachment: e.target.value })}
-                  placeholder="https://... (PDF or image link)"
-                  className={inputClass}
-                />
-              </div>
+              {/* Attachment - Optional only for Jobs */}
+              {form.type !== 'Scholarship' && form.type !== 'Competition' && (
+                <div>
+                  <label className="text-slate-700" style={{ fontSize: 13, fontWeight: 600, marginBottom: 6, display: 'block' }}>Attachment (Optional PDF/Image URL)</label>
+                  <input
+                    type="text"
+                    value={form.attachment}
+                    onChange={(e) => setForm({ ...form, attachment: e.target.value })}
+                    placeholder="https://... (PDF or image link)"
+                    className={inputClass}
+                  />
+                </div>
+              )}
 
             </div>
 
@@ -272,7 +411,7 @@ const AdminOpportunityCreate = () => {
               </button>
               <button
                 onClick={handlePublish}
-                disabled={submitting || !form.title || !form.organization || !form.description || !form.deadline}
+                disabled={submitting || !isFormValid()}
                 className="px-6 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(59,130,246,0.25)]"
                 style={{ background: 'linear-gradient(135deg, #3B82F6, #6366F1)' }}
               >

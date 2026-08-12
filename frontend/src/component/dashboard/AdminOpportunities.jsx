@@ -535,31 +535,37 @@ const AdminOpportunities = () => {
 
                   {/* Title */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Opportunity Title</label>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      {form.type === 'Scholarship' ? 'Scholarship Title' : form.type === 'Competition' ? 'Competition Title' : 'Opportunity Title'} *
+                    </label>
                     <input
                       type="text"
                       value={form.title}
                       onChange={(e) => setForm({ ...form, title: e.target.value })}
-                      placeholder="e.g. Software Engineer Position"
+                      placeholder={form.type === 'Scholarship' ? 'e.g. Full-Bright Postgraduate Scholarship' : form.type === 'Competition' ? 'e.g. National EdTech Hackathon 2026' : 'e.g. Software Engineer Position'}
                       className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-slate-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 transition-all"
                     />
                   </div>
 
                   {/* Organization */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Organization / Company</label>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      {form.type === 'Scholarship' ? 'Organization / Provider' : form.type === 'Competition' ? 'Organizer' : 'Organization / Company'} *
+                    </label>
                     <input
                       type="text"
                       value={form.organization}
                       onChange={(e) => setForm({ ...form, organization: e.target.value })}
-                      placeholder="e.g. Google, Ministry of Education"
+                      placeholder={form.type === 'Scholarship' ? 'e.g. DAAD, Commonwealth Foundation' : form.type === 'Competition' ? 'e.g. IEEE UFTB Student Branch' : 'e.g. Google, Ministry of Education'}
                       className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-slate-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 transition-all"
                     />
                   </div>
 
                   {/* Description */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Description</label>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      {form.type === 'Scholarship' || form.type === 'Competition' ? 'Short Description' : 'Description'} *
+                    </label>
                     <textarea
                       rows={4}
                       value={form.description}
@@ -571,7 +577,9 @@ const AdminOpportunities = () => {
 
                   {/* Eligibility */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Eligibility / Requirements</label>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      {form.type === 'Scholarship' ? 'Eligibility' : form.type === 'Competition' ? 'Eligibility / Who Can Participate' : 'Eligibility / Requirements'} *
+                    </label>
                     <textarea
                       rows={3}
                       value={form.eligibility}
@@ -584,7 +592,9 @@ const AdminOpportunities = () => {
                   {/* Deadline + Apply Link */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Application Deadline</label>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        {form.type === 'Competition' ? 'Registration Deadline' : 'Application Deadline'} *
+                      </label>
                       <input
                         type="date"
                         value={form.deadline}
@@ -593,7 +603,9 @@ const AdminOpportunities = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Apply Link (URL)</label>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                        {form.type === 'Competition' ? 'Registration Link (URL)' : 'Apply Link (URL)'} {(form.type === 'Scholarship' || form.type === 'Competition') ? '*' : ''}
+                      </label>
                       <input
                         type="url"
                         value={form.applyLink}
@@ -604,17 +616,19 @@ const AdminOpportunities = () => {
                     </div>
                   </div>
 
-                  {/* Attachment */}
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Attachment (Optional PDF/Image URL)</label>
-                    <input
-                      type="text"
-                      value={form.attachment}
-                      onChange={(e) => setForm({ ...form, attachment: e.target.value })}
-                      placeholder="https://... (PDF or image link)"
-                      className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-slate-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 transition-all"
-                    />
-                  </div>
+                  {/* Attachment - Optional only for Jobs */}
+                  {form.type !== 'Scholarship' && form.type !== 'Competition' && (
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Attachment (Optional PDF/Image URL)</label>
+                      <input
+                        type="text"
+                        value={form.attachment}
+                        onChange={(e) => setForm({ ...form, attachment: e.target.value })}
+                        placeholder="https://... (PDF or image link)"
+                        className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-slate-600 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30 transition-all"
+                      />
+                    </div>
+                  )}
 
                   {/* Featured Toggle */}
                   <div className="flex items-center justify-between py-3 px-4 bg-white/[0.03] border border-white/[0.06] rounded-xl">
@@ -643,7 +657,7 @@ const AdminOpportunities = () => {
                   </button>
                   <button
                     onClick={handleUpdate}
-                    disabled={submitting || !form.title || !form.organization || !form.description || !form.deadline}
+                    disabled={submitting || !form.title || !form.organization || !form.description || !form.deadline || ((form.type === 'Scholarship' || form.type === 'Competition') && !form.applyLink)}
                     className="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     style={{ background: 'linear-gradient(135deg, #3B82F6, #6366F1)' }}
                   >
