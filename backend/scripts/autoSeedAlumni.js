@@ -75,14 +75,17 @@ const autoSeedAlumni = async () => {
       console.error('Department cleanup error:', deptErr.message);
     }
 
-    // Auto-enrich all 20 alumni profiles and Shanta
+    // Auto-enrich all 20 alumni profiles and Shanta, and seed 15 Scholarships
     try {
       const enrich1 = require('./enrich10Alumni');
       const enrich2 = require('./enrichRemaining10Alumni');
       const enrichS = require('./enrichShanta');
+      const seedScholarships = require('./seed15Scholarships');
+
       if (typeof enrich1 === 'function') await enrich1();
       if (typeof enrich2 === 'function') await enrich2();
       if (typeof enrichS === 'function') await enrichS();
+      if (typeof seedScholarships === 'function') await seedScholarships();
     } catch (e) {
       console.error('Alumni enrichment auto-run error:', e.message);
     }
