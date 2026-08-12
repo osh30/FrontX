@@ -63,11 +63,14 @@ const autoSeedAlumni = async () => {
       console.log(`🎓 All 20 Alumni accounts verified in database.`);
     }
 
-    // Auto-enrich the 10 target alumni if their projects/research are empty
+    // Auto-enrich all 20 alumni profiles
     try {
-      const enrichmentModule = require('./enrich10Alumni');
+      const enrich1 = require('./enrich10Alumni');
+      const enrich2 = require('./enrichRemaining10Alumni');
+      if (typeof enrich1 === 'function') await enrich1();
+      if (typeof enrich2 === 'function') await enrich2();
     } catch (e) {
-      // module executed via script
+      console.error('Alumni enrichment auto-run error:', e.message);
     }
   } catch (error) {
     console.error('Auto-seed alumni error (non-blocking):', error.message);
