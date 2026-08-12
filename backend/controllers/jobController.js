@@ -62,10 +62,18 @@ const getJobs = async (req, res) => {
     }
 
     // Fetch from Job model
-    const jobs = await Job.find(query)
+    const jobsRaw = await Job.find(query)
       .populate('postedBy', 'name email profile')
+      .populate('linkedOpportunityId')
       .sort('-createdAt')
       .lean();
+
+    const jobs = jobsRaw.map(j => ({
+      ...j,
+      opportunityType: j.linkedOpportunityId?.opportunityType || j.opportunityType || (j.company?.toLowerCase().includes('govt') || j.title?.toLowerCase().includes('govt') ? 'Government Job' : 'Private Job'),
+      eligibility: j.linkedOpportunityId?.eligibility?.experienceRequired || j.eligibility || '',
+      applicationUrl: j.linkedOpportunityId?.applicationUrl || j.applicationUrl || '',
+    }));
 
     // Fetch published opportunities from the Opportunity model that haven't been synced:
     //   - Admin-posted (Flow 1) -> status 'active'
@@ -109,7 +117,7 @@ const getJobs = async (req, res) => {
 
       const syncedOppIds = jobs
         .filter(j => j.linkedOpportunityId)
-        .map(j => j.linkedOpportunityId.toString());
+        .map(j => (j.linkedOpportunityId._id || j.linkedOpportunityId).toString());
 
       if (syncedOppIds.length > 0) {
         conditions.push({ _id: { $nin: syncedOppIds } });
@@ -127,7 +135,10 @@ const getJobs = async (req, res) => {
         _id: opp._id,
         title: opp.title,
         company: opp.companyName || 'Admin Posted',
+        opportunityType: opp.opportunityType,
         description: opp.description?.about || '',
+        eligibility: opp.eligibility?.experienceRequired || '',
+        applicationUrl: opp.applicationUrl || '',
         requirements: opp.skills || [],
         location: opp.location || '',
         salaryRange: {

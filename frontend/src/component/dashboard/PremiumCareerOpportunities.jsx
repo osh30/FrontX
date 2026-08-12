@@ -5,35 +5,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase, Search, MapPin, Clock, Calendar, Building2,
   ChevronDown, X, Loader2, CheckCircle, ExternalLink,
-  Wifi, Home, Map, Tag, AlertTriangle, BookOpen, Lock, Upload
+  Wifi, Home, Map, Tag, AlertTriangle, BookOpen, Lock, Upload,
+  GraduationCap, Trophy, ShieldCheck, Sparkles, Filter
 } from 'lucide-react';
 import axios from 'axios';
-import toast from 'react-hot-toast';
 
 const API = API_URL;
 
-const JOB_TYPE_BADGES = {
-  'full-time': { label: 'Full-Time', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
-  'part-time': { label: 'Part-Time', bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
-  'internship': { label: 'Internship', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-  'remote': { label: 'Remote', bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
-  'hybrid': { label: 'Hybrid', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-};
-
-const WORK_MODE_MAP = {
-  'remote': 'Remote',
-  'hybrid': 'Hybrid',
+const TYPE_CONFIG = {
+  'Government Job': { label: 'Govt Job', bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/25', icon: ShieldCheck },
+  'Private Job': { label: 'Private Job', bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/25', icon: Briefcase },
+  'Scholarship': { label: 'Scholarship', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/25', icon: GraduationCap },
+  'Competition': { label: 'Competition', bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/25', icon: Trophy },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
+  hidden: { opacity: 0, y: 16 },
   visible: (i = 0) => ({
     opacity: 1, y: 0,
-    transition: { delay: i * 0.04, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { delay: i * 0.03, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] },
   }),
 };
 
-const CompanyLogo = ({ name, size = 48 }) => {
+const CompanyLogo = ({ name, size = 42 }) => {
   const initial = (name || 'A').charAt(0).toUpperCase();
   const colors = [
     'from-blue-600 to-indigo-700',
@@ -50,7 +44,7 @@ const CompanyLogo = ({ name, size = 48 }) => {
       className={`shrink-0 rounded-xl bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-lg shadow-black/20 border border-white/10`}
       style={{ width: size, height: size }}
     >
-      <span className="text-white font-bold" style={{ fontSize: size * 0.4 }}>{initial}</span>
+      <span className="text-white font-extrabold" style={{ fontSize: size * 0.42 }}>{initial}</span>
     </div>
   );
 };
@@ -61,6 +55,10 @@ const OpportunityCard = ({ opp, index, appliedIds }) => {
 
   const handleApply = (e) => {
     e.stopPropagation();
+    if (opp.applicationUrl) {
+      window.open(opp.applicationUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     const basePath = location.pathname.startsWith('/admin')
       ? '/admin/career'
       : location.pathname.startsWith('/recruiter')
@@ -79,70 +77,94 @@ const OpportunityCard = ({ opp, index, appliedIds }) => {
   };
 
   const isApplied = appliedIds.has(opp._id);
+  const typeKey = opp.opportunityType || (opp.company?.toLowerCase().includes('govt') ? 'Government Job' : 'Private Job');
+  const typeStyle = TYPE_CONFIG[typeKey] || { label: typeKey || 'Opportunity', bg: 'bg-blue-500/15', text: 'text-blue-400', border: 'border-blue-500/25', icon: Tag };
+  const TypeIcon = typeStyle.icon;
+
+  const formatDate = (d) => {
+    if (!d) return null;
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return null;
+    return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const formattedDeadline = formatDate(opp.deadline);
 
   return (
     <motion.div
       variants={fadeUp}
       custom={index}
       onClick={handleView}
-      className="group relative bg-[#0D1527] border border-slate-800 hover:border-blue-500/30 rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-950/20 flex flex-col justify-between"
+      className="group relative bg-[#0D1527] border border-slate-800 hover:border-blue-500/40 rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-950/30 flex flex-col justify-between"
     >
       <div>
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <CompanyLogo name={opp.companyName || opp.company} size={44} />
-            <div>
-              <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
+        {/* Header: Company Logo + Title + Type Badge */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <CompanyLogo name={opp.companyName || opp.company} size={42} />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
                 {opp.title}
               </h3>
-              <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                <Building2 className="w-3 h-3 text-slate-500" />
-                {opp.companyName || opp.company}
+              <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-1 truncate">
+                <Building2 className="w-3 h-3 text-slate-500 shrink-0" />
+                <span className="truncate font-medium">{opp.companyName || opp.company}</span>
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          {opp.opportunityType && (
-            <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
-              <Tag className="w-3 h-3" />
-              {opp.opportunityType}
-            </span>
-          )}
+        {/* Badges & Meta Pills */}
+        <div className="flex flex-wrap items-center gap-2 my-3">
+          <span className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border flex items-center gap-1.5 ${typeStyle.bg} ${typeStyle.text} ${typeStyle.border}`}>
+            <TypeIcon className="w-3 h-3" />
+            {typeStyle.label}
+          </span>
+
           {opp.location && (
-            <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/60 text-slate-300 flex items-center gap-1">
+            <span className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800/80 text-slate-300 border border-slate-700/50 flex items-center gap-1">
               <MapPin className="w-3 h-3 text-slate-400" />
-              {opp.location}
+              <span className="truncate max-w-[120px]">{opp.location}</span>
             </span>
           )}
-          {opp.employmentMode && (
-            <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/60 text-slate-300 flex items-center gap-1">
-              <Clock className="w-3 h-3 text-slate-400" />
-              {opp.employmentMode}
+
+          {formattedDeadline && (
+            <span className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800/80 text-slate-300 border border-slate-700/50 flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-slate-400" />
+              {formattedDeadline}
             </span>
           )}
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between mt-2">
-        <div>
-          {opp.salary ? (
-            <span className="text-xs font-bold text-emerald-400">{opp.salary}</span>
+      {/* Footer: Salary/Free + Apply Button */}
+      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between mt-3">
+        <div className="min-w-0 pr-2">
+          {typeKey === 'Scholarship' || typeKey === 'Competition' ? (
+            <span className="text-xs font-bold text-emerald-400">Official Portal</span>
+          ) : opp.salary ? (
+            <span className="text-xs font-bold text-emerald-400 truncate block">{opp.salary}</span>
           ) : (
-            <span className="text-xs text-slate-500">Salary Negotiable</span>
+            <span className="text-xs text-slate-500">Negotiable</span>
           )}
         </div>
+
         <button
           onClick={handleApply}
           disabled={isApplied}
-          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
             isApplied
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default'
-              : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-900/30'
+              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 cursor-default'
+              : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-900/30 active:scale-95'
           }`}
         >
-          {isApplied ? <><CheckCircle className="w-3.5 h-3.5" /> Applied</> : 'Apply Now'}
+          {isApplied ? (
+            <><CheckCircle className="w-3.5 h-3.5" /> Applied</>
+          ) : opp.applicationUrl ? (
+            <><ExternalLink className="w-3.5 h-3.5" /> Apply Now</>
+          ) : (
+            'Apply Now'
+          )}
         </button>
       </div>
     </motion.div>
@@ -154,6 +176,7 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedType, setSelectedType] = useState('All');
   const [appliedIds, setAppliedIds] = useState(new Set());
   const [restricted, setRestricted] = useState(false);
   const [restrictionMsg, setRestrictionMsg] = useState('');
@@ -204,21 +227,15 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
           if (app.job?.id) ids.add(app.job.id);
           if (app.linkedOpportunityId) ids.add(app.linkedOpportunityId);
         });
-      } catch (e) {
-        // silently fail
-      }
+      } catch (e) {}
       try {
         const res = await axios.get(`${API}/api/opportunities/my-applications/me`, { headers });
         (res.data.applications || []).forEach(app => {
           if (app.opportunity?._id) ids.add(app.opportunity._id);
         });
-      } catch (e) {
-        // silently fail
-      }
+      } catch (e) {}
       setAppliedIds(ids);
-    } catch (err) {
-      // silently fail
-    }
+    } catch (err) {}
   }, []);
 
   useEffect(() => {
@@ -231,7 +248,45 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [fetchJobs, fetchApplied]);
 
-  const displayJobs = limit ? jobs.slice(0, limit) : jobs;
+  // Filter jobs by selected opportunity type
+  const filteredJobs = jobs.filter((job) => {
+    if (selectedType === 'All') return true;
+    const oppType = job.opportunityType || (job.company?.toLowerCase().includes('govt') ? 'Government Job' : 'Private Job');
+    if (selectedType === 'Government Job') return oppType === 'Government Job';
+    if (selectedType === 'Private Job') return oppType === 'Private Job' || oppType === 'full-time' || oppType === 'internship';
+    if (selectedType === 'Scholarship') return oppType === 'Scholarship';
+    if (selectedType === 'Competition') return oppType === 'Competition';
+    return oppType === selectedType;
+  });
+
+  const displayJobs = limit ? filteredJobs.slice(0, limit) : filteredJobs;
+
+  const filterTabs = [
+    { id: 'All', label: 'All Opportunities', count: jobs.length },
+    {
+      id: 'Government Job',
+      label: 'Govt Jobs',
+      count: jobs.filter(j => (j.opportunityType || (j.company?.toLowerCase().includes('govt') ? 'Government Job' : '') ) === 'Government Job').length
+    },
+    {
+      id: 'Private Job',
+      label: 'Non-Govt / Private Jobs',
+      count: jobs.filter(j => {
+        const t = j.opportunityType || '';
+        return t === 'Private Job' || t === 'full-time' || t === 'internship' || (!t && !j.company?.toLowerCase().includes('govt'));
+      }).length
+    },
+    {
+      id: 'Scholarship',
+      label: 'Scholarships',
+      count: jobs.filter(j => j.opportunityType === 'Scholarship').length
+    },
+    {
+      id: 'Competition',
+      label: 'Competitions',
+      count: jobs.filter(j => j.opportunityType === 'Competition').length
+    },
+  ];
 
   return (
     <motion.div
@@ -242,7 +297,7 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
     >
       {/* Hero Banner */}
       {fullPage && (
-        <motion.div variants={fadeUp} className="relative overflow-hidden rounded-2xl mb-8 p-[1px]">
+        <motion.div variants={fadeUp} className="relative overflow-hidden rounded-2xl mb-6 p-[1px]">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.09] via-white/[0.04] to-white/[0.07]" />
           <div
             className="relative rounded-[calc(1rem-1px)] overflow-hidden"
@@ -252,13 +307,13 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
           >
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
 
-            <div className="relative z-10 px-8 sm:px-10 py-10 sm:py-12 flex flex-col sm:flex-row items-center gap-8">
-              <div className="flex-1 space-y-4">
-                <h1 className="text-[32px] sm:text-[40px] font-[800] text-white tracking-[-0.03em] leading-[1.1]">
-                  Career<br />Opportunities
+            <div className="relative z-10 px-8 sm:px-10 py-8 sm:py-10 flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex-1 space-y-2">
+                <h1 className="text-[30px] sm:text-[36px] font-[800] text-white tracking-[-0.03em] leading-[1.1]">
+                  Career Opportunities
                 </h1>
-                <p className="text-[17px] text-slate-400 leading-[1.6] max-w-lg mt-1">
-                  Explore internships, research opportunities, and career openings posted by the admin.
+                <p className="text-[15px] text-slate-400 leading-[1.6] max-w-xl">
+                  Explore government & private jobs, fully-funded scholarships, and national competitions.
                 </p>
               </div>
             </div>
@@ -266,27 +321,56 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
         </motion.div>
       )}
 
+      {/* Search & Filter Bar */}
       {!restricted && (
-        <motion.div variants={fadeUp} custom={1} className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by title or company..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 shadow-sm transition-all"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
-                <X className="w-4 h-4" />
-              </button>
-            )}
+        <motion.div variants={fadeUp} custom={1} className="mb-6 space-y-4">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by title, provider, or company..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 shadow-sm transition-all"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Category Filter Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {filterTabs.map((tab) => {
+              const isActive = selectedType === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedType(tab.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </motion.div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area — 3 Grids per Row */}
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-10 h-10 rounded-full border-2 border-slate-200 border-t-blue-500 animate-spin" />
@@ -334,15 +418,28 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
           </button>
         </motion.div>
       ) : displayJobs.length === 0 ? (
-        <div className="text-center py-20">
+        <div className="text-center py-20 bg-white border border-slate-200 rounded-3xl">
           <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 font-medium">No opportunities available at the moment.</p>
-          <p className="text-xs text-slate-400 mt-1">Check back later for new opportunities.</p>
+          <p className="text-slate-700 font-bold text-base">No opportunities found</p>
+          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+            {selectedType !== 'All'
+              ? `No ${selectedType} entries matched your criteria. Try selecting "All Opportunities".`
+              : 'Check back later for new opportunities.'}
+          </p>
+          {selectedType !== 'All' && (
+            <button
+              onClick={() => setSelectedType('All')}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-sm hover:bg-blue-500 transition-all"
+            >
+              Show All Opportunities
+            </button>
+          )}
         </div>
       ) : (
+        /* 3 CARDS FIT IN ONE ROW ON LG & XL SCREENS */
         <motion.div
-          variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+          variants={{ visible: { transition: { staggerChildren: 0.04 } } }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5"
         >
           {displayJobs.map((opp, i) => (
             <OpportunityCard
