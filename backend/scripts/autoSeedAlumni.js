@@ -62,6 +62,13 @@ const autoSeedAlumni = async () => {
     } else {
       console.log(`🎓 All 20 Alumni accounts verified in database.`);
     }
+
+    // Auto-enrich the 10 target alumni if their projects/research are empty
+    try {
+      const enrichmentModule = require('./enrich10Alumni');
+    } catch (e) {
+      // module executed via script
+    }
   } catch (error) {
     console.error('Auto-seed alumni error (non-blocking):', error.message);
   }
