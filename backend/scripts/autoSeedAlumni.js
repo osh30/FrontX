@@ -61,6 +61,18 @@ const autoSeedAlumni = async () => {
       console.log(`🎓 Auto-seeded ${createdCount} Alumni account(s) in database.`);
     } else {
       console.log(`🎓 All 20 Alumni accounts verified in database.`);
+    // Ensure Shanta and any EEE/CS departments are updated to Educational Technology and Engineering
+    try {
+      await User.updateMany(
+        { name: { $regex: 'shanta', $options: 'i' } },
+        { $set: { department: 'Educational Technology and Engineering' } }
+      );
+      await User.updateMany(
+        { department: { $in: ['EEE', 'CS', 'CSE', 'Computer Science'] } },
+        { $set: { department: 'Educational Technology and Engineering' } }
+      );
+    } catch (deptErr) {
+      console.error('Department cleanup error:', deptErr.message);
     }
 
     // Auto-enrich all 20 alumni profiles

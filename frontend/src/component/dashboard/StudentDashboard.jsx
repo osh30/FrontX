@@ -624,7 +624,7 @@ const MentorshipPage = ({ onViewProfile }) => {
           setAlumni(prev => [...prev, ...data.mentors]);
         } else {
           setAlumni(data.mentors);
-          setDepartments(data.departments || []);
+          setDepartments((data.departments || []).filter(d => d !== 'CS' && d !== 'EEE' && d !== 'CSE' && d !== 'Computer Science'));
         }
         setTotal(data.total);
         setTotalPages(data.totalPages);
@@ -702,7 +702,7 @@ const MentorshipPage = ({ onViewProfile }) => {
           <select value={department} onChange={e => setDepartment(e.target.value)}
             className="pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 transition-all appearance-none cursor-pointer min-w-[180px]">
             <option value="">All Departments</option>
-            {departments.map(d => <option key={d} value={d}>{d}</option>)}
+            {departments.filter(d => d !== 'CS' && d !== 'EEE' && d !== 'CSE' && d !== 'Computer Science').map(d => <option key={d} value={d}>{d}</option>)}
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
         </div>

@@ -170,7 +170,8 @@ const getMentors = async (req, res) => {
       .skip((parseInt(page) - 1) * parseInt(limit))
       .limit(parseInt(limit));
 
-    const departments = await User.distinct('department', { role: 'alumni', department: { $ne: null, $ne: '' } });
+    const rawDepartments = await User.distinct('department', { role: 'alumni', department: { $ne: null, $ne: '' } });
+    const departments = rawDepartments.filter(d => d !== 'CS' && d !== 'EEE' && d !== 'CSE' && d !== 'Computer Science');
 
     res.json({
       mentors,
