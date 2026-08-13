@@ -135,13 +135,31 @@ const OpportunityCard = ({ opp, index, appliedIds }) => {
             </span>
           )}
         </div>
+
+        {/* Official Portal URL Link */}
+        {opp.applicationUrl && (
+          <div className="mt-2.5 pt-2 border-t border-slate-800/60 flex items-center justify-between gap-2 text-xs">
+            <span className="text-[11px] font-medium text-slate-400 shrink-0">Official Portal:</span>
+            <a
+              href={opp.applicationUrl.startsWith('http') ? opp.applicationUrl : `https://${opp.applicationUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-[11px] font-bold text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 truncate max-w-[190px]"
+              title={opp.applicationUrl}
+            >
+              <span className="truncate">{opp.applicationUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span>
+              <ExternalLink className="w-3 h-3 shrink-0" />
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Footer: Salary/Free + Apply Button */}
       <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between mt-3">
         <div className="min-w-0 pr-2">
           {typeKey === 'Scholarship' || typeKey === 'Competition' ? (
-            <span className="text-xs font-bold text-emerald-400">Official Portal</span>
+            <span className="text-xs font-bold text-emerald-400">Fully Funded</span>
           ) : opp.salary ? (
             <span className="text-xs font-bold text-emerald-400 truncate block">{opp.salary}</span>
           ) : (
@@ -161,7 +179,7 @@ const OpportunityCard = ({ opp, index, appliedIds }) => {
           {isApplied ? (
             <><CheckCircle className="w-3.5 h-3.5" /> Applied</>
           ) : opp.applicationUrl ? (
-            <><ExternalLink className="w-3.5 h-3.5" /> Apply Now</>
+            <><ExternalLink className="w-3.5 h-3.5" /> Apply Portal</>
           ) : (
             'Apply Now'
           )}
