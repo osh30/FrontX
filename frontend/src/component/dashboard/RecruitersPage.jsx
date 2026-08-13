@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Building2, Mail, Briefcase, Search, CheckCircle, ExternalLink, ShieldCheck, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Building2, Mail, Briefcase, Search, ShieldCheck, X,
+  ExternalLink, Calendar, MapPin, Tag, CheckCircle2, ArrowRight
+} from 'lucide-react';
 import { API_BASE } from '../../config/api';
+import { useNavigate } from 'react-router-dom';
 
 const RecruitersPage = () => {
   const [recruiters, setRecruiters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRecruiter, setSelectedRecruiter] = useState(null);
+  const [showDrawer, setShowDrawer] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRecruiters();
@@ -40,6 +47,11 @@ const RecruitersPage = () => {
     );
   });
 
+  const handleCardClick = (recruiter) => {
+    setSelectedRecruiter(recruiter);
+    setShowDrawer(true);
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* ===== HERO BANNER ===== */}
@@ -58,7 +70,7 @@ const RecruitersPage = () => {
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">Connected Recruiters</h1>
             <p className="text-slate-300 text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
-              Explore and connect with verified company recruiters, hiring partners, and technical talent leads connected with FrontX.
+              Explore verified company recruiters and hiring managers connected with FrontX. Click any card to view complete profile and active opportunities.
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/10 shrink-0">
@@ -108,8 +120,10 @@ const RecruitersPage = () => {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-300 flex flex-col justify-between group"
+              onClick={() => handleCardClick(recruiter)}
+              className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
             >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
               <div>
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5 shadow-md overflow-hidden shrink-0">
@@ -144,19 +158,145 @@ const RecruitersPage = () => {
 
               <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
-                  <Briefcase className="w-3 h-3 text-slate-400" /> {recruiter.activeJobsCount || 3} Active Jobs
+                  <Briefcase className="w-3 h-3 text-slate-400" /> {recruiter.activeJobsCount || (recruiter.opportunities?.length || 0)} Active Jobs
                 </span>
-                <a
-                  href={`mailto:${recruiter.email}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white text-xs font-bold transition-all shadow-sm"
-                >
-                  <Mail className="w-3.5 h-3.5" /> Contact Recruiter
-                </a>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white text-xs font-bold transition-all shadow-sm">
+                  View Profile <ArrowRight className="w-3.5 h-3.5" />
+                </span>
               </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      {/* ===== RECRUITER DETAILS DRAWER ===== */}
+      <AnimatePresence>
+        {showDrawer && selectedRecruiter && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDrawer(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed right-0 top-0 h-full w-full max-w-lg bg-white shadow-2xl z-50 overflow-y-auto flex flex-col"
+            >
+              {/* Drawer Header */}
+              <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-bold text-slate-900">Recruiter Details</h3>
+                </div>
+                <button
+                  onClick={() => setShowDrawer(false)}
+                  className="p-2 hover:bg-slate-100 rounded-xl text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="p-6 space-y-6 flex-1">
+                {/* Profile Card Header */}
+                <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="flex items-start gap-4 relative z-10">
+                    <div className="w-16 h-16 rounded-2xl bg-white p-0.5 shadow-md overflow-hidden shrink-0">
+                      {selectedRecruiter.companyLogo || selectedRecruiter.profilePicture ? (
+                        <img
+                          src={selectedRecruiter.companyLogo || selectedRecruiter.profilePicture}
+                          alt={selectedRecruiter.name}
+                          className="w-full h-full object-cover rounded-[14px]"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-blue-600 text-white font-bold text-2xl">
+                          {selectedRecruiter.name?.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white">{selectedRecruiter.name}</h2>
+                      <p className="text-xs text-blue-400 font-semibold mt-0.5">{selectedRecruiter.companyName || 'Corporate Partner'}</p>
+                      <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                        <CheckCircle2 className="w-3 h-3" /> Official Hiring Manager
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
+                    <a
+                      href={`mailto:${selectedRecruiter.email}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md"
+                    >
+                      <Mail className="w-3.5 h-3.5" /> Email Recruiter
+                    </a>
+                    <span className="text-slate-400 text-[11px] truncate">{selectedRecruiter.email}</span>
+                  </div>
+                </div>
+
+                {/* About / Bio Section */}
+                <div>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">About Recruiter</h4>
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-xs text-slate-700 leading-relaxed">
+                    {selectedRecruiter.bio || 'Talent Acquisition Leader dedicated to connecting top tech candidates with growth opportunities.'}
+                  </div>
+                </div>
+
+                {/* Active Job Opportunities */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Posted Opportunities</h4>
+                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                      {selectedRecruiter.opportunities?.length || 0} Listed
+                    </span>
+                  </div>
+
+                  {!selectedRecruiter.opportunities || selectedRecruiter.opportunities.length === 0 ? (
+                    <div className="bg-slate-50 rounded-2xl p-6 text-center border border-dashed border-slate-200">
+                      <Briefcase className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="text-xs font-semibold text-slate-600">No active job posts directly listed right now</p>
+                      <p className="text-[11px] text-slate-400 mt-1">Check back soon or contact recruiter directly.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedRecruiter.opportunities.map((opp, i) => (
+                        <div
+                          key={opp._id || i}
+                          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:border-blue-300 transition-all flex items-center justify-between gap-3"
+                        >
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">{opp.title}</p>
+                            <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 flex-wrap">
+                              {opp.type && <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{opp.type}</span>}
+                              {opp.location && <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3 text-slate-400" />{opp.location}</span>}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setShowDrawer(false);
+                              navigate(`/dashboard/career?opp=${opp._id}`);
+                            }}
+                            className="p-2 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-xl transition-all shrink-0"
+                            title="View Job Details"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
