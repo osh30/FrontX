@@ -202,7 +202,21 @@ const getStudents = async (req, res) => {
 // @access  Private
 const getRecruiters = async (req, res) => {
   try {
-    const recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
+    let recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
+
+    // If no recruiters found in DB, ensure real recruiters exist
+    if (!recruiters || recruiters.length === 0) {
+      try {
+        const ensureRealRecruiters = require('../scripts/ensureRealRecruiters');
+        if (typeof ensureRealRecruiters === 'function') {
+          await ensureRealRecruiters();
+        }
+      } catch (e) {
+        console.error('Ensure recruiters error:', e.message);
+      }
+      recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
+    }
+
     const Opportunity = require('../models/Opportunity');
 
     const enrichedRecruiters = await Promise.all(recruiters.map(async (r) => {
