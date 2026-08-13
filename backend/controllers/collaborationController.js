@@ -97,6 +97,16 @@ const createPost = async (req, res) => {
 // @access  Private
 const getPosts = async (req, res) => {
   try {
+    try {
+      const count = await CollaborationPost.countDocuments();
+      if (count < 7) {
+        const seed7 = require('../scripts/seed7AlumniCollaborations');
+        if (typeof seed7 === 'function') await seed7();
+      }
+    } catch (e) {
+      console.error('Auto-seed 7 collaborations error:', e.message);
+    }
+
     const posts = await CollaborationPost.find({ status: 'active' })
       .populate('alumni', 'name department profilePicture bio session')
       .sort({ createdAt: -1 });
