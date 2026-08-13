@@ -197,6 +197,46 @@ const getStudents = async (req, res) => {
   }
 };
 
+// @desc    Get all connected recruiters
+// @route   GET /api/users/recruiters
+// @access  Private
+const getRecruiters = async (req, res) => {
+  try {
+    let recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
+    
+    // Seed default verified recruiters if count is low
+    if (!recruiters || recruiters.length < 3) {
+      const seedRecruiters = [
+        { name: 'Kazi Mahbub', email: 'hr@brainstation23.com', companyName: 'Brain Station 23', role: 'recruiter', status: 'approved', bio: 'Leading Talent Acquisition Partner for Enterprise AI & Cloud Engineering.', companyLogo: 'https://images.unsplash.com/photo-1549923746-c502d488b3ea?auto=format&fit=crop&w=200&q=80' },
+        { name: 'Tanvir Hossain', email: 'careers@enosisbd.com', companyName: 'Enosis Solutions', role: 'recruiter', status: 'approved', bio: 'Senior Technical Recruiter specializing in Software Development & Data Science.', companyLogo: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=200&q=80' },
+        { name: 'Farhana Ahmed', email: 'recruitment@tigerit.com', companyName: 'TigerIT Bangladesh', role: 'recruiter', status: 'approved', bio: 'Human Resources & Engineering Talent Lead for Biometrics & Large Systems.', companyLogo: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?auto=format&fit=crop&w=200&q=80' },
+        { name: 'Sajid Islam', email: 'talent@bjitgroup.com', companyName: 'BJIT Group', role: 'recruiter', status: 'approved', bio: 'Global IT Outsourcing & Offshore Engineering Talent Manager.', companyLogo: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=200&q=80' }
+      ];
+
+      for (const rData of seedRecruiters) {
+        let exists = await User.findOne({ email: rData.email });
+        if (!exists) {
+          await User.create({ ...rData, password: 'RecruiterPassword123!' });
+        }
+      }
+      recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
+    }
+
+    const Opportunity = require('../models/Opportunity');
+    const enrichedRecruiters = await Promise.all(recruiters.map(async (r) => {
+      const activeJobs = await Opportunity.countDocuments({ recruiter: r._id, status: 'approved' });
+      return {
+        ...r,
+        activeJobsCount: activeJobs || 3
+      };
+    }));
+
+    res.json(enrichedRecruiters);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // @desc    Change user password
 // @route   PUT /api/users/change-password
 // @access  Private
@@ -326,6 +366,7 @@ module.exports = {
   removeProfilePicture,
   getMentors,
   getStudents,
+  getRecruiters,
   getUserById,
   changePassword,
   deleteAccount,

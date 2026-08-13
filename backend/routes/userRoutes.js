@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getUserProfile, updateUserProfile, uploadFile, removeProfilePicture, getMentors, getStudents, getUserById, changePassword, deleteAccount, updateTheme } = require('../controllers/userController');
+const { getUserProfile, updateUserProfile, uploadFile, removeProfilePicture, getMentors, getStudents, getRecruiters, getUserById, changePassword, deleteAccount, updateTheme } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 const { upload } = require('../middleware/uploadMiddleware');
 
@@ -13,6 +13,7 @@ router.delete('/profile-picture', protect, removeProfilePicture);
 
 router.get('/mentors', protect, getMentors);
 router.get('/students', protect, getStudents);
+router.get('/recruiters', protect, getRecruiters);
 router.put('/change-password', protect, changePassword);
 router.delete('/account', protect, deleteAccount);
 router.put('/theme', protect, updateTheme);

@@ -36,6 +36,7 @@ import CreateBlogPage from './CreateBlogPage';
 import BlogDetailsPage from './BlogDetailsPage';
 import SavedBlogsPage from './SavedBlogsPage';
 import StudentInterviews from './StudentInterviews';
+import RecruitersPage from './RecruitersPage';
 import Avatar from './Avatar';
 import PremiumCareerOpportunities from './PremiumCareerOpportunities';
 import OpportunityDetailsRouter from './OpportunityDetailsRouter';
@@ -53,7 +54,7 @@ const StudentDashboard = ({ user }) => {
   const pathParts = location.pathname.split('/');
   const activeTab = pathParts.length > 2 && pathParts[2] ? pathParts[2] : 'dashboard';
 
-  const showRightPanel = activeTab !== 'profile' && activeTab !== 'settings' && activeTab !== 'progress' && activeTab !== 'mentorship' && activeTab !== 'messages' && activeTab !== 'collaboration' && activeTab !== 'sessions' && activeTab !== 'meetings' && activeTab !== 'career' && activeTab !== 'skills' && activeTab !== 'ai-skill-analysis' && activeTab !== 'resources' && activeTab !== 'community' && activeTab !== 'learnings' && activeTab !== 'blog' && activeTab !== 'interviews' && activeTab !== 'notifications';
+  const showRightPanel = activeTab !== 'profile' && activeTab !== 'settings' && activeTab !== 'progress' && activeTab !== 'mentorship' && activeTab !== 'messages' && activeTab !== 'collaboration' && activeTab !== 'sessions' && activeTab !== 'meetings' && activeTab !== 'career' && activeTab !== 'skills' && activeTab !== 'ai-skill-analysis' && activeTab !== 'resources' && activeTab !== 'community' && activeTab !== 'learnings' && activeTab !== 'blog' && activeTab !== 'interviews' && activeTab !== 'recruiters' && activeTab !== 'notifications';
 
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(SIDEBAR_KEY) === 'true'; } catch { return false; }
@@ -253,6 +254,12 @@ const StudentDashboard = ({ user }) => {
         return (
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
             <StudentInterviews />
+          </div>
+        );
+      case 'recruiters':
+        return (
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+            <RecruitersPage />
           </div>
         );
         case 'skills':

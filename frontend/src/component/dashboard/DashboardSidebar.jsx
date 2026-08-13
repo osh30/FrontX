@@ -4,7 +4,7 @@ import {
   Brain, TrendingUp, MessageCircle, User, Settings,
   LogOut, Menu, X, Inbox, Calendar, Lightbulb, Share2, BarChart3,
   Activity, PlayCircle, UserPlus, ClipboardList, PenTool,
-  ChevronLeft, ChevronRight, CalendarCheck, Video,
+  ChevronLeft, ChevronRight, CalendarCheck, Video, Building2,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -32,6 +32,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', colla
     { id: 'sessions', label: 'Sessions', icon: Calendar },
     { id: 'career', label: 'Career Opportunities', icon: Briefcase },
     { id: 'interviews', label: 'Interviews', icon: CalendarCheck },
+    { id: 'recruiters', label: 'Recruiters', icon: Building2 },
     { id: 'skills', label: 'Analysis', icon: Brain },
     { id: 'study-planner', label: 'Study Planner', icon: ClipboardList },
     { id: 'progress', label: 'Progress', icon: Activity },
@@ -51,6 +52,8 @@ const DashboardSidebar = ({ activeTab, setActiveTab, userRole = 'student', colla
     { id: 'mentorship-sessions', label: 'Sessions', icon: Calendar },
     { id: 'resources', label: 'Resources', icon: Share2 },
     { id: 'opportunities', label: 'Opportunities', icon: Briefcase },
+    { id: 'interviews', label: 'Interviews', icon: CalendarCheck },
+    { id: 'recruiters', label: 'Recruiters', icon: Building2 },
     { id: 'blog', label: 'Blog', icon: PenTool },
     { id: 'community', label: 'Community', icon: MessageCircle },
     { id: 'messages', label: 'Messages', icon: Inbox },

@@ -29,6 +29,8 @@ import OpportunityDetailsRouter from './OpportunityDetailsRouter';
 import ApplicationFormPage from './ApplicationFormPage';
 import MyApplicationsPage from './MyApplicationsPage';
 import PremiumAdminResourceHub from './PremiumAdminResourceHub';
+import StudentInterviews from './StudentInterviews';
+import RecruitersPage from './RecruitersPage';
 
 
 const SIDEBAR_KEY = 'frontx_dashboard_sidebar_collapsed';
@@ -300,6 +302,10 @@ const AlumniDashboard = ({ user }) => {
             <PremiumCareerOpportunities limit={null} fullPage={true} />
           </div>
         );
+      case 'interviews':
+        return <StudentInterviews />;
+      case 'recruiters':
+        return <RecruitersPage />;
       case 'settings':
         return <SettingsPage user={user} />;
       case 'profile':
