@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   ArrowLeft, Calendar, Clock, Building2, ExternalLink,
-  Loader2, Send, Paperclip, Eye, Download, CheckCircle2
+  Loader2, Send, Paperclip, Eye, Download, CheckCircle2, Globe, ShieldCheck
 } from 'lucide-react';
 
 const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -12,7 +12,7 @@ const authHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem('toke
 const typeStyles = {
   'Government Job': { label: 'Government Job', badge: 'bg-blue-50 text-blue-700 ring-blue-200' },
   'Private Job': { label: 'Private Job', badge: 'bg-violet-50 text-violet-700 ring-violet-200' },
-  'Scholarship': { label: 'Scholarship', badge: 'bg-amber-50 text-amber-700 ring-amber-200' },
+  'Scholarship': { label: 'Scholarship', badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200' },
   'Competition': { label: 'Competition', badge: 'bg-rose-50 text-rose-700 ring-rose-200' },
   'Internship': { label: 'Internship', badge: 'bg-cyan-50 text-cyan-700 ring-cyan-200' },
   'Remote Job': { label: 'Remote Job', badge: 'bg-teal-50 text-teal-700 ring-teal-200' },
@@ -36,6 +36,25 @@ const getEligibility = (opp) => {
     return `Eligible Departments: ${opp.eligibility.eligibleDepartments.join(', ')}`;
   }
   return '';
+};
+
+const parseEligibilityPoints = (raw) => {
+  if (!raw) return [];
+  const text = String(raw).trim();
+  if (!text) return [];
+
+  let items = [];
+  if (text.includes(';')) {
+    items = text.split(';');
+  } else if (text.includes('\n')) {
+    items = text.split('\n');
+  } else {
+    items = text.split(/(?=\d+\.\s)/g);
+  }
+
+  return items
+    .map(s => s.trim().replace(/^[-•\d+\.\s]+/, ''))
+    .filter(Boolean);
 };
 
 const getAttachment = (opp) => {
@@ -144,7 +163,8 @@ export default function OpportunityDetailsPage() {
   const title = opp.title || '';
   const organization = opp.companyName || opp.organization || '';
   const description = getDescription(opp);
-  const eligibility = getEligibility(opp);
+  const eligibilityRaw = getEligibility(opp);
+  const eligibilityPoints = parseEligibilityPoints(eligibilityRaw);
   const applyUrlRaw = (opp.applicationUrl || opp.applyLink || '').trim();
   const applyUrl = normalizeUrl(applyUrlRaw);
   const attachment = getAttachment(opp);
@@ -152,24 +172,23 @@ export default function OpportunityDetailsPage() {
   const deadline = opp.deadline ? new Date(opp.deadline) : null;
   const isExpired = deadline && deadline < new Date();
   const daysLeft = deadline ? Math.max(0, Math.ceil((deadline - Date.now()) / (1000 * 60 * 60 * 24))) : null;
-  const eligibilityLines = eligibility ? eligibility.split('\n').map(l => l.trim()).filter(Boolean) : [];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-12">
       <button
         onClick={goBack}
-        className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+        className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors mb-4"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Opportunities
       </button>
 
       {/* Header Card */}
-      <div className="mt-5 bg-white rounded-3xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500" />
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] overflow-hidden">
+        <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500" />
         <div className="px-6 py-8 sm:px-10 sm:py-10">
           <div className="flex flex-wrap items-center gap-3">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ring-1 ${typeStyle.badge}`}>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ring-1 ${typeStyle.badge}`}>
               {typeStyle.label}
             </span>
             {posted && (
@@ -185,14 +204,14 @@ export default function OpportunityDetailsPage() {
           </h1>
 
           {organization && (
-            <p className="mt-3 flex items-center gap-2 text-base text-slate-500 font-medium">
+            <p className="mt-3 flex items-center gap-2 text-base text-slate-600 font-semibold">
               <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
               {organization}
             </p>
           )}
 
           {deadline && (
-            <div className="mt-7 inline-flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+            <div className="mt-6 inline-flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
               <Calendar className="w-4 h-4 text-rose-500 shrink-0" />
               <span className="text-sm font-medium text-slate-600">Application Deadline:</span>
               <span className="text-sm font-bold text-slate-900">{formatDate(deadline)}</span>
@@ -210,108 +229,113 @@ export default function OpportunityDetailsPage() {
         </div>
       </div>
 
-      {/* Details Card */}
-      {(description || eligibility) && (
+      {/* Details & Point-by-Point Eligibility Card */}
+      {(description || eligibilityPoints.length > 0) && (
         <div className="mt-6 bg-white rounded-3xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] overflow-hidden">
           {description && (
             <section className="px-6 py-8 sm:px-10">
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Description</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-3">Overview & Description</h2>
               <LinkifyText text={description} className="text-[15px] text-slate-600 leading-relaxed whitespace-pre-line" />
             </section>
           )}
 
-          {eligibility && (
+          {eligibilityPoints.length > 0 && (
             <>
               <div className="h-px bg-slate-100 mx-6 sm:mx-10" />
               <section className="px-6 py-8 sm:px-10">
-                <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Eligibility / Requirements</h2>
-                {eligibilityLines.length > 1 ? (
-                  <ul className="space-y-3">
-                    {eligibilityLines.map((line, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                        <LinkifyText text={line} className="text-[15px] text-slate-600 leading-relaxed" />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <LinkifyText text={eligibility} className="text-[15px] text-slate-600 leading-relaxed whitespace-pre-line" />
-                )}
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                  {opp.opportunityType === 'Scholarship' ? 'Eligibility Criteria' : 'Eligibility / Requirements'}
+                </h2>
+
+                <ul className="space-y-3">
+                  {eligibilityPoints.map((point, i) => (
+                    <li key={i} className="flex items-start gap-3.5 bg-slate-50/70 border border-slate-200/60 rounded-2xl p-4 transition-all hover:bg-slate-50">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                      <LinkifyText text={point} className="text-[14px] sm:text-[15px] text-slate-700 leading-relaxed font-medium" />
+                    </li>
+                  ))}
+                </ul>
               </section>
             </>
           )}
         </div>
       )}
 
-      {/* Apply Card */}
+      {/* Application & Portal Link Card */}
       {(applyUrl || attachment) && (
         <div className="mt-6 bg-white rounded-3xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] overflow-hidden">
           <div className="px-6 py-8 sm:px-10">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">Apply</h2>
-            <div className="space-y-6">
-              {applyUrl && (
-                <div>
-                  <p className="text-sm font-medium text-slate-600 mb-2">Application Link</p>
-                  <a
-                    href={applyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-medium text-sm cursor-pointer break-all underline-offset-2 hover:underline"
-                  >
-                    {applyUrlRaw}
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  </a>
-                </div>
-              )}
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-blue-600" />
+              Official Portal & Application
+            </h2>
 
-              <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                {applyUrl && (
+            {applyUrl && (
+              <div className="bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-blue-50/90 border border-blue-200/80 rounded-2xl p-5 sm:p-6 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-blue-600 text-white mb-2">
+                      Verified Application Portal
+                    </span>
+                    <p className="text-xs text-slate-500 font-medium mb-1">Official Portal Link:</p>
+                    <a
+                      href={applyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm sm:text-base font-bold text-blue-700 hover:text-blue-900 break-all underline underline-offset-4"
+                    >
+                      {applyUrlRaw}
+                      <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
+                    </a>
+                  </div>
+
                   <a
                     href={applyUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 hover:from-indigo-500 hover:via-blue-500 hover:to-cyan-400 transition-all shadow-lg shadow-indigo-600/20 hover:shadow-xl hover:shadow-indigo-500/25"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-white font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-md shadow-blue-500/20 shrink-0"
                   >
                     <Send className="w-4 h-4" />
-                    Apply Now
-                    <ExternalLink className="w-4 h-4 opacity-80" />
+                    Apply on Official Site
+                    <ExternalLink className="w-4 h-4 opacity-90" />
                   </a>
-                )}
-
-                {attachment && (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                        <Paperclip className="w-4 h-4 text-slate-500" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-800 truncate">{attachment.name}</p>
-                        <p className="text-xs text-slate-400">Attachment</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={attachment.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 ring-1 ring-indigo-200 hover:bg-indigo-100 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        View
-                      </a>
-                      <a
-                        href={attachment.url}
-                        download
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white ring-1 ring-slate-200 hover:bg-slate-100 transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        Download
-                      </a>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
+
+            {attachment && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                    <Paperclip className="w-4 h-4 text-slate-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 truncate">{attachment.name}</p>
+                    <p className="text-xs text-slate-400">Attachment Document</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={attachment.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 ring-1 ring-indigo-200 hover:bg-indigo-100 transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    View
+                  </a>
+                  <a
+                    href={attachment.url}
+                    download
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white ring-1 ring-slate-200 hover:bg-slate-100 transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
