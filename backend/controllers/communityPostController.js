@@ -150,7 +150,13 @@ const getPosts = async (req, res) => {
       });
 
       const postObj = post.toObject();
-      if (postObj.isAnonymous) delete postObj.originalAuthor;
+      if (postObj.isAnonymous) {
+        delete postObj.originalAuthor;
+      } else if (postObj.originalAuthor) {
+        if (!postObj.originalAuthor.department || ['EEE', 'CS', 'CSE', 'Computer Science'].includes(postObj.originalAuthor.department)) {
+          postObj.originalAuthor.department = 'Educational Technology and Engineering';
+        }
+      }
 
       const pollData = postObj.poll?.options ? {
         options: postObj.poll.options.map(opt => ({

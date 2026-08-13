@@ -179,10 +179,14 @@ const PostCard = ({ post, onUpdate, currentUserRole }) => {
 
   const renderAuthorInfo = (isAnon, authorRole, originalAuthor) => {
     if (isAnon) return { name: 'Anonymous Student', avatar: null, department: null };
+    const rawDept = originalAuthor?.department;
+    const cleanDept = (!rawDept || rawDept === 'EEE' || rawDept === 'CS' || rawDept === 'CSE' || rawDept === 'Computer Science')
+      ? 'Educational Technology and Engineering'
+      : rawDept;
     return {
       name: originalAuthor?.name || 'Unknown User',
       avatar: originalAuthor?.profilePicture,
-      department: originalAuthor?.department
+      department: cleanDept
     };
   };
 
