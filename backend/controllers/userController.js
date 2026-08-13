@@ -202,23 +202,6 @@ const getStudents = async (req, res) => {
 // @access  Private
 const getRecruiters = async (req, res) => {
   try {
-    // Auto-clean any legacy demo recruiters
-    const demoEmails = [
-      'hr@brainstation23.com',
-      'careers@enosisbd.com',
-      'recruitment@tigerit.com',
-      'talent@bjitgroup.com',
-      'e2e.recruiter@frontx.test'
-    ];
-    try {
-      await User.deleteMany({
-        $or: [
-          { email: { $in: demoEmails } },
-          { isDemoRecruiter: true }
-        ]
-      });
-    } catch (cleanErr) {}
-
     const recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
     const Opportunity = require('../models/Opportunity');
 
