@@ -25,6 +25,7 @@ const collaborationPostSchema = new mongoose.Schema({
       'Conference Paper',
       'Journal Publication',
       'Thesis',
+      'Research Project',
       'Other'
     ],
     required: true

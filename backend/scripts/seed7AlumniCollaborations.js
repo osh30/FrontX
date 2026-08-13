@@ -122,6 +122,57 @@ const COLLABORATION_POSTS = [
     outcomes: ['Research Publication', 'Conference Paper', 'Portfolio Project'],
     benefits: ['Hands-on Research Experience', 'Publication Opportunity', 'Research Training', 'Networking'],
     deadline: new Date('2026-10-20T23:59:59.000Z')
+  },
+  {
+    alumniEmail: 'prapto.mahmud@std.uftb.ac.bd',
+    alumniName: 'Prapto Mahmud',
+    title: 'Bangla Handwritten Character Recognition Using Deep Learning',
+    type: 'Research Paper',
+    domain: 'Artificial Intelligence',
+    overview: 'Develop a deep-learning model capable of recognizing handwritten Bengali characters from scanned or photographed documents. The project will focus on image preprocessing, dataset preparation, CNN-based classification, and model evaluation.',
+    whyItMatters: 'Bengali handwritten document digitization can support education, archival systems, government documentation, and automated data entry.',
+    responsibilities: ['Literature Review', 'Dataset Collection', 'Data Preprocessing', 'Model Development', 'Testing', 'Report Writing'],
+    requiredSkills: ['Python', 'TensorFlow/PyTorch', 'Computer Vision', 'CNN', 'Machine Learning'],
+    experienceLevel: 'Intermediate',
+    studentCount: 3,
+    duration: '3 Months',
+    outcomes: ['Research Publication', 'Portfolio Project', 'Certificate'],
+    benefits: ['Hands-on Research Experience', 'Machine Learning Experience', 'Portfolio Development', 'Mentorship'],
+    deadline: new Date('2026-10-10T23:59:59.000Z')
+  },
+  {
+    alumniEmail: 'shahriar.hassan@std.uftb.ac.bd',
+    alumniName: 'Shahriar Hassan',
+    title: 'University Student Performance Prediction Using Machine Learning',
+    type: 'Capstone Project',
+    domain: 'Data Science',
+    overview: 'Develop a machine-learning system that analyzes academic performance, attendance, study habits, and other relevant student factors to predict academic performance and identify students who may need additional academic support.',
+    whyItMatters: 'Early identification of students who are struggling academically can help universities provide targeted academic support and improve student success.',
+    responsibilities: ['Data Collection', 'Data Cleaning', 'Exploratory Data Analysis', 'Machine Learning', 'Model Evaluation', 'Visualization', 'Report Writing'],
+    requiredSkills: ['Python', 'Pandas', 'Scikit-learn', 'Data Visualization', 'Statistics'],
+    experienceLevel: 'Beginner Friendly',
+    studentCount: 3,
+    duration: '3 Months',
+    outcomes: ['Portfolio Project', 'Research Publication', 'Certificate'],
+    benefits: ['Hands-on Data Science Experience', 'Machine Learning Practice', 'Portfolio Development', 'Research Training'],
+    deadline: new Date('2026-10-25T23:59:59.000Z')
+  },
+  {
+    alumniEmail: 'nahin.rahman@std.uftb.ac.bd',
+    alumniName: 'Nahin Rahman',
+    title: 'Smart Campus Navigation and Student Assistance System',
+    type: 'Research Project',
+    domain: 'Web Development',
+    overview: 'Develop a web-based campus assistance platform that helps students locate classrooms, laboratories, departments, offices, libraries, and other important university facilities. The system can also provide route information and useful campus resources.',
+    whyItMatters: 'New students often spend significant time searching for classrooms and university facilities. A centralized digital navigation platform can make campus life easier and improve access to university services.',
+    responsibilities: ['Requirement Analysis', 'UI/UX Design', 'Web Development', 'Database Development', 'Testing', 'Documentation'],
+    requiredSkills: ['React', 'JavaScript', 'Node.js', 'MongoDB', 'UI/UX Design'],
+    experienceLevel: 'Beginner Friendly',
+    studentCount: 4,
+    duration: '3 Months',
+    outcomes: ['Portfolio Project', 'Research Publication', 'Certificate'],
+    benefits: ['Hands-on Development Experience', 'Portfolio Development', 'Mentorship', 'Team Collaboration Experience'],
+    deadline: new Date('2026-11-05T23:59:59.000Z')
   }
 ];
 
@@ -135,7 +186,7 @@ const generateResearchId = () => {
   return result;
 };
 
-const seed7AlumniCollaborations = async () => {
+const seed10AlumniCollaborations = async () => {
   try {
     let createdCount = 0;
     let skippedCount = 0;
@@ -226,14 +277,14 @@ const seed7AlumniCollaborations = async () => {
   }
 };
 
-module.exports = seed7AlumniCollaborations;
+module.exports = seed10AlumniCollaborations;
 
 if (require.main === module) {
   const dotenv = require('dotenv');
   dotenv.config();
   mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/frontx_db')
     .then(async () => {
-      await seed7AlumniCollaborations();
+      await seed10AlumniCollaborations();
       process.exit(0);
     })
     .catch(err => {

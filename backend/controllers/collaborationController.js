@@ -99,9 +99,9 @@ const getPosts = async (req, res) => {
   try {
     try {
       const count = await CollaborationPost.countDocuments();
-      if (count < 7) {
-        const seed7 = require('../scripts/seed7AlumniCollaborations');
-        if (typeof seed7 === 'function') await seed7();
+      if (count < 10) {
+        const seed10 = require('../scripts/seed7AlumniCollaborations');
+        if (typeof seed10 === 'function') await seed10();
       }
     } catch (e) {
       console.error('Auto-seed 7 collaborations error:', e.message);
