@@ -21,6 +21,46 @@ const typeStyles = {
 
 const defaultType = { label: 'Opportunity', badge: 'bg-slate-100 text-slate-700 ring-slate-200' };
 
+const SCHOLARSHIP_LINKS = {
+  'fulbright': 'https://foreign.fulbrightonline.org',
+  'chevening': 'https://www.chevening.org',
+  'daad': 'https://www.daad.de/en/study-and-research-in-germany/scholarships',
+  'commonwealth': 'https://cscuk.fcdo.gov.uk',
+  'erasmus': 'https://erasmus-plus.ec.europa.eu/opportunities/erasmus-mundus-catalogue',
+  'mext': 'https://www.studyinjapan.go.jp/en/smap-stopj-applications-research.html',
+  'japan': 'https://www.studyinjapan.go.jp/en/smap-stopj-applications-research.html',
+  'australia': 'https://australiaawardsbangladesh.org',
+  'türkiye': 'https://www.turkiyeburslari.gov.tr',
+  'turkey': 'https://www.turkiyeburslari.gov.tr',
+  'korea': 'https://www.studyinkorea.go.kr',
+  'gks': 'https://www.studyinkorea.go.kr',
+  'eiffel': 'https://www.campusfrance.org/en/france-excellence-eiffel-scholarship-program',
+  'france': 'https://www.campusfrance.org/en/france-excellence-eiffel-scholarship-program',
+  'swiss': 'https://www.sbfi.admin.ch/en/swiss-government-excellence-scholarships-at-a-glance',
+  'switzerland': 'https://www.sbfi.admin.ch/en/swiss-government-excellence-scholarships-at-a-glance',
+  'nl scholarship': 'https://www.studyinholland.nl/finances/nl-scholarship',
+  'dutch': 'https://www.studyinholland.nl/finances/nl-scholarship',
+  'holland': 'https://www.studyinholland.nl/finances/nl-scholarship',
+  'vanier': 'https://vanier.gc.ca',
+  'canada': 'https://vanier.gc.ca',
+  'gates': 'https://www.gatescambridge.org',
+  'cambridge': 'https://www.gatescambridge.org',
+  'aga khan': 'https://the.akdn/en/what-we-do/developing-human-capacity/education/international-scholarships',
+};
+
+const resolveApplyUrl = (opp) => {
+  let url = (opp?.applicationUrl || opp?.applyLink || '').trim();
+  if (url) return url;
+  const title = (opp?.title || '').toLowerCase();
+  const org = (opp?.companyName || opp?.organization || '').toLowerCase();
+  for (const [key, fallbackUrl] of Object.entries(SCHOLARSHIP_LINKS)) {
+    if (title.includes(key) || org.includes(key)) {
+      return fallbackUrl;
+    }
+  }
+  return '';
+};
+
 const getDescription = (opp) => {
   if (!opp) return '';
   if (typeof opp.description === 'string') return opp.description.trim();
@@ -165,7 +205,7 @@ export default function OpportunityDetailsPage() {
   const description = getDescription(opp);
   const eligibilityRaw = getEligibility(opp);
   const eligibilityPoints = parseEligibilityPoints(eligibilityRaw);
-  const applyUrlRaw = (opp.applicationUrl || opp.applyLink || '').trim();
+  const applyUrlRaw = resolveApplyUrl(opp);
   const applyUrl = normalizeUrl(applyUrlRaw);
   const attachment = getAttachment(opp);
   const posted = opp.createdAt ? new Date(opp.createdAt) : null;
@@ -183,7 +223,7 @@ export default function OpportunityDetailsPage() {
         Back to Opportunities
       </button>
 
-      {/* Header Card */}
+      {/* Header Card with Top Portal Banner */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] overflow-hidden">
         <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500" />
         <div className="px-6 py-8 sm:px-10 sm:py-10">
@@ -224,6 +264,38 @@ export default function OpportunityDetailsPage() {
                   {daysLeft === 0 ? 'Deadline today' : `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`}
                 </span>
               ) : null}
+            </div>
+          )}
+
+          {/* OFFICIAL APPLICATION PORTAL LINK BANNER (TOP OF PAGE) */}
+          {applyUrl && (
+            <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/10 border border-blue-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-md mb-1.5">
+                  <Globe className="w-3.5 h-3.5" /> Official Application Portal
+                </span>
+                <p className="text-xs text-slate-500 font-medium">Verified Application Website:</p>
+                <a
+                  href={applyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm sm:text-base font-bold text-blue-700 hover:text-blue-900 break-all underline underline-offset-4 mt-0.5"
+                >
+                  {applyUrlRaw}
+                  <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
+                </a>
+              </div>
+
+              <a
+                href={applyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-md shadow-blue-500/20 shrink-0"
+              >
+                <Send className="w-4 h-4" />
+                Apply on Official Site
+                <ExternalLink className="w-4 h-4 opacity-90" />
+              </a>
             </div>
           )}
         </div>
