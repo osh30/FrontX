@@ -334,80 +334,39 @@ export default function OpportunityDetailsPage() {
         </div>
       )}
 
-      {/* Application & Portal Link Card */}
-      {(applyUrl || attachment) && (
-        <div className="mt-6 bg-white rounded-3xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] overflow-hidden">
-          <div className="px-6 py-8 sm:px-10">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <Globe className="w-5 h-5 text-blue-600" />
-              Official Portal & Application
-            </h2>
-
-            {applyUrl && (
-              <div className="bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-blue-50/90 border border-blue-200/80 rounded-2xl p-5 sm:p-6 mb-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-blue-600 text-white mb-2">
-                      Verified Application Portal
-                    </span>
-                    <p className="text-xs text-slate-500 font-medium mb-1">Official Portal Link:</p>
-                    <a
-                      href={applyUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm sm:text-base font-bold text-blue-700 hover:text-blue-900 break-all underline underline-offset-4"
-                    >
-                      {applyUrlRaw}
-                      <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
-                    </a>
-                  </div>
-
-                  <a
-                    href={applyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-white font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-md shadow-blue-500/20 shrink-0"
-                  >
-                    <Send className="w-4 h-4" />
-                    Apply on Official Site
-                    <ExternalLink className="w-4 h-4 opacity-90" />
-                  </a>
-                </div>
+      {/* Attachment Card (Only if attachment document exists) */}
+      {attachment && (
+        <div className="mt-6 bg-white rounded-3xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.04),0_12px_32px_-12px_rgba(15,23,42,0.12)] p-6 sm:p-8">
+          <h2 className="text-base font-bold text-slate-900 mb-3">Attachment Document</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                <Paperclip className="w-4 h-4 text-slate-500" />
               </div>
-            )}
-
-            {attachment && (
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                    <Paperclip className="w-4 h-4 text-slate-500" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-800 truncate">{attachment.name}</p>
-                    <p className="text-xs text-slate-400">Attachment Document</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={attachment.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 ring-1 ring-indigo-200 hover:bg-indigo-100 transition-colors"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    View
-                  </a>
-                  <a
-                    href={attachment.url}
-                    download
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white ring-1 ring-slate-200 hover:bg-slate-100 transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download
-                  </a>
-                </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-800 truncate">{attachment.name}</p>
+                <p className="text-xs text-slate-400">Attached File</p>
               </div>
-            )}
+            </div>
+            <div className="flex items-center gap-2">
+              <a
+                href={attachment.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 ring-1 ring-indigo-200 hover:bg-indigo-100 transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                View
+              </a>
+              <a
+                href={attachment.url}
+                download
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white ring-1 ring-slate-200 hover:bg-slate-100 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download
+              </a>
+            </div>
           </div>
         </div>
       )}
