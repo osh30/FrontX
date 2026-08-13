@@ -116,6 +116,16 @@ const createPost = async (req, res) => {
 // @access  Private
 const getPosts = async (req, res) => {
   try {
+    try {
+      const count = await CommunityPost.countDocuments();
+      if (count < 5) {
+        const seedCommunity = require('../scripts/seed5AlumniCommunityPosts');
+        if (typeof seedCommunity === 'function') await seedCommunity();
+      }
+    } catch (e) {
+      console.error('Auto-seed community error:', e.message);
+    }
+
     const posts = await CommunityPost.find()
       .populate('originalAuthor', 'name profilePicture department role')
       .sort({ createdAt: -1 });

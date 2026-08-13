@@ -82,12 +82,14 @@ const autoSeedAlumni = async () => {
       const enrichS = require('./enrichShanta');
       const seedScholarships = require('./seed15Scholarships');
       const seedCollaborations = require('./seed7AlumniCollaborations');
+      const seedCommunity = require('./seed5AlumniCommunityPosts');
 
       if (typeof enrich1 === 'function') await enrich1();
       if (typeof enrich2 === 'function') await enrich2();
       if (typeof enrichS === 'function') await enrichS();
       if (typeof seedScholarships === 'function') await seedScholarships();
       if (typeof seedCollaborations === 'function') await seedCollaborations();
+      if (typeof seedCommunity === 'function') await seedCommunity();
     } catch (e) {
       console.error('Alumni enrichment auto-run error:', e.message);
     }
