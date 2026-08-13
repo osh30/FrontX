@@ -271,19 +271,20 @@ export default function OpportunityDetailsPage() {
           {applyUrl && (
             <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-blue-500/10 border border-blue-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-md mb-1.5">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-md mb-2">
                   <Globe className="w-3.5 h-3.5" /> Official Application Portal
                 </span>
-                <p className="text-xs text-slate-500 font-medium">Verified Application Website:</p>
-                <a
-                  href={applyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm sm:text-base font-bold text-blue-700 hover:text-blue-900 break-all underline underline-offset-4 mt-0.5"
-                >
-                  {applyUrlRaw}
-                  <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
-                </a>
+                <div>
+                  <a
+                    href={applyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm sm:text-base font-bold text-blue-700 hover:text-blue-900 break-all underline underline-offset-4"
+                  >
+                    {applyUrlRaw}
+                    <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
+                  </a>
+                </div>
               </div>
 
               <a
