@@ -36,7 +36,6 @@ const autoSeedAlumni = async () => {
       const emailLower = acc.email.toLowerCase();
       const existing = await User.findOne({ email: emailLower });
       if (existing) {
-        // Ensure role is alumni and department is set
         let needsUpdate = false;
         if (existing.role !== 'alumni') { existing.role = 'alumni'; needsUpdate = true; }
         if (!existing.department) { existing.department = 'Educational Technology and Engineering'; needsUpdate = true; }
@@ -61,6 +60,8 @@ const autoSeedAlumni = async () => {
       console.log(`🎓 Auto-seeded ${createdCount} Alumni account(s) in database.`);
     } else {
       console.log(`🎓 All 20 Alumni accounts verified in database.`);
+    }
+
     // Ensure Shanta and any EEE/CS departments are updated to Educational Technology and Engineering
     try {
       await User.updateMany(
