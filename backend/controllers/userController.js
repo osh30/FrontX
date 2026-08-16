@@ -276,6 +276,18 @@ const getRecruiters = async (req, res) => {
         companyDescription: 'Grameenphone is a leading telecommunications and digital services company in Bangladesh.',
         bio: 'Technology & People Acquisition Lead for Digital Services at Grameenphone Ltd.',
         companyLogo: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=200&q=80'
+      },
+      {
+        name: 'Jannat Rahaman',
+        email: 'znure563@gmail.com',
+        companyName: 'NexaByte Solutions',
+        role: 'recruiter',
+        status: 'approved',
+        industryType: 'Technology / Software',
+        companyWebsite: 'https://nexabyte.example.com',
+        companyDescription: 'NexaByte Solutions is a technology-focused company profile created for testing FrontX recruiter communication and opportunity workflows.',
+        bio: 'Talent Acquisition Lead at NexaByte Solutions sourcing Junior Software Engineers and Product Associates.',
+        companyLogo: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=200&q=80'
       }
     ];
 
@@ -329,6 +341,14 @@ const getRecruiters = async (req, res) => {
       if (bracCount === 0) {
         const seed3Recruiters = require('../scripts/seed3Recruiters9Opportunities');
         if (typeof seed3Recruiters === 'function') await seed3Recruiters();
+      }
+    } catch (e) {}
+
+    try {
+      const nexaCount = await Opportunity.countDocuments({ companyName: /NexaByte/i });
+      if (nexaCount === 0) {
+        const seedNexaByteOpportunity = require('../scripts/seedNexaByteOpportunity');
+        if (typeof seedNexaByteOpportunity === 'function') await seedNexaByteOpportunity();
       }
     } catch (e) {}
 

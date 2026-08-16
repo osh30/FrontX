@@ -73,6 +73,18 @@ const REAL_RECRUITERS = [
     companyDescription: 'Grameenphone is a leading telecommunications and digital services company in Bangladesh, providing mobile connectivity, digital services, and technology-enabled solutions to millions of customers across the country.',
     bio: 'Technology & People Acquisition Lead for Digital Services at Grameenphone Ltd.',
     companyLogo: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=200&q=80'
+  },
+  {
+    name: 'Jannat Rahaman',
+    email: 'znure563@gmail.com',
+    companyName: 'NexaByte Solutions',
+    role: 'recruiter',
+    status: 'approved',
+    industryType: 'Technology / Software',
+    companyWebsite: 'https://nexabyte.example.com',
+    companyDescription: 'NexaByte Solutions is a technology-focused company profile created for testing FrontX recruiter communication and opportunity workflows. The profile represents a software and digital solutions organization where students can explore technology-related career opportunities.',
+    bio: 'Talent Acquisition Lead at NexaByte Solutions sourcing Junior Software Engineers and Product Associates.',
+    companyLogo: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=200&q=80'
   }
 ];
 
