@@ -79,13 +79,7 @@ const REAL_RECRUITERS = [
 const ensureRealRecruiters = async () => {
   try {
     for (const rData of REAL_RECRUITERS) {
-      let r = await User.findOne({
-        $or: [
-          { email: rData.email.toLowerCase() },
-          { name: { $regex: new RegExp(`^${rData.name}$`, 'i') } },
-          { companyName: { $regex: new RegExp(`^${rData.companyName}$`, 'i') } }
-        ]
-      });
+      let r = await User.findOne({ email: rData.email.toLowerCase() });
 
       if (!r) {
         r = await User.create({

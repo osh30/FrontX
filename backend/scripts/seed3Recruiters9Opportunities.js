@@ -268,12 +268,7 @@ const seed3Recruiters9Opportunities = async () => {
   await ensureRealRecruiters();
 
   for (const cData of SEED_DATA) {
-    const recruiter = await User.findOne({
-      $or: [
-        { email: cData.recruiterEmail.toLowerCase() },
-        { companyName: { $regex: new RegExp(`^${cData.companyName}$`, 'i') } }
-      ]
-    });
+    const recruiter = await User.findOne({ email: cData.recruiterEmail.toLowerCase() });
 
     if (!recruiter) {
       console.error(`❌ Recruiter for ${cData.companyName} NOT found in database.`);
