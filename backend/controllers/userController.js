@@ -311,6 +311,7 @@ const getRecruiters = async (req, res) => {
         }
       } catch (e) {
         console.error(`Recruiter upsert error for ${rData.email}:`, e.message);
+        if (req.query.debug) return res.json({ debugError: e.message, email: rData.email });
       }
     }
 
