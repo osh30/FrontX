@@ -204,12 +204,16 @@ const getRecruiters = async (req, res) => {
   try {
     let recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
 
-    // If no recruiters found in DB, ensure real recruiters exist
-    if (!recruiters || recruiters.length === 0) {
+    // If recruiters count is less than 7 in DB, ensure all real recruiters and opportunities exist
+    if (!recruiters || recruiters.length < 7) {
       try {
         const ensureRealRecruiters = require('../scripts/ensureRealRecruiters');
         if (typeof ensureRealRecruiters === 'function') {
           await ensureRealRecruiters();
+        }
+        const seed3Recruiters = require('../scripts/seed3Recruiters9Opportunities');
+        if (typeof seed3Recruiters === 'function') {
+          await seed3Recruiters();
         }
       } catch (e) {
         console.error('Ensure recruiters error:', e.message);
