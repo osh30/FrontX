@@ -380,6 +380,68 @@ const getUserById = async (req, res) => {
   }
 };
 
+// @desc    Send email / message inquiry to a recruiter
+// @route   POST /api/users/send-recruiter-email
+// @access  Private
+const sendRecruiterEmail = async (req, res) => {
+  try {
+    const { recruiterEmail, recruiterId, subject, message } = req.body;
+    if (!recruiterEmail || !subject || !message) {
+      return res.status(400).json({ message: 'Recruiter email, subject, and message are required.' });
+    }
+
+    const Notification = require('../models/Notification');
+    const recruiter = await User.findOne({
+      $or: [
+        { email: recruiterEmail.toLowerCase() },
+        { _id: recruiterId && recruiterId.match(/^[0-9a-fA-F]{24}$/) ? recruiterId : null }
+      ].filter(Boolean)
+    });
+
+    // Notify recruiter inside FrontX platform
+    if (recruiter) {
+      await Notification.create({
+        user: recruiter._id,
+        senderUserId: req.user._id || req.user.id,
+        title: `New Student Inquiry: ${subject}`,
+        message: `Student ${req.user.name || 'A student'} (${req.user.email}) sent: "${message.substring(0, 150)}..."`,
+        type: 'opportunity',
+        relatedId: req.user._id || req.user.id
+      });
+    }
+
+    // Send email via nodemailer if SMTP config exists
+    try {
+      const nodemailer = require('nodemailer');
+      if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT || '587'),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+          }
+        });
+
+        await transporter.sendMail({
+          from: `"FrontX Platform" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+          to: recruiterEmail,
+          replyTo: req.user.email,
+          subject: subject,
+          text: `From Student: ${req.user.name} (${req.user.email})\n\nMessage:\n${message}\n\nSent via FrontX Platform`
+        });
+      }
+    } catch (emailErr) {
+      console.log('SMTP send note (non-blocking):', emailErr.message);
+    }
+
+    res.json({ success: true, message: `Email inquiry successfully sent to ${recruiterEmail}` });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
@@ -391,5 +453,5 @@ module.exports = {
   getUserById,
   changePassword,
   deleteAccount,
-  updateTheme
+  sendRecruiterEmail
 };

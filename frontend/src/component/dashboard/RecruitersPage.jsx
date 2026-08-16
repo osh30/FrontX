@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2, Mail, Briefcase, Search, ShieldCheck, X,
-  ExternalLink, Calendar, MapPin, Tag, CheckCircle2, ArrowRight
+  ExternalLink, MapPin, CheckCircle2, ArrowRight, Send, Loader2
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const RecruitersPage = () => {
   const [recruiters, setRecruiters] = useState([]);
@@ -13,6 +14,14 @@ const RecruitersPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRecruiter, setSelectedRecruiter] = useState(null);
   const [showDrawer, setShowDrawer] = useState(false);
+  
+  // Email Modal State
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailRecruiter, setEmailRecruiter] = useState(null);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +61,53 @@ const RecruitersPage = () => {
     setShowDrawer(true);
   };
 
+  const handleOpenEmailModal = (recruiter, e) => {
+    if (e) e.stopPropagation();
+    setEmailRecruiter(recruiter);
+    setEmailSubject(`[FrontX Inquiry] Career opportunities at ${recruiter.companyName || 'your company'}`);
+    setEmailMessage(`Hello ${recruiter.name},\n\nI am a student on FrontX interested in learning more about career and internship opportunities at ${recruiter.companyName || 'your organization'}. I would love to connect and share my profile with your team.\n\nBest regards,`);
+    setShowEmailModal(true);
+  };
+
+  const handleSendPlatformEmail = async (e) => {
+    e.preventDefault();
+    if (!emailSubject.trim() || !emailMessage.trim()) {
+      toast.error('Please enter both subject and message.');
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/users/send-recruiter-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          recruiterEmail: emailRecruiter.email,
+          recruiterId: emailRecruiter._id,
+          subject: emailSubject,
+          message: emailMessage
+        })
+      });
+
+      if (res.ok) {
+        toast.success(`Email inquiry sent to ${emailRecruiter.name}!`);
+        setShowEmailModal(false);
+      } else {
+        const errData = await res.json();
+        toast.error(errData.message || 'Failed to send email inquiry.');
+      }
+    } catch (err) {
+      toast.error('Network error. Opening default mail client instead...');
+      window.location.href = `mailto:${emailRecruiter.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailMessage)}`;
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* ===== HERO BANNER ===== */}
@@ -70,7 +126,7 @@ const RecruitersPage = () => {
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">Connected Recruiters</h1>
             <p className="text-slate-300 text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
-              Explore verified company recruiters and hiring managers connected with FrontX. Click any card to view complete profile and active opportunities.
+              Explore verified company recruiters and hiring managers connected with FrontX. Click any recruiter to view full profile or send direct email inquiries.
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/10 shrink-0">
@@ -156,12 +212,15 @@ const RecruitersPage = () => {
                 </p>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
-                  <Briefcase className="w-3 h-3 text-slate-400" /> {recruiter.activeJobsCount || (recruiter.opportunities?.length || 0)} Active Jobs
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white text-xs font-bold transition-all shadow-sm">
-                  View Profile <ArrowRight className="w-3.5 h-3.5" />
+              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                <button
+                  onClick={(e) => handleOpenEmailModal(recruiter, e)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-bold transition-all shadow-sm"
+                >
+                  <Mail className="w-3.5 h-3.5" /> Email Recruiter
+                </button>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-50 text-slate-700 group-hover:bg-slate-900 group-hover:text-white text-xs font-bold transition-all">
+                  Profile <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </motion.div>
@@ -230,13 +289,13 @@ const RecruitersPage = () => {
                   </div>
 
                   <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                    <a
-                      href={`mailto:${selectedRecruiter.email}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md"
+                    <button
+                      onClick={(e) => handleOpenEmailModal(selectedRecruiter, e)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
                     >
-                      <Mail className="w-3.5 h-3.5" /> Email Recruiter
-                    </a>
-                    <span className="text-slate-400 text-[11px] truncate">{selectedRecruiter.email}</span>
+                      <Mail className="w-4 h-4" /> Email Recruiter
+                    </button>
+                    <span className="text-slate-400 text-[11px] truncate select-all">{selectedRecruiter.email}</span>
                   </div>
                 </div>
 
@@ -252,7 +311,7 @@ const RecruitersPage = () => {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Posted Opportunities</h4>
-                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
                       {selectedRecruiter.opportunities?.length || 0} Listed
                     </span>
                   </div>
@@ -273,8 +332,17 @@ const RecruitersPage = () => {
                           <div>
                             <p className="text-xs font-bold text-slate-900">{opp.title}</p>
                             <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 flex-wrap">
-                              {opp.type && <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{opp.type}</span>}
-                              {opp.location && <span className="flex items-center gap-0.5"><MapPin className="w-3 h-3 text-slate-400" />{opp.location}</span>}
+                              {(opp.type || opp.opportunityType) && (
+                                <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                  {opp.type || opp.opportunityType}
+                                </span>
+                              )}
+                              {opp.location && (
+                                <span className="flex items-center gap-0.5">
+                                  <MapPin className="w-3 h-3 text-slate-400" />
+                                  {opp.location}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <button
@@ -295,6 +363,103 @@ const RecruitersPage = () => {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* ===== EMAIL RECRUITER COMPOSER MODAL ===== */}
+      <AnimatePresence>
+        {showEmailModal && emailRecruiter && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowEmailModal(false)}
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative z-10 border border-slate-100 overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-base">Email {emailRecruiter.name}</h3>
+                    <p className="text-xs text-slate-500">{emailRecruiter.companyName || 'Corporate Partner'} • {emailRecruiter.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowEmailModal(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Form */}
+              <form onSubmit={handleSendPlatformEmail} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Subject Line
+                  </label>
+                  <input
+                    type="text"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                    required
+                    placeholder="Enter email subject..."
+                    className="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                    Message to Recruiter
+                  </label>
+                  <textarea
+                    rows={5}
+                    value={emailMessage}
+                    onChange={(e) => setEmailMessage(e.target.value)}
+                    required
+                    placeholder="Write your email message..."
+                    className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                  />
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <a
+                    href={`mailto:${emailRecruiter.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailMessage)}`}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all text-center"
+                  >
+                    Open Mail App ↗
+                  </a>
+
+                  <button
+                    type="submit"
+                    disabled={sendingEmail}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md disabled:opacity-50"
+                  >
+                    {sendingEmail ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" /> Send Email Inquiry
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
