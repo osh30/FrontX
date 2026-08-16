@@ -37,6 +37,42 @@ const REAL_RECRUITERS = [
     status: 'approved',
     bio: 'Senior HR & Technical Recruiter hiring Full-Stack Developers and Data Engineers.',
     companyLogo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80'
+  },
+  {
+    name: 'BRAC Recruitment Team',
+    email: 'recruitment@brac.net',
+    companyName: 'BRAC',
+    role: 'recruiter',
+    status: 'approved',
+    industryType: 'Social Development / Technology / NGO',
+    companyWebsite: 'https://www.brac.net',
+    companyDescription: 'BRAC is a global development organization working to create opportunities for people living in poverty and to support sustainable social and economic development. Its activities span areas including education, livelihoods, financial inclusion, healthcare, social development, and technology-enabled solutions.',
+    bio: 'Talent Acquisition & People Team driving social development and technology innovation at BRAC.',
+    companyLogo: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=200&q=80'
+  },
+  {
+    name: 'bKash Recruitment Team',
+    email: 'recruitment@bkash.com',
+    companyName: 'bKash Limited',
+    role: 'recruiter',
+    status: 'approved',
+    industryType: 'FinTech / Technology',
+    companyWebsite: 'https://www.bkash.com',
+    companyDescription: 'bKash is a leading mobile financial services company in Bangladesh providing digital financial services that help individuals and businesses send, receive, save, pay, and manage money through technology-enabled financial solutions.',
+    bio: 'Engineering & HR Talent Lead for Mobile Financial Services at bKash Limited.',
+    companyLogo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=200&q=80'
+  },
+  {
+    name: 'Grameenphone Recruitment Team',
+    email: 'recruitment@grameenphone.com',
+    companyName: 'Grameenphone Ltd.',
+    role: 'recruiter',
+    status: 'approved',
+    industryType: 'Telecommunications / Technology',
+    companyWebsite: 'https://www.grameenphone.com',
+    companyDescription: 'Grameenphone is a leading telecommunications and digital services company in Bangladesh, providing mobile connectivity, digital services, and technology-enabled solutions to millions of customers across the country.',
+    bio: 'Technology & People Acquisition Lead for Digital Services at Grameenphone Ltd.',
+    companyLogo: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=200&q=80'
   }
 ];
 
@@ -46,7 +82,8 @@ const ensureRealRecruiters = async () => {
       let r = await User.findOne({
         $or: [
           { email: rData.email.toLowerCase() },
-          { name: { $regex: new RegExp(`^${rData.name}$`, 'i') } }
+          { name: { $regex: new RegExp(`^${rData.name}$`, 'i') } },
+          { companyName: { $regex: new RegExp(`^${rData.companyName}$`, 'i') } }
         ]
       });
 
@@ -61,6 +98,9 @@ const ensureRealRecruiters = async () => {
         r.companyName = rData.companyName;
         r.role = 'recruiter';
         r.status = 'approved';
+        if (rData.industryType) r.industryType = rData.industryType;
+        if (rData.companyWebsite) r.companyWebsite = rData.companyWebsite;
+        if (rData.companyDescription) r.companyDescription = rData.companyDescription;
         if (!r.bio) r.bio = rData.bio;
         if (!r.companyLogo) r.companyLogo = rData.companyLogo;
         await r.save();

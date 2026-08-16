@@ -85,6 +85,7 @@ const autoSeedAlumni = async () => {
       const seedCommunity = require('./seed5AlumniCommunityPosts');
       const ensureRecruiters = require('./ensureRealRecruiters');
       const seedShopUp = require('./seedShopUpOpportunities');
+      const seed3Recruiters = require('./seed3Recruiters9Opportunities');
 
       if (typeof enrich1 === 'function') await enrich1();
       if (typeof enrich2 === 'function') await enrich2();
@@ -94,6 +95,7 @@ const autoSeedAlumni = async () => {
       if (typeof seedCommunity === 'function') await seedCommunity();
       if (typeof ensureRecruiters === 'function') await ensureRecruiters();
       if (typeof seedShopUp === 'function') await seedShopUp();
+      if (typeof seed3Recruiters === 'function') await seed3Recruiters();
     } catch (e) {
       console.error('Alumni enrichment auto-run error:', e.message);
     }
