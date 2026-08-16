@@ -219,15 +219,36 @@ const getRecruiters = async (req, res) => {
 
     const Opportunity = require('../models/Opportunity');
 
+    // Auto-seed ShopUp opportunities if missing in DB
+    const shopUpCount = await Opportunity.countDocuments({ companyName: /ShopUp/i });
+    if (shopUpCount === 0) {
+      try {
+        const seedShopUpOpportunities = require('../scripts/seedShopUpOpportunities');
+        if (typeof seedShopUpOpportunities === 'function') {
+          await seedShopUpOpportunities();
+        }
+      } catch (e) {
+        console.error('Seed ShopUp error:', e.message);
+      }
+    }
+
     const enrichedRecruiters = await Promise.all(recruiters.map(async (r) => {
       const opportunities = await Opportunity.find({
-        $or: [{ recruiter: r._id }, { companyName: { $regex: new RegExp(`^${r.companyName}$`, 'i') } }]
-      }).select('title type location category deadline status companyName').lean();
+        $or: [
+          { recruiter: r._id },
+          { companyName: { $regex: new RegExp(`^${(r.companyName || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } }
+        ]
+      }).select('title opportunityType type location category deadline status companyName').lean();
+
+      const mappedOpps = opportunities.map(o => ({
+        ...o,
+        type: o.type || o.opportunityType
+      }));
 
       return {
         ...r,
-        activeJobsCount: opportunities.length,
-        opportunities: opportunities
+        activeJobsCount: mappedOpps.length,
+        opportunities: mappedOpps
       };
     }));
 
