@@ -133,6 +133,14 @@ initMeetings({ app, io });
 const User = require('./models/User');
 
 // Routes
+app.get('/api/debug-recs', async (req, res) => {
+  try {
+    const recruiters = await User.find({ role: 'recruiter' }).select('name email companyName role status').lean();
+    res.json({ count: recruiters.length, recruiters });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/alumni', require('./routes/alumniRoutes'));
@@ -303,15 +311,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-});
-
-app.get('/api/debug-recs', async (req, res) => {
-  try {
-    const recruiters = await User.find({ role: 'recruiter' }).select('name email companyName role status').lean();
-    res.json({ count: recruiters.length, recruiters });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
 });
 
 // Test email endpoint
