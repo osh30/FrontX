@@ -550,5 +550,6 @@ module.exports = {
   getUserById,
   changePassword,
   deleteAccount,
+  updateTheme,
   sendRecruiterEmail
 };
