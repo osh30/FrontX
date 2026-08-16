@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Building2, Mail, Briefcase, Search, ShieldCheck, X,
-  ExternalLink, MapPin, CheckCircle2, ArrowRight, Send, Loader2
+  Building2, Mail, Briefcase, Search, X, Minus, Maximize2, Minimize2,
+  ExternalLink, MapPin, ArrowRight, Send, Loader2, Paperclip, Type, Trash2, FileText
 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
@@ -15,12 +15,16 @@ const RecruitersPage = () => {
   const [selectedRecruiter, setSelectedRecruiter] = useState(null);
   const [showDrawer, setShowDrawer] = useState(false);
   
-  // Email Modal State
-  const [showEmailModal, setShowEmailModal] = useState(false);
+  // Gmail-style Compose Window State
+  const [showEmailCompose, setShowEmailCompose] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [emailRecruiter, setEmailRecruiter] = useState(null);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [attachedFile, setAttachedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -61,24 +65,76 @@ const RecruitersPage = () => {
     setShowDrawer(true);
   };
 
-  const handleOpenEmailModal = (recruiter, e) => {
+  const handleOpenComposeWindow = (recruiter, e) => {
     if (e) e.stopPropagation();
+    if (!recruiter || !recruiter.email || !recruiter.email.includes('@')) {
+      toast.error('This recruiter does not have a valid email address.');
+      return;
+    }
     setEmailRecruiter(recruiter);
-    setEmailSubject(`[FrontX Inquiry] Career opportunities at ${recruiter.companyName || 'your company'}`);
-    setEmailMessage(`Hello ${recruiter.name},\n\nI am a student on FrontX interested in learning more about career and internship opportunities at ${recruiter.companyName || 'your organization'}. I would love to connect and share my profile with your team.\n\nBest regards,`);
-    setShowEmailModal(true);
+    setEmailSubject('');
+    setEmailMessage('');
+    setAttachedFile(null);
+    setIsMinimized(false);
+    setIsMaximized(false);
+    setShowEmailCompose(true);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size exceeds 10MB limit.');
+        return;
+      }
+      setAttachedFile(file);
+      toast.success(`Attached: ${file.name}`);
+    }
   };
 
   const handleSendPlatformEmail = async (e) => {
-    e.preventDefault();
-    if (!emailSubject.trim() || !emailMessage.trim()) {
-      toast.error('Please enter both subject and message.');
+    if (e) e.preventDefault();
+
+    if (!emailRecruiter || !emailRecruiter.email) {
+      toast.error('This recruiter does not have a valid email address.');
+      return;
+    }
+
+    if (!emailSubject.trim()) {
+      toast.error('Please enter an email subject line.');
+      return;
+    }
+
+    if (!emailMessage.trim()) {
+      toast.error('Please write your message before sending.');
       return;
     }
 
     setSendingEmail(true);
+
     try {
       const token = localStorage.getItem('token');
+      let attachmentUrl = '';
+
+      // Upload file to Cloudinary if attached
+      if (attachedFile) {
+        const formData = new FormData();
+        formData.append('file', attachedFile);
+        try {
+          const uploadRes = await fetch(`${API_BASE}/users/upload`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData
+          });
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            attachmentUrl = uploadData.fileUrl || uploadData.url || '';
+          }
+        } catch (uploadErr) {
+          console.warn('Attachment upload failed, proceeding with message:', uploadErr);
+        }
+      }
+
       const res = await fetch(`${API_BASE}/users/send-recruiter-email`, {
         method: 'POST',
         headers: {
@@ -88,28 +144,31 @@ const RecruitersPage = () => {
         body: JSON.stringify({
           recruiterEmail: emailRecruiter.email,
           recruiterId: emailRecruiter._id,
-          subject: emailSubject,
-          message: emailMessage
+          subject: emailSubject.trim(),
+          message: emailMessage.trim(),
+          attachmentUrl
         })
       });
 
       if (res.ok) {
-        toast.success(`Email inquiry sent to ${emailRecruiter.name}!`);
-        setShowEmailModal(false);
+        toast.success('Email sent successfully.');
+        setShowEmailCompose(false);
+        setEmailSubject('');
+        setEmailMessage('');
+        setAttachedFile(null);
       } else {
         const errData = await res.json();
-        toast.error(errData.message || 'Failed to send email inquiry.');
+        toast.error(errData.message || 'Unable to send email. Please try again.');
       }
     } catch (err) {
-      toast.error('Network error. Opening default mail client instead...');
-      window.location.href = `mailto:${emailRecruiter.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailMessage)}`;
+      toast.error('Unable to send email. Please try again.');
     } finally {
       setSendingEmail(false);
     }
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* ===== HERO BANNER ===== */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -126,7 +185,7 @@ const RecruitersPage = () => {
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">Connected Recruiters</h1>
             <p className="text-slate-300 text-sm md:text-base mt-2 max-w-2xl leading-relaxed">
-              Explore verified company recruiters and hiring managers connected with FrontX. Click any recruiter to view full profile or send direct email inquiries.
+              Explore corporate recruiters and talent acquisition leads connected with FrontX. Click any recruiter card to view opportunities or compose direct email inquiries.
             </p>
           </div>
           <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/10 shrink-0">
@@ -177,12 +236,14 @@ const RecruitersPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
               onClick={() => handleCardClick(recruiter)}
-              className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
+              className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              
               <div>
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5 shadow-md overflow-hidden shrink-0">
+                {/* Header: Profile image & Clean Top Section without Verified Recruiter Badge */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-0.5 shadow-md overflow-hidden shrink-0 group-hover:scale-105 transition-transform duration-300">
                     {recruiter.companyLogo || recruiter.profilePicture ? (
                       <img
                         src={recruiter.companyLogo || recruiter.profilePicture}
@@ -195,31 +256,30 @@ const RecruitersPage = () => {
                       </div>
                     )}
                   </div>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                    <ShieldCheck className="w-3.5 h-3.5" /> Verified Recruiter
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                      {recruiter.name}
+                    </h3>
+                    <p className="text-xs font-semibold text-blue-600 mt-0.5 flex items-center gap-1 truncate">
+                      <Building2 className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{recruiter.companyName || 'Corporate Partner'}</span>
+                    </p>
+                  </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                  {recruiter.name}
-                </h3>
-                <p className="text-xs font-semibold text-blue-600 mt-0.5 flex items-center gap-1">
-                  <Building2 className="w-3.5 h-3.5" /> {recruiter.companyName || 'Corporate Partner'}
-                </p>
-
-                <p className="text-xs text-slate-500 mt-3 line-clamp-3 leading-relaxed">
-                  {recruiter.bio || 'Talent Acquisition Partner connecting top tech candidates with career opportunities.'}
+                <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                  {recruiter.bio || 'Talent Acquisition Leader connecting top candidates with growth opportunities.'}
                 </p>
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                 <button
-                  onClick={(e) => handleOpenEmailModal(recruiter, e)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white text-xs font-bold transition-all shadow-sm"
+                  onClick={(e) => handleOpenComposeWindow(recruiter, e)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-sm active:scale-95"
                 >
                   <Mail className="w-3.5 h-3.5" /> Email Recruiter
                 </button>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-50 text-slate-700 group-hover:bg-slate-900 group-hover:text-white text-xs font-bold transition-all">
+                <span className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 text-slate-700 group-hover:bg-slate-900 group-hover:text-white text-xs font-bold transition-all">
                   Profile <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
@@ -282,16 +342,16 @@ const RecruitersPage = () => {
                     <div>
                       <h2 className="text-xl font-bold text-white">{selectedRecruiter.name}</h2>
                       <p className="text-xs text-blue-400 font-semibold mt-0.5">{selectedRecruiter.companyName || 'Corporate Partner'}</p>
-                      <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                        <CheckCircle2 className="w-3 h-3" /> Official Hiring Manager
-                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
+                  <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-xs gap-3">
                     <button
-                      onClick={(e) => handleOpenEmailModal(selectedRecruiter, e)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
+                      onClick={(e) => {
+                        setShowDrawer(false);
+                        handleOpenComposeWindow(selectedRecruiter, e);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
                     >
                       <Mail className="w-4 h-4" /> Email Recruiter
                     </button>
@@ -366,98 +426,177 @@ const RecruitersPage = () => {
         )}
       </AnimatePresence>
 
-      {/* ===== EMAIL RECRUITER COMPOSER MODAL ===== */}
+      {/* ===== GMAIL-STYLE COMPOSE WINDOW FLOATING INTERFACE ===== */}
       <AnimatePresence>
-        {showEmailModal && emailRecruiter && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {showEmailCompose && emailRecruiter && (
+          <div className="fixed inset-0 sm:inset-auto z-50 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowEmailModal(false)}
-              className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative z-10 border border-slate-100 overflow-hidden"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ type: 'spring', damping: 24, stiffness: 260 }}
+              className={`pointer-events-auto bg-white shadow-2xl border border-slate-300 flex flex-col font-sans transition-all duration-300 ${
+                isMaximized
+                  ? 'fixed inset-4 sm:inset-10 z-50 rounded-2xl'
+                  : isMinimized
+                  ? 'fixed bottom-0 right-4 sm:right-8 w-72 sm:w-80 h-11 rounded-t-xl overflow-hidden z-50'
+                  : 'fixed inset-0 sm:inset-auto sm:bottom-0 sm:right-8 w-full sm:w-[560px] h-full sm:h-[520px] rounded-none sm:rounded-t-2xl z-50'
+              }`}
             >
-              {/* Modal Header */}
-              <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-base">Email {emailRecruiter.name}</h3>
-                    <p className="text-xs text-slate-500">{emailRecruiter.companyName || 'Corporate Partner'} • {emailRecruiter.email}</p>
-                  </div>
+              {/* Header Bar */}
+              <div
+                onClick={() => setIsMinimized(!isMinimized)}
+                className="bg-[#0F172A] text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none rounded-t-none sm:rounded-t-2xl"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <Mail className="w-4 h-4 text-blue-400 shrink-0" />
+                  <span className="font-bold text-xs tracking-wide truncate">
+                    {isMinimized ? `Message: ${emailRecruiter.name}` : 'New Message'}
+                  </span>
                 </div>
-                <button
-                  onClick={() => setShowEmailModal(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Modal Form */}
-              <form onSubmit={handleSendPlatformEmail} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Subject Line
-                  </label>
-                  <input
-                    type="text"
-                    value={emailSubject}
-                    onChange={(e) => setEmailSubject(e.target.value)}
-                    required
-                    placeholder="Enter email subject..."
-                    className="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Message to Recruiter
-                  </label>
-                  <textarea
-                    rows={5}
-                    value={emailMessage}
-                    onChange={(e) => setEmailMessage(e.target.value)}
-                    required
-                    placeholder="Write your email message..."
-                    className="w-full p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
-                  />
-                </div>
-
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <a
-                    href={`mailto:${emailRecruiter.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailMessage)}`}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all text-center"
-                  >
-                    Open Mail App ↗
-                  </a>
-
+                <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
-                    type="submit"
-                    disabled={sendingEmail}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md disabled:opacity-50"
+                    type="button"
+                    onClick={() => setIsMinimized(!isMinimized)}
+                    className="p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white transition-colors"
+                    title={isMinimized ? 'Expand' : 'Minimize'}
                   >
-                    {sendingEmail ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" /> Send Email Inquiry
-                      </>
-                    )}
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMinimized(false);
+                      setIsMaximized(!isMaximized);
+                    }}
+                    className="hidden sm:block p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white transition-colors"
+                    title={isMaximized ? 'Restore' : 'Maximize'}
+                  >
+                    {isMaximized ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailCompose(false)}
+                    className="p-1 hover:bg-red-500/20 hover:text-red-400 rounded text-slate-300 transition-colors"
+                    title="Close"
+                  >
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </form>
+              </div>
+
+              {/* Compose Window Content (Hidden if Minimized) */}
+              {!isMinimized && (
+                <form onSubmit={handleSendPlatformEmail} className="flex-1 flex flex-col bg-white overflow-hidden">
+                  {/* Recipient Row */}
+                  <div className="px-4 py-2 border-b border-slate-100 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-slate-400 select-none w-8">To</span>
+                    <div className="flex-1 flex items-center gap-1.5 flex-wrap py-0.5">
+                      <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-900 text-xs font-semibold px-2.5 py-1 rounded-lg border border-slate-200">
+                        {emailRecruiter.name} &lt;{emailRecruiter.email}&gt;
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Subject Row */}
+                  <div className="px-4 py-2 border-b border-slate-100 flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      placeholder="Subject"
+                      className="w-full text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none bg-transparent py-1"
+                    />
+                  </div>
+
+                  {/* Message Editor Area */}
+                  <div className="flex-1 p-4 overflow-y-auto flex flex-col">
+                    <textarea
+                      value={emailMessage}
+                      onChange={(e) => setEmailMessage(e.target.value)}
+                      placeholder="Write your message..."
+                      className="w-full flex-1 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed font-sans"
+                    />
+
+                    {/* Attached File Badge */}
+                    {attachedFile && (
+                      <div className="mt-3 inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-800 text-xs px-3 py-1.5 rounded-xl self-start">
+                        <FileText className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="font-semibold truncate max-w-[200px]">{attachedFile.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => setAttachedFile(null)}
+                          className="hover:text-red-600 transition-colors ml-1"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hidden File Input */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  />
+
+                  {/* Action Bar Footer */}
+                  <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-3 shrink-0">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="submit"
+                        disabled={sendingEmail}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0F172A] hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
+                      >
+                        {sendingEmail ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...
+                          </>
+                        ) : (
+                          <>
+                            Send <Send className="w-3.5 h-3.5" />
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-2 hover:bg-slate-200/60 rounded-xl text-slate-500 hover:text-slate-800 transition-colors"
+                        title="Attach file"
+                      >
+                        <Paperclip className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => toast.success('Standard plain-text editor active')}
+                        className="p-2 hover:bg-slate-200/60 rounded-xl text-slate-500 hover:text-slate-800 transition-colors"
+                        title="Formatting options"
+                      >
+                        <Type className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmailSubject('');
+                        setEmailMessage('');
+                        setAttachedFile(null);
+                        setShowEmailCompose(false);
+                      }}
+                      className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-xl transition-colors"
+                      title="Discard draft"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </form>
+              )}
             </motion.div>
           </div>
         )}

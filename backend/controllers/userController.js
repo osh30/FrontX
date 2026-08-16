@@ -482,12 +482,12 @@ const getUserById = async (req, res) => {
   }
 };
 
-// @desc    Send email / message inquiry to a recruiter
+// @desc    Send direct email inquiry to recruiter
 // @route   POST /api/users/send-recruiter-email
 // @access  Private
 const sendRecruiterEmail = async (req, res) => {
   try {
-    const { recruiterEmail, recruiterId, subject, message } = req.body;
+    const { recruiterEmail, recruiterId, subject, message, attachmentUrl } = req.body;
     if (!recruiterEmail || !subject || !message) {
       return res.status(400).json({ message: 'Recruiter email, subject, and message are required.' });
     }
@@ -505,18 +505,20 @@ const sendRecruiterEmail = async (req, res) => {
       await Notification.create({
         user: recruiter._id,
         senderUserId: req.user._id || req.user.id,
-        title: `New Student Inquiry: ${subject}`,
+        title: `New Student Message: ${subject}`,
         message: `Student ${req.user.name || 'A student'} (${req.user.email}) sent: "${message.substring(0, 150)}..."`,
         type: 'opportunity',
         relatedId: req.user._id || req.user.id
       });
     }
 
-    // Send email via nodemailer if SMTP config exists
+    // Send email via nodemailer if SMTP / EMAIL config exists
     try {
       const nodemailer = require('nodemailer');
+      let transporter = null;
+
       if (process.env.SMTP_HOST && process.env.SMTP_USER) {
-        const transporter = nodemailer.createTransport({
+        transporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
           port: parseInt(process.env.SMTP_PORT || '587'),
           secure: process.env.SMTP_SECURE === 'true',
@@ -525,20 +527,48 @@ const sendRecruiterEmail = async (req, res) => {
             pass: process.env.SMTP_PASS
           }
         });
+      } else if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
+        });
+      }
+
+      if (transporter) {
+        const mailBodyHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; line-height: 1.6;">
+            <div style="background-color: #0f172a; padding: 20px; text-align: center; border-radius: 12px 12px 0 0;">
+              <h2 style="color: #ffffff; margin: 0; font-size: 20px;">FrontX Student Inquiry</h2>
+            </div>
+            <div style="padding: 24px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+              <p style="font-size: 14px; margin-top: 0;"><strong>From Student:</strong> ${req.user.name} (&lt;<a href="mailto:${req.user.email}" style="color: #2563eb;">${req.user.email}</a>&gt;)</p>
+              <p style="font-size: 14px;"><strong>Subject:</strong> ${subject}</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;" />
+              <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-wrap; font-size: 14px;">${message}</div>
+              ${attachmentUrl ? `<p style="margin-top: 16px; font-size: 13px;">📎 <strong>Attachment:</strong> <a href="${attachmentUrl}" target="_blank" style="color: #2563eb;">View Attached Document</a></p>` : ''}
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0 12px 0;" />
+              <p style="font-size: 12px; color: #64748b; margin: 0;">You can reply directly to this email to respond to ${req.user.name}.</p>
+            </div>
+          </div>
+        `;
 
         await transporter.sendMail({
-          from: `"FrontX Platform" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+          from: `"FrontX Platform" <${process.env.SMTP_FROM || process.env.EMAIL_USER || process.env.SMTP_USER}>`,
           to: recruiterEmail,
           replyTo: req.user.email,
           subject: subject,
-          text: `From Student: ${req.user.name} (${req.user.email})\n\nMessage:\n${message}\n\nSent via FrontX Platform`
+          text: `From Student: ${req.user.name} (${req.user.email})\n\nSubject: ${subject}\n\nMessage:\n${message}\n\n${attachmentUrl ? `Attachment: ${attachmentUrl}\n\n` : ''}Sent via FrontX Platform`,
+          html: mailBodyHtml
         });
       }
     } catch (emailErr) {
-      console.log('SMTP send note (non-blocking):', emailErr.message);
+      console.log('Email delivery note (non-blocking):', emailErr.message);
     }
 
-    res.json({ success: true, message: `Email inquiry successfully sent to ${recruiterEmail}` });
+    res.json({ success: true, message: `Email sent successfully.` });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
