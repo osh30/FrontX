@@ -44,7 +44,13 @@ const finalizeLinkedSource = async (meeting) => {
   await session.save();
 };
 
+const mongoose = require('mongoose');
+
 const runCleanup = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    return { skipped: true, reason: 'database_not_connected' };
+  }
+
   const now = Date.now();
 
   const activeMeetings = await Meeting.find({ status: { $in: ['active', 'scheduled'] } }).lean();

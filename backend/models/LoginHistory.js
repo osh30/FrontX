@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const loginHistorySchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   action: { type: String, enum: ['login', 'logout'], required: true },
-  role: { type: String, enum: ['student', 'alumni', 'admin'], required: true },
+  role: { type: String, enum: ['student', 'alumni', 'recruiter', 'admin'], required: true },
   ip: { type: String, default: '' },
   userAgent: { type: String, default: '' },
   device: { type: String, default: '' },
