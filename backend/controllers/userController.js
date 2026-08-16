@@ -279,32 +279,36 @@ const getRecruiters = async (req, res) => {
       }
     ];
 
-    const bcrypt = require('bcryptjs');
-
     for (const rData of REAL_RECRUITERS) {
       try {
-        const hashedPassword = await bcrypt.hash('RecruiterPassword123!', 10);
-        await User.findOneAndUpdate(
-          { email: rData.email.toLowerCase() },
-          {
-            $set: {
-              name: rData.name,
-              email: rData.email.toLowerCase(),
-              role: 'recruiter',
-              status: 'approved',
-              companyName: rData.companyName,
-              industryType: rData.industryType || 'Technology',
-              companyWebsite: rData.companyWebsite || '',
-              companyDescription: rData.companyDescription || '',
-              bio: rData.bio || '',
-              companyLogo: rData.companyLogo || ''
-            },
-            $setOnInsert: {
-              password: hashedPassword
-            }
-          },
-          { upsert: true, new: true }
-        );
+        let r = await User.findOne({ email: rData.email.toLowerCase() });
+        if (!r) {
+          r = new User({
+            name: rData.name,
+            email: rData.email.toLowerCase(),
+            password: 'RecruiterPassword123!',
+            role: 'recruiter',
+            status: 'approved',
+            companyName: rData.companyName,
+            industryType: rData.industryType || 'Technology',
+            companyWebsite: rData.companyWebsite || '',
+            companyDescription: rData.companyDescription || '',
+            bio: rData.bio || '',
+            companyLogo: rData.companyLogo || ''
+          });
+          await r.save();
+        } else {
+          r.name = rData.name;
+          r.companyName = rData.companyName;
+          r.role = 'recruiter';
+          r.status = 'approved';
+          if (rData.industryType) r.industryType = rData.industryType;
+          if (rData.companyWebsite) r.companyWebsite = rData.companyWebsite;
+          if (rData.companyDescription) r.companyDescription = rData.companyDescription;
+          if (!r.bio) r.bio = rData.bio;
+          if (!r.companyLogo) r.companyLogo = rData.companyLogo;
+          await r.save();
+        }
       } catch (e) {
         console.error(`Recruiter upsert error for ${rData.email}:`, e.message);
       }
