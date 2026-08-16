@@ -308,6 +308,9 @@ const createOpportunity = async (req, res) => {
     if (!title || !title.trim()) return res.status(400).json({ message: 'Title is required' });
     if (!opportunityType) return res.status(400).json({ message: 'Opportunity type is required' });
 
+    const isApprovedRecruiter = recruiter.status === 'approved' || recruiter.verificationStatus === 'verified';
+    const initialStatus = isApprovedRecruiter ? 'approved' : 'pending';
+
     const opportunity = await Opportunity.create({
       recruiter: req.user.id,
       companyId: req.user.id,
@@ -327,7 +330,7 @@ const createOpportunity = async (req, res) => {
       documents: documents || [],
       applicationMethod: 'Inside FrontX',
       visibility: ['student', 'alumni'],
-      status: 'pending',
+      status: initialStatus,
       createdByRole: 'recruiter',
       submittedAt: new Date()
     });

@@ -106,8 +106,9 @@ const getJobs = async (req, res) => {
       const conditions = [
         {
           $or: [
-            { createdByRole: 'admin', status: 'active' },
-            { createdByRole: 'recruiter', status: 'approved' }
+            { createdByRole: 'admin', status: { $in: ['active', 'approved'] } },
+            { createdByRole: 'recruiter', status: { $in: ['approved', 'active', 'pending'] } },
+            { status: { $in: ['approved', 'active', 'pending'] } }
           ]
         }
       ];
