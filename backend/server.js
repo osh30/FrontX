@@ -305,6 +305,15 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 
+app.get('/api/debug-recs', async (req, res) => {
+  try {
+    const recruiters = await User.find({ role: 'recruiter' }).select('name email companyName role status').lean();
+    res.json({ count: recruiters.length, recruiters });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Test email endpoint
 app.get('/api/test-email', async (req, res) => {
   const nodemailer = require('nodemailer');
@@ -320,7 +329,7 @@ app.get('/api/test-email', async (req, res) => {
   try {
     await transporter.sendMail({
       from: `"FrontX" <${process.env.EMAIL_USER}>`,
-      to: 'your_test_email@gmail.com',  // আপনার ইমেইল দিন
+      to: 'your_test_email@gmail.com',
       subject: 'Test Email from FrontX',
       html: '<h1>Test Successful!</h1><p>Your email configuration is working.</p>'
     });
