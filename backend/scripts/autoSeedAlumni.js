@@ -29,6 +29,20 @@ const ALUMNI_ACCOUNTS = [
 ];
 
 const autoSeedAlumni = async () => {
+  // 1. Ensure recruiters and 9 opportunities are provisioned first
+  try {
+    const ensureRecruiters = require('./ensureRealRecruiters');
+    const seedShopUp = require('./seedShopUpOpportunities');
+    const seed3Recruiters = require('./seed3Recruiters9Opportunities');
+
+    if (typeof ensureRecruiters === 'function') await ensureRecruiters();
+    if (typeof seedShopUp === 'function') await seedShopUp();
+    if (typeof seed3Recruiters === 'function') await seed3Recruiters();
+  } catch (recErr) {
+    console.error('Recruiter auto-seed error:', recErr.message);
+  }
+
+  // 2. Ensure alumni accounts
   try {
     let createdCount = 0;
 
@@ -84,9 +98,6 @@ const autoSeedAlumni = async () => {
       const seedScholarships = require('./seed15Scholarships');
       const seedCollaborations = require('./seed7AlumniCollaborations');
       const seedCommunity = require('./seed5AlumniCommunityPosts');
-      const ensureRecruiters = require('./ensureRealRecruiters');
-      const seedShopUp = require('./seedShopUpOpportunities');
-      const seed3Recruiters = require('./seed3Recruiters9Opportunities');
 
       if (typeof enrich1 === 'function') await enrich1();
       if (typeof enrich2 === 'function') await enrich2();
@@ -94,9 +105,6 @@ const autoSeedAlumni = async () => {
       if (typeof seedScholarships === 'function') await seedScholarships();
       if (typeof seedCollaborations === 'function') await seedCollaborations();
       if (typeof seedCommunity === 'function') await seedCommunity();
-      if (typeof ensureRecruiters === 'function') await ensureRecruiters();
-      if (typeof seedShopUp === 'function') await seedShopUp();
-      if (typeof seed3Recruiters === 'function') await seed3Recruiters();
     } catch (e) {
       console.error('Alumni enrichment auto-run error:', e.message);
     }
