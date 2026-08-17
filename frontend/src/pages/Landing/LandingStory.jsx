@@ -448,7 +448,29 @@ export const AttendMentorshipSessionStory = () => {
 export const JoinResearchStory = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
+  
+  const DEFAULT_REAL_POSTS = [
+    {
+      _id: "6a7d7814a48ad9a4878f3427",
+      id: "6a7d7814a48ad9a4878f3427",
+      title: "Smart Campus Navigation and Student Assistance System",
+      type: "Research Project",
+      mentor: "Nahin Rahman",
+      status: "active",
+      deadline: "2026-11-05T23:59:59.000Z"
+    },
+    {
+      _id: "6a7d7813a48ad9a4878f341a",
+      id: "6a7d7813a48ad9a4878f341a",
+      title: "University Student Performance Prediction Using Machine Learning",
+      type: "Capstone Project",
+      mentor: "Shahriar Hassan",
+      status: "active",
+      deadline: "2026-10-25T23:59:59.000Z"
+    }
+  ];
+
+  const [posts, setPosts] = useState(DEFAULT_REAL_POSTS);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -464,8 +486,9 @@ export const JoinResearchStory = () => {
         }
         if (res.ok) {
           const data = await res.json();
-          if (isMounted && data.posts && Array.isArray(data.posts)) {
-            setPosts(data.posts.slice(0, 2));
+          const list = data.posts || data.data || (Array.isArray(data) ? data : null);
+          if (isMounted && list && Array.isArray(list) && list.length > 0) {
+            setPosts(list.slice(0, 2));
           }
         }
       } catch (err) {
