@@ -273,7 +273,10 @@ const TrustedStatistics = () => {
     let isMounted = true;
     const fetchPublicStats = async () => {
       try {
-        const res = await fetch(`${API_BASE}/stats/public`);
+        let res = await fetch(`${API_BASE}/stats/public`);
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/users/public-stats`);
+        }
         if (res.ok) {
           const data = await res.json();
           if (isMounted) {
