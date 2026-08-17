@@ -26,7 +26,7 @@ const createSession = async (req, res) => {
     } = req.body;
 
     const user = await User.findById(req.user.id);
-    if (!user || user.role !== 'Alumni') {
+    if (!user || user.role?.toLowerCase() !== 'alumni') {
       return res.status(403).json({ message: 'Only alumni can schedule sessions.' });
     }
 
