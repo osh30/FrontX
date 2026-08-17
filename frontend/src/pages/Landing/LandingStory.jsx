@@ -778,6 +778,12 @@ export const AccessResourcesStory = () => {
 };
 
 export const CareerOpportunitiesStory = () => {
+  const opportunities = [
+    { role: "Digital Technology Intern", company: "Grameenphone Ltd." },
+    { role: "UX Research Intern", company: "bKash Limited" },
+    { role: "Junior Product Analyst", company: "bKash Limited" }
+  ];
+
   return (
     <StoryBlock
       title="Land exclusive job opportunities"
@@ -788,11 +794,7 @@ export const CareerOpportunitiesStory = () => {
       reversed={true}
       imageContent={
         <div className="space-y-4">
-          {[
-            { role: "Software Engineer", company: "Google", location: "Remote", type: "Full-time" },
-            { role: "Product Design Intern", company: "Meta", location: "London", type: "Internship" },
-            { role: "Frontend Developer", company: "Stripe", location: "New York", type: "Full-time" }
-          ].map((job, i) => (
+          {opportunities.map((job, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -7, scale: 1.02 }}
@@ -809,19 +811,14 @@ export const CareerOpportunitiesStory = () => {
                   maskComposite: 'exclude',
                 }}
               />
-              <div className="relative z-10 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-400/15 rounded-xl flex items-center justify-center font-bold text-blue-300/80 group-hover:text-indigo-200 group-hover:bg-blue-500/15 transition-all duration-300">
-                    {job.company[0]}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white/90 group-hover:text-white transition-colors duration-300">{job.role}</h4>
-                    <p className="text-sm text-blue-200/60 group-hover:text-blue-200/80 transition-colors duration-300">{job.company} • {job.location}</p>
-                  </div>
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-400/15 rounded-xl flex items-center justify-center font-bold text-blue-300/80 group-hover:text-indigo-200 group-hover:bg-blue-500/15 transition-all duration-300 flex-shrink-0">
+                  {job.company[0]}
                 </div>
-                <button className="px-4 py-2 bg-white/[0.08] text-blue-200 font-semibold rounded-xl text-sm border border-white/[0.06] opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:bg-white/[0.15] group-hover:text-white group-hover:shadow-[0_0_16px_rgba(96,165,250,0.15)]">
-                  View
-                </button>
+                <div>
+                  <h4 className="font-bold text-white text-lg leading-snug group-hover:text-blue-100 transition-colors duration-300">{job.role}</h4>
+                  <p className="text-sm font-medium text-blue-200/60 group-hover:text-blue-200/80 transition-colors duration-300 mt-0.5">{job.company}</p>
+                </div>
               </div>
             </motion.div>
           ))}
