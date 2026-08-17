@@ -455,7 +455,10 @@ export const JoinResearchStory = () => {
     let isMounted = true;
     const fetchPublicPosts = async () => {
       try {
-        let res = await fetch(`${API_BASE}/users/public-collaboration`);
+        let res = await fetch(`${API_BASE}/stats/collaboration`);
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/users/public-collaboration`);
+        }
         if (!res.ok) {
           res = await fetch(`${API_BASE}/collaboration/public`);
         }
