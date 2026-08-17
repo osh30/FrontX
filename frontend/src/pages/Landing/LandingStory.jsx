@@ -225,7 +225,10 @@ export const FindAlumniMentorStory = () => {
     let isMounted = true;
     const fetchPublicAlumni = async () => {
       try {
-        const res = await fetch(`${API_BASE}/alumni/public`);
+        let res = await fetch(`${API_BASE}/alumni/public`);
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/stats/alumni`);
+        }
         if (res.ok) {
           const data = await res.json();
           if (isMounted && data.alumni && Array.isArray(data.alumni)) {
