@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles, Users, GraduationCap, Briefcase, BookOpen, Brain, Plus, Star } from 'lucide-react';
+import { API_BASE } from '../../config/api';
 
 const StoryBlock = ({ title, subtitle, description, icon: Icon, color, bg, imageContent, reversed, lead, actions, centered, descriptionClassName, descriptionColor }) => {
   return (
@@ -215,12 +216,45 @@ export const AiCareerAnalysisStory = () => {
 };
 
 export const FindAlumniMentorStory = () => {
-  const alumni = [
-    { name: "Shanta" },
-    { name: "Rakib" },
-    { name: "Sabbir" },
-    { name: "Fatema" },
-  ];
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [alumniList, setAlumniList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPublicAlumni = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/alumni/public`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.alumni && Array.isArray(data.alumni)) {
+            setAlumniList(data.alumni.slice(0, 4));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch public alumni for landing page:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchPublicAlumni();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleConnect = (alumniId) => {
+    if (user) {
+      if (user.role === 'student' || user.role === 'alumni') {
+        navigate('/dashboard/mentorship');
+      } else {
+        navigate('/dashboard');
+      }
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <StoryBlock
       title={<span>Connect with alumni who have walked your path</span>}
@@ -230,72 +264,106 @@ export const FindAlumniMentorStory = () => {
       bg="bg-purple-100"
       reversed={true}
       imageContent={
-        <div className="grid grid-cols-2 gap-5">
-          {alumni.map((person, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 25, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ type: 'spring', stiffness: 120, damping: 18, mass: 0.3, delay: 0.08 * i }}
-              style={{ willChange: 'transform, opacity' }}
-            >
+        loading ? (
+          <div className="grid grid-cols-2 gap-5">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="bg-gradient-to-br from-[#08152F] to-[#0F2D5C] rounded-[22px] p-7 border border-blue-400/15 flex flex-col items-center animate-pulse">
+                <div className="w-[90px] h-[90px] rounded-full bg-white/10 mb-5" />
+                <div className="w-24 h-4 bg-white/20 rounded mb-2" />
+                <div className="w-32 h-3 bg-white/10 rounded mb-5" />
+                <div className="w-full h-9 bg-white/10 rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : alumniList.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-[#08152F] to-[#0F2D5C] rounded-[22px] border border-blue-400/15 text-center">
+            <Users className="w-12 h-12 text-blue-400/50 mb-3" />
+            <p className="text-gray-300 font-medium text-base">No alumni profiles available yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-5">
+            {alumniList.map((person, i) => (
               <motion.div
-                animate={{ y: [0, -2.5, 0] }}
-                transition={{ duration: 3.5 + i * 0.4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.25 }}
-                className="relative"
+                key={person._id || person.id || i}
+                initial={{ opacity: 0, y: 25, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ type: 'spring', stiffness: 120, damping: 18, mass: 0.3, delay: 0.08 * i }}
+                style={{ willChange: 'transform, opacity' }}
               >
                 <motion.div
-                  whileHover={{ y: -6, scale: 1.03 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 20, mass: 0.4 }}
-                  className="group relative bg-gradient-to-br from-[#08152F] to-[#0F2D5C] rounded-[22px] p-7 border border-blue-400/15 shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(59,130,246,0.15)] transition-shadow duration-300 flex flex-col items-center text-center overflow-hidden"
+                  animate={{ y: [0, -2.5, 0] }}
+                  transition={{ duration: 3.5 + i * 0.4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.25 }}
+                  className="relative"
                 >
-                  {/* Glass overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-transparent to-transparent pointer-events-none rounded-[22px]" />
-                  <div className="absolute inset-0 rounded-[22px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{
-                      padding: '1px',
-                      background: 'linear-gradient(135deg, rgba(96,165,250,0.4), rgba(139,92,246,0.2), rgba(96,165,250,0.4))',
-                      WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                      WebkitMaskComposite: 'xor',
-                      maskComposite: 'exclude',
-                    }}
-                  />
-
-                  {/* Profile image */}
-                  <div className="w-[90px] h-[90px] rounded-full border-[3px] border-white shadow-[0_0_20px_rgba(96,165,250,0.25)] mb-5 overflow-hidden">
-                    <motion.div
-                      whileHover={{ scale: 1.03 }}
-                      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                      className="w-full h-full bg-gradient-to-b from-[#2A3A5C] to-[#1A2744] flex items-center justify-center"
-                    >
-                      <svg viewBox="0 0 24 24" fill="#5A6E9E" className="w-10 h-10">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                      </svg>
-                    </motion.div>
-                  </div>
-
-                  {/* Info */}
-                  <h4 className="text-[22px] font-bold text-white leading-tight mb-1">{person.name}</h4>
-                  <p className="text-[15px] font-medium text-gray-400 mb-5">Software Engineer at Google</p>
-
-                  {/* Connect button */}
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold text-sm rounded-full shadow-lg shadow-blue-500/20 hover:shadow-[0_8px_30px_rgba(96,165,250,0.3)] transition-shadow duration-300 flex items-center justify-center gap-2 group"
+                  <motion.div
+                    whileHover={{ y: -6, scale: 1.03 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 20, mass: 0.4 }}
+                    className="group relative bg-gradient-to-br from-[#08152F] to-[#0F2D5C] rounded-[22px] p-7 border border-blue-400/15 shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_20px_50px_rgba(59,130,246,0.15)] transition-shadow duration-300 flex flex-col items-center text-center overflow-hidden"
                   >
-                    <span>Connect</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-hover:translate-x-0.5">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </motion.button>
+                    {/* Glass overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-transparent to-transparent pointer-events-none rounded-[22px]" />
+                    <div className="absolute inset-0 rounded-[22px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                      style={{
+                        padding: '1px',
+                        background: 'linear-gradient(135deg, rgba(96,165,250,0.4), rgba(139,92,246,0.2), rgba(96,165,250,0.4))',
+                        WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                        WebkitMaskComposite: 'xor',
+                        maskComposite: 'exclude',
+                      }}
+                    />
+
+                    {/* Profile image */}
+                    <div className="w-[90px] h-[90px] rounded-full border-[3px] border-white shadow-[0_0_20px_rgba(96,165,250,0.25)] mb-5 overflow-hidden flex-shrink-0">
+                      {person.profilePicture ? (
+                        <img
+                          src={person.profilePicture}
+                          alt={person.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className="w-full h-full bg-gradient-to-b from-[#2A3A5C] to-[#1A2744] flex items-center justify-center"
+                        style={{ display: person.profilePicture ? 'none' : 'flex' }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="#5A6E9E" className="w-10 h-10">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <h4 className="text-[22px] font-bold text-white leading-tight mb-1 truncate max-w-full px-1" title={person.name}>
+                      {person.name}
+                    </h4>
+                    <p className="text-[15px] font-medium text-gray-400 mb-5 line-clamp-2 px-1" title={person.workTitle}>
+                      {person.workTitle}
+                    </p>
+
+                    {/* Connect button */}
+                    <motion.button
+                      onClick={() => handleConnect(person._id || person.id)}
+                      whileHover={{ scale: 1.03 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                      className="w-full py-2.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold text-sm rounded-full shadow-lg shadow-blue-500/20 hover:shadow-[0_8px_30px_rgba(96,165,250,0.3)] transition-shadow duration-300 flex items-center justify-center gap-2 group"
+                    >
+                      <span>Connect</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-hover:translate-x-0.5">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </motion.button>
+                  </motion.div>
                 </motion.div>
               </motion.div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       }
     />
   );
