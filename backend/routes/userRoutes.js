@@ -66,6 +66,36 @@ router.get('/public-alumni', async (req, res) => {
   }
 });
 
+router.get('/public-collaboration', async (req, res) => {
+  try {
+    const CollaborationPost = require('../models/CollaborationPost');
+    const posts = await CollaborationPost.find({ status: 'active' })
+      .populate({
+        path: 'alumni',
+        select: 'name role department'
+      })
+      .sort({ createdAt: -1 })
+      .limit(2)
+      .lean();
+
+    const formatted = posts.map(p => ({
+      _id: p._id,
+      id: p._id,
+      title: p.title,
+      type: p.type || p.domain || 'Research Project',
+      domain: p.domain || 'Technology',
+      mentor: p.alumni?.name || 'Alumni Mentor',
+      deadline: p.deadline,
+      status: p.status || 'active'
+    }));
+
+    res.json({ success: true, posts: formatted });
+  } catch (error) {
+    console.error('Public collaboration posts error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch public collaboration posts' });
+  }
+});
+
 router.route('/profile')
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);

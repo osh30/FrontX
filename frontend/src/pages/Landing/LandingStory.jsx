@@ -446,10 +446,50 @@ export const AttendMentorshipSessionStory = () => {
 };
 
 export const JoinResearchStory = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPublicPosts = async () => {
+      try {
+        let res = await fetch(`${API_BASE}/users/public-collaboration`);
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/collaboration/public`);
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.posts && Array.isArray(data.posts)) {
+            setPosts(data.posts.slice(0, 2));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch public collaboration posts for landing page:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchPublicPosts();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleApply = (project) => {
+    const isExpired = project.deadline && new Date(project.deadline).getTime() < Date.now();
+    if (isExpired) return;
+
+    if (user) {
+      navigate(`/dashboard/collaboration/${project._id || project.id}`);
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <StoryBlock
       title="Build a strong academic portfolio"
-
       description="Collaborate with professors and alumni on cutting-edge research. Gain hands-on experience, co-author papers, and strengthen your profile for higher studies and prestigious roles."
       icon={GraduationCap}
       color="text-cyan-700"
@@ -457,29 +497,56 @@ export const JoinResearchStory = () => {
       reversed={true}
       imageContent={
         <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-50 rounded-full blur-[80px] -mr-32 -mt-32"></div>
-           <div className="relative z-10 space-y-6">
-             {[
-                { title: "Quantum Computing Algorithms", type: "Computer Science", mentor: "Sabbir" },
-                { title: "AI in Healthcare Diagnostics", type: "Machine Learning", mentor: "Fatema" }
-              ].map((project, i) => (
-                <div key={i} className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:border-cyan-200 transition-colors cursor-pointer group">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-lg mb-1">{project.title}</h4>
-                      <p className="text-sm text-blue-900 dark:text-blue-300 font-semibold">{project.type}</p>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-50 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+          <div className="relative z-10 space-y-6">
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2].map((n) => (
+                  <div key={n} className="p-6 bg-gray-50 border border-gray-100 rounded-2xl animate-pulse">
+                    <div className="w-3/4 h-5 bg-gray-200 rounded mb-2" />
+                    <div className="w-1/4 h-4 bg-gray-200 rounded mb-4" />
+                    <div className="w-1/3 h-4 bg-gray-200 rounded mb-4" />
+                    <div className="w-full h-10 bg-gray-200 rounded-xl" />
+                  </div>
+                ))}
+              </div>
+            ) : posts.length === 0 ? (
+              <div className="p-8 text-center bg-gray-50 rounded-2xl border border-gray-100">
+                <p className="text-gray-500 font-medium">No active collaboration opportunities available yet.</p>
+              </div>
+            ) : (
+              posts.map((project, i) => {
+                const isExpired = project.deadline && new Date(project.deadline).getTime() < Date.now();
+                return (
+                  <div key={project._id || project.id || i} className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:border-cyan-200 transition-colors cursor-pointer group">
+                    <div className="flex justify-between items-start mb-4 gap-2">
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-lg mb-1 leading-snug">{project.title}</h4>
+                        <p className="text-sm text-blue-900 dark:text-blue-300 font-semibold">{project.type}</p>
+                      </div>
+                      <span className={`px-3 py-1 text-xs font-bold rounded-full flex-shrink-0 ${isExpired ? 'bg-red-50 text-red-600' : 'bg-cyan-50 text-blue-900'}`}>
+                        {isExpired ? 'Expired' : 'Active'}
+                      </span>
                     </div>
-                    <span className="px-3 py-1 bg-cyan-50 text-blue-900 text-xs font-bold rounded-full">Active</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                   <Users className="w-4 h-4" /> Led by {project.mentor}
-                 </div>
-                  <button className="w-full py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-950 font-medium rounded-xl border border-transparent transition-all duration-[350ms] ease-in-out hover:bg-[#1E3A8A] dark:hover:bg-blue-100 hover:text-white hover:shadow-[0_0_24px_rgba(96,165,250,0.25)] hover:-translate-y-[2px] hover:scale-[1.02] hover:shadow-xl hover:border-blue-400/20 cursor-pointer">
-                    Apply to Join
-                  </button>
-               </div>
-             ))}
-           </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                      <Users className="w-4 h-4" /> Led by {project.mentor}
+                    </div>
+                    <button
+                      onClick={() => handleApply(project)}
+                      disabled={isExpired}
+                      className={`w-full py-2.5 font-medium rounded-xl border transition-all duration-[350ms] ease-in-out cursor-pointer ${
+                        isExpired
+                          ? 'bg-gray-200 text-gray-400 border-transparent cursor-not-allowed'
+                          : 'bg-gray-900 dark:bg-white text-white dark:text-gray-950 border-transparent hover:bg-[#1E3A8A] dark:hover:bg-blue-100 hover:text-white hover:shadow-[0_0_24px_rgba(96,165,250,0.25)] hover:-translate-y-[2px] hover:scale-[1.02] hover:shadow-xl hover:border-blue-400/20'
+                      }`}
+                    >
+                      {isExpired ? 'Application Closed' : 'Apply to Join'}
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       }
     />
