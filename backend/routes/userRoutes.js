@@ -23,6 +23,49 @@ router.get('/public-stats', async (req, res) => {
   }
 });
 
+router.get('/public-alumni', async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const alumniList = await User.find({ role: 'alumni', isActive: { $ne: false }, status: { $ne: 'rejected' } })
+      .select('name profilePicture avatar currentJob jobTitle designation company companyName workplace department bio')
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .lean();
+
+    const alumni = alumniList.map(a => {
+      const job = a.currentJob || a.jobTitle || a.designation || '';
+      const company = a.company || a.companyName || a.workplace || '';
+      
+      let workTitle = '';
+      if (job && company) {
+        workTitle = `${job} at ${company}`;
+      } else if (job) {
+        workTitle = job;
+      } else if (company) {
+        workTitle = company;
+      } else if (a.department) {
+        workTitle = `Alumni • ${a.department}`;
+      } else {
+        workTitle = 'Alumni Mentor';
+      }
+
+      return {
+        _id: a._id,
+        id: a._id,
+        name: a.name,
+        profilePicture: a.profilePicture || a.avatar || '',
+        workTitle,
+        department: a.department || 'Educational Technology & Engineering'
+      };
+    });
+
+    res.json({ success: true, alumni });
+  } catch (error) {
+    console.error('Public alumni endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch public alumni' });
+  }
+});
+
 router.route('/profile')
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
