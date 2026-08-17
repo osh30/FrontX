@@ -164,6 +164,7 @@ app.use('/api/company-reviews', require('./routes/companyReviewRoutes'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/opportunities', require('./routes/opportunityDetails'));
 app.use('/api/admin-resources', require('./routes/adminResourceRoutes'));
+app.use('/api/stats', require('./routes/statsRoutes'));
 
 // Test Users Route
 app.get("/api/test-users", async (req, res) => {

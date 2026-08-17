@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, animate, useInView, useMotionValue, useTransform } from 'framer-motion';
+import { API_BASE } from '../../config/api';
 
 // ─── Static SVG Icons (no JS animation loops) ───
 const AnimatedGraduationCap = () => (
@@ -129,18 +130,32 @@ const AnimatedTrophy = () => (
 const Counter = ({ to, suffix }) => {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
-  const [count, setCount] = useState(typeof to === 'number' ? 0 : to);
+  const [count, setCount] = useState(to === null ? '—' : to);
 
   useEffect(() => {
-    if (inView && typeof to === 'number') {
-      const controls = animate(0, to, {
-        duration: 1.8,
-        ease: "easeOut",
-        onUpdate(value) {
-          setCount(Math.floor(value));
-        }
-      });
-      return () => controls.stop();
+    if (to === null) {
+      setCount('—');
+      return;
+    }
+    if (typeof to === 'number') {
+      if (to === 0) {
+        setCount(0);
+        return;
+      }
+      if (inView) {
+        const controls = animate(0, to, {
+          duration: 1.5,
+          ease: "easeOut",
+          onUpdate(value) {
+            setCount(Math.floor(value));
+          }
+        });
+        return () => controls.stop();
+      } else {
+        setCount(to);
+      }
+    } else {
+      setCount(to);
     }
   }, [inView, to]);
 
@@ -154,13 +169,6 @@ const ICONS = {
   Microscope: AnimatedHandshake,
   BriefcaseBusiness: AnimatedTrophy,
 };
-
-const STATS = [
-  { value: 650, suffix: '+', label: "Registered Students", icon: "GraduationCap" },
-  { value: 120, suffix: '+', label: "Verified Alumni", icon: "Users" },
-  { value: 85, suffix: '+', label: "Research Opportunities", icon: "Microscope" },
-  { value: 140, suffix: '+', label: "Career Opportunities", icon: "BriefcaseBusiness" },
-];
 
 const containerVariants = {
   hidden: {},
@@ -254,6 +262,47 @@ const TiltCard = ({ stat, index }) => {
 };
 
 const TrustedStatistics = () => {
+  const [stats, setStats] = useState({
+    students: null,
+    alumni: null,
+    researchOpportunities: null,
+    careerOpportunities: null
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPublicStats = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/stats/public`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setStats({
+              students: typeof data.students === 'number' ? data.students : '—',
+              alumni: typeof data.alumni === 'number' ? data.alumni : '—',
+              researchOpportunities: typeof data.researchOpportunities === 'number' ? data.researchOpportunities : '—',
+              careerOpportunities: typeof data.careerOpportunities === 'number' ? data.careerOpportunities : '—'
+            });
+          }
+        } else {
+          if (isMounted) setStats({ students: '—', alumni: '—', researchOpportunities: '—', careerOpportunities: '—' });
+        }
+      } catch (err) {
+        if (isMounted) setStats({ students: '—', alumni: '—', researchOpportunities: '—', careerOpportunities: '—' });
+      }
+    };
+
+    fetchPublicStats();
+    return () => { isMounted = false; };
+  }, []);
+
+  const statsList = [
+    { value: stats.students, suffix: '', label: "Registered Students", icon: "GraduationCap" },
+    { value: stats.alumni, suffix: '', label: "Verified Alumni", icon: "Users" },
+    { value: stats.researchOpportunities, suffix: '', label: "Research Opportunities", icon: "Microscope" },
+    { value: stats.careerOpportunities, suffix: '', label: "Career Opportunities", icon: "BriefcaseBusiness" },
+  ];
+
   return (
     <section className="py-32 relative bg-white dark:bg-[#0B1220] overflow-hidden">
       {/* Subtle Background Effects */}
@@ -292,7 +341,7 @@ const TrustedStatistics = () => {
           viewport={{ once: true, amount: 0.25 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {STATS.map((stat, index) => (
+          {statsList.map((stat, index) => (
             <TiltCard key={index} stat={stat} index={index} />
           ))}
         </motion.div>
@@ -302,3 +351,4 @@ const TrustedStatistics = () => {
 };
 
 export default TrustedStatistics;
+
