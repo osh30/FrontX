@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 // Join gates (Upcoming -> Active -> Ended) update automatically on the page.
 // A shared module-level timestamp lets multiple components stay in sync and
 // avoids each component running its own interval.
-export const useMeetingClock = (intervalMs = 30000) => {
+export const useMeetingClock = (intervalMs = 5000) => {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {

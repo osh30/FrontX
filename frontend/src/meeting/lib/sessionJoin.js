@@ -78,11 +78,17 @@ export const parseTimeOfDay = (timeStr) => {
   return { hour, minute };
 };
 
-// Calendar parts via UTC getters so "2026-08-10" stays the picked calendar date.
+// Calendar parts in Asia/Dhaka (UTC+6) timezone.
 const toCalendarParts = (dateLike) => {
+  if (!dateLike) return null;
+  if (typeof dateLike === 'string' && dateLike.match(/^\d{4}-\d{2}-\d{2}/)) {
+    const [y, m, d] = dateLike.split('T')[0].split('-').map(Number);
+    return { year: y, month: m - 1, day: d };
+  }
   const d = new Date(dateLike);
   if (Number.isNaN(d.getTime())) return null;
-  return { year: d.getUTCFullYear(), month: d.getUTCMonth(), day: d.getUTCDate() };
+  const bdDate = new Date(d.getTime() + (6 * 60 * 60 * 1000));
+  return { year: bdDate.getUTCFullYear(), month: bdDate.getUTCMonth(), day: bdDate.getUTCDate() };
 };
 
 export const computeScheduleWindow = ({ date, time, duration }) => {
@@ -90,23 +96,24 @@ export const computeScheduleWindow = ({ date, time, duration }) => {
   const parts = toCalendarParts(date);
   const tod = parseTimeOfDay(time);
   if (!parts || !tod) return null;
-  const durationMs = (Number(duration) || 0) * MINUTE_MS;
-  const start = new Date(Date.UTC(parts.year, parts.month, parts.day, tod.hour, tod.minute, 0, 0));
-  const end = durationMs > 0 ? new Date(start.getTime() + durationMs) : null;
+  const durationMs = (Number(duration) || 60) * MINUTE_MS;
+  const startMs = Date.UTC(parts.year, parts.month, parts.day, tod.hour, tod.minute, 0, 0) - (6 * 60 * 60 * 1000);
+  const start = new Date(startMs);
+  const end = new Date(start.getTime() + durationMs);
   return { start, end };
 };
 
 // Resolves the schedule window for Session, MentorshipSession, or Interview docs.
 export const meetingWindow = (item) => {
   if (!item) return null;
-  if (item.scheduleStart && item.scheduleEnd) {
-    return { start: new Date(item.scheduleStart), end: new Date(item.scheduleEnd) };
-  }
   if (item.sessionDate != null && item.sessionTime) {
     return computeScheduleWindow({ date: item.sessionDate, time: item.sessionTime, duration: item.sessionDuration });
   }
   if (item.date != null && item.time) {
     return computeScheduleWindow({ date: item.date, time: item.time, duration: item.duration });
+  }
+  if (item.scheduleStart && item.scheduleEnd) {
+    return { start: new Date(item.scheduleStart), end: new Date(item.scheduleEnd) };
   }
   return null;
 };

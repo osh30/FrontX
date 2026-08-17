@@ -1,6 +1,5 @@
 // Shared time helpers for the session/interview meeting lifecycle.
-// All enforcement compares real Date values stored in UTC; no string parsing at read time
-// and never string-vs-string time comparisons.
+// All enforcement compares real Date values in Asia/Dhaka (UTC+6) timezone.
 
 const MINUTE_MS = 60 * 1000;
 
@@ -28,31 +27,36 @@ const parseTimeOfDay = (timeStr) => {
   return { hour, minute };
 };
 
-// Resolve calendar {year, month, day} from a Date or date-like string. Bare date strings
-// ("2026-08-10") parse as UTC midnight, so UTC getters return the calendar date the user
-// picked regardless of the server / deployment timezone.
+// Resolve calendar {year, month (0-indexed), day} in Asia/Dhaka (UTC+6) timezone.
 const toCalendarParts = (dateLike) => {
+  if (!dateLike) return null;
+  if (typeof dateLike === 'string' && dateLike.match(/^\d{4}-\d{2}-\d{2}/)) {
+    const [y, m, d] = dateLike.split('T')[0].split('-').map(Number);
+    return { year: y, month: m - 1, day: d };
+  }
   const d = new Date(dateLike);
   if (Number.isNaN(d.getTime())) return null;
-  return { year: d.getUTCFullYear(), month: d.getUTCMonth(), day: d.getUTCDate() };
+  // Shift by 6 hours to get calendar parts in Asia/Dhaka (UTC+6)
+  const bdDate = new Date(d.getTime() + (6 * 60 * 60 * 1000));
+  return { year: bdDate.getUTCFullYear(), month: bdDate.getUTCMonth(), day: bdDate.getUTCDate() };
 };
 
-// Combine a calendar date + wall-clock time + duration into UTC start/end instants.
-// A duration of 0 means "no explicit end"; the window helper then treats the meeting as
-// active as soon as it starts (ends only when marked ended explicitly).
+// Combine a calendar date + wall-clock time in Asia/Dhaka + duration into UTC start/end instants.
+// Wall-clock time in Bangladesh (Asia/Dhaka) = UTC + 6 hours.
+// Therefore, UTC Instant = Date.UTC(year, month, day, hour, minute) - 6 hours.
 const computeScheduleWindow = ({ date, time, duration }) => {
   if (!date || !time) return null;
   const parts = toCalendarParts(date);
   const tod = parseTimeOfDay(time);
   if (!parts || !tod) return null;
-  const durationMs = (Number(duration) || 0) * MINUTE_MS;
-  const start = new Date(Date.UTC(parts.year, parts.month, parts.day, tod.hour, tod.minute, 0, 0));
-  const end = durationMs > 0 ? new Date(start.getTime() + durationMs) : null;
+  const durationMs = (Number(duration) || 60) * MINUTE_MS;
+  const startMs = Date.UTC(parts.year, parts.month, parts.day, tod.hour, tod.minute, 0, 0) - (6 * 60 * 60 * 1000);
+  const start = new Date(startMs);
+  const end = new Date(start.getTime() + durationMs);
   return { start, end, durationMinutes: durationMs / MINUTE_MS };
 };
 
-// Derive the schedule window for each kind of scheduled session source (one-on-one Session
-// uses date/time/duration; group MentorshipSession uses sessionDate/sessionTime/sessionDuration).
+// Derive the schedule window for each kind of scheduled session source.
 const getScheduleInfo = (source) => {
   if (!source) return null;
   if (source.sessionDate != null && source.sessionTime) {
@@ -64,12 +68,15 @@ const getScheduleInfo = (source) => {
   return null;
 };
 
-// Prefer documented scheduleStart/scheduleEnd fields stored on the doc; fall back to deriving from date+time.
+// Prefer deriving from date + time + duration (Asia/Dhaka wall-clock time), fall back to stored scheduleStart/scheduleEnd.
 const effectiveWindow = (doc) => {
-  if (doc && doc.scheduleStart && doc.scheduleEnd) {
+  if (!doc) return null;
+  const derived = getScheduleInfo(doc);
+  if (derived) return derived;
+  if (doc.scheduleStart && doc.scheduleEnd) {
     return { start: new Date(doc.scheduleStart), end: new Date(doc.scheduleEnd) };
   }
-  return getScheduleInfo(doc);
+  return null;
 };
 
 // Classify a time instant against the schedule window.
@@ -101,19 +108,12 @@ const assertJoinableWindow = (window, now = new Date()) => {
 const hasParticipated = (doc) => Boolean(doc && doc.hasStarted);
 
 // Suggested next source status when a FrontX/X-forwarded meeting window ends.
-// isAlumniKind: sessions (Session/MentorshipSession) use "Past Session" final; interviews use "canceled".
 const finalStatusFor = (kind, hasStarted) => {
   if (kind === 'interview') return hasStarted ? 'completed' : 'canceled';
   return hasStarted ? 'Completed' : 'Past Session';
 };
 
-// Derive the effective status for a scheduled session (one-on-one Session or group
-// MentorshipSession) from its real schedule window (scheduleStart/scheduleEnd or
-// date+time+duration) compared against `now`.
-//   - upcoming  (now < start)      -> keep 'Scheduled'/'Upcoming'
-//   - active    (start <= now < end) -> 'Ongoing'
-//   - ended     (now >= end)       -> 'Completed' if anyone attended, else 'Past Session'
-// Explicit final statuses (Completed / Cancelled / Past Session) are preserved.
+// Derive the effective status for a scheduled session from its real schedule window compared against `now`.
 const deriveSessionStatus = (source, now = new Date()) => {
   if (!source) return null;
   const current = source.status;
