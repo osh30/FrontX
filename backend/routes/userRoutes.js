@@ -4,17 +4,6 @@ const { getUserProfile, updateUserProfile, uploadFile, removeProfilePicture, get
 const { protect } = require('../middleware/auth');
 const { upload } = require('../middleware/uploadMiddleware');
 
-router.route('/profile')
-  .get(protect, getUserProfile)
-  .put(protect, updateUserProfile);
-
-router.post('/upload', protect, upload.single('file'), uploadFile);
-router.delete('/profile-picture', protect, removeProfilePicture);
-
-router.get('/mentors', protect, getMentors);
-router.get('/students', protect, getStudents);
-router.get('/recruiters', protect, getRecruiters);
-router.post('/send-recruiter-email', protect, sendRecruiterEmail);
 router.get('/public-stats', async (req, res) => {
   try {
     const User = require('../models/User');
@@ -33,6 +22,18 @@ router.get('/public-stats', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+router.route('/profile')
+  .get(protect, getUserProfile)
+  .put(protect, updateUserProfile);
+
+router.post('/upload', protect, upload.single('file'), uploadFile);
+router.delete('/profile-picture', protect, removeProfilePicture);
+
+router.get('/mentors', protect, getMentors);
+router.get('/students', protect, getStudents);
+router.get('/recruiters', protect, getRecruiters);
+router.post('/send-recruiter-email', protect, sendRecruiterEmail);
 
 router.put('/change-password', protect, changePassword);
 router.delete('/account', protect, deleteAccount);
