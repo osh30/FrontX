@@ -5,8 +5,9 @@ const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/sit
 const verifyTurnstileToken = async (token, remoteIp = '') => {
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
+  // If Turnstile secret key is not configured on server, bypass verification gracefully
   if (!secretKey) {
-    return { success: false, error: 'Turnstile is not configured on the server.' };
+    return { success: true };
   }
   if (!token) {
     return { success: false, error: 'Missing Turnstile verification token.' };
@@ -19,7 +20,6 @@ const verifyTurnstileToken = async (token, remoteIp = '') => {
 
   try {
     const params = new URLSearchParams({ secret: secretKey, response: token });
-    // Intentionally omitting remoteIp as it can cause validation failures if the IP is internal (e.g., ::1)
 
     const { data } = await axios.post(TURNSTILE_VERIFY_URL, params.toString(), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -38,10 +38,14 @@ const verifyTurnstileToken = async (token, remoteIp = '') => {
 };
 
 const verifyTurnstile = async (req, res, next) => {
+  if (!process.env.TURNSTILE_SECRET_KEY) {
+    return next();
+  }
+
   const { success } = await verifyTurnstileToken(req.body.turnstileToken, req.ip);
   if (!success) {
     return res.status(400).json({
-      message: 'Human verification failed. Please complete the Cloudflare challenge and try again.'
+      message: 'Human verification failed or challenge expired. Please complete the Cloudflare check and try again.'
     });
   }
   next();
