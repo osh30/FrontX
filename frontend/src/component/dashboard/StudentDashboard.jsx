@@ -227,6 +227,9 @@ const StudentDashboard = ({ user }) => {
           <SessionsPage />
         );
       case 'career':
+      case 'opportunities':
+      case 'opportunity':
+      case 'jobs':
         if (pathParts[3] === 'my-applications') {
           return (
             <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">

@@ -279,6 +279,9 @@ const AlumniDashboard = ({ user }) => {
         if (pathParts[3]) return <BlogDetailsPage />;
         return <BlogPage />;
       case 'opportunities':
+      case 'opportunity':
+      case 'career':
+      case 'jobs':
         if (pathParts[3] === 'my-applications') {
           return (
             <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
