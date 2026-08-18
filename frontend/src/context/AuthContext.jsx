@@ -84,7 +84,11 @@ export const AuthProvider = ({ children }) => {
       return { success: true, role: newUser.role };
     } catch (error) {
       console.error('Login error:', error.response?.data || error.message);
-      return { success: false, error: error.response?.data?.message || 'Login failed' };
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Login failed',
+        correctRole: error.response?.data?.correctRole
+      };
     }
   };
 

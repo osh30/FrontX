@@ -171,15 +171,20 @@ const loginUser = async (req, res) => {
   try {
     const { email, password, selectedRole } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email || !email.trim() || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: cleanEmail });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       await recordLogin(req, user, false, 'Invalid password');
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid email or password.' });
     }
 
     if (user.isActive === false) {
@@ -188,12 +193,14 @@ const loginUser = async (req, res) => {
     }
 
     if (user.role === 'admin') {
-      return res.status(403).json({ message: 'Admin accounts cannot log in from this page.' });
+      return res.status(403).json({ message: 'Admin accounts cannot log in from this page. Please use the Admin Portal.' });
     }
 
     if (selectedRole && user.role !== selectedRole) {
+      const formattedRole = user.role.charAt(0).toUpperCase() + user.role.slice(1);
       return res.status(403).json({
-        message: `This account does not belong to the selected role. Please choose the correct role and try again.`
+        message: `This account is registered as ${formattedRole}. Please select the ${formattedRole} tab above to log in.`,
+        correctRole: user.role
       });
     }
 

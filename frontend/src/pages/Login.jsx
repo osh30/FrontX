@@ -73,6 +73,9 @@ const Login = () => {
     if (result.success) {
       navigate('/dashboard');
     } else {
+      if (result.correctRole) {
+        setSelectedRole(result.correctRole);
+      }
       setErrors({ submit: result.error || 'Login failed. Please try again.' });
     }
     setIsLoading(false);
