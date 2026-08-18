@@ -53,6 +53,8 @@ router.get('/public', async (req, res) => {
   }
 });
 
+const { effectiveWindow, getMeetingPhase, deriveSessionStatus } = require('../meetings/lib/meetingTime');
+
 // GET /api/alumni/analytics/dashboard
 router.get('/analytics/dashboard', protect, analyticsController.getAlumniAnalytics);
 router.get('/stats', protect, async (req, res) => {
@@ -67,31 +69,28 @@ router.get('/stats', protect, async (req, res) => {
     // Active Mentorships (all accepted requests)
     const activeMentorships = await MentorshipRequest.countDocuments({ alumniId, status: 'accepted' });
 
-    // Upcoming Sessions (1-on-1 + group mentorship) whose scheduled date+time is still in the future
-    const upcomingSoloSessions = await Session.find(
-      { alumni: alumniId, status: { $nin: ['Cancelled', 'Completed'] } },
-      { date: 1, time: 1 }
+    // Upcoming Sessions (1-on-1 + group mentorship) whose phase is strictly 'upcoming' or 'active'
+    const soloSessions = await Session.find(
+      { alumni: alumniId, status: { $nin: ['Cancelled', 'Completed', 'Past Session'] } }
     ).lean();
-    const upcomingGroupSessions = await MentorshipSession.find(
-      { alumniId, status: { $nin: ['Cancelled', 'Completed'] } },
-      { sessionDate: 1, sessionTime: 1 }
+    const groupSessions = await MentorshipSession.find(
+      { alumniId, status: { $nin: ['Cancelled', 'Completed', 'Past Session'] } }
     ).lean();
 
-    const isUpcoming = (date, time) => {
-      if (!date) return false;
-      const scheduled = new Date(date);
-      const [hours, minutes] = String(time || '').split(':');
-      const h = parseInt(hours, 10);
-      const m = parseInt(minutes, 10);
-      if (!Number.isNaN(h)) {
-        scheduled.setHours(h, Number.isNaN(m) ? 0 : m, 0, 0);
+    const isSessionUpcoming = (sessionDoc) => {
+      const derived = deriveSessionStatus(sessionDoc, now);
+      if (derived === 'Completed' || derived === 'Past Session' || derived === 'Cancelled') {
+        return false;
       }
-      return scheduled.getTime() > now.getTime();
+      const window = effectiveWindow(sessionDoc);
+      if (!window || !window.start) return false;
+      const phase = getMeetingPhase(window, now).phase;
+      return phase === 'upcoming' || phase === 'active';
     };
 
     const upcomingSessions =
-      upcomingSoloSessions.filter(s => isUpcoming(s.date, s.time)).length +
-      upcomingGroupSessions.filter(g => isUpcoming(g.sessionDate, g.sessionTime)).length;
+      soloSessions.filter(s => isSessionUpcoming(s)).length +
+      groupSessions.filter(g => isSessionUpcoming(g)).length;
 
     // Resources Shared (AdminResource hub uploads + legacy Resource model uploads belonging to this alumni)
     const [adminResourcesShared, legacyResourcesShared] = await Promise.all([
