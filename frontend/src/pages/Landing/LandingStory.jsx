@@ -801,11 +801,44 @@ export const AccessResourcesStory = () => {
 };
 
 export const CareerOpportunitiesStory = () => {
-  const opportunities = [
-    { role: "Digital Technology Intern", company: "Grameenphone Ltd." },
-    { role: "UX Research Intern", company: "bKash Limited" },
-    { role: "Junior Product Analyst", company: "bKash Limited" }
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const DEFAULT_OPPORTUNITIES = [
+    { id: "6a81e64e15cc6e7ce4e7f36c", role: "Digital Technology Intern", company: "Grameenphone Ltd." },
+    { id: "6a81e64e15cc6e7ce4e7f367", role: "UX Research Intern", company: "bKash Limited" },
+    { id: "6a81e64e15cc6e7ce4e7f364", role: "Junior Product Analyst", company: "bKash Limited" }
   ];
+
+  const [opportunities, setOpportunities] = useState(DEFAULT_OPPORTUNITIES);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLandingOpps = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/stats/opportunities`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.opportunities && Array.isArray(data.opportunities) && data.opportunities.length > 0) {
+            setOpportunities(data.opportunities);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch landing opportunities:', err);
+      }
+    };
+
+    fetchLandingOpps();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleClick = () => {
+    if (user) {
+      navigate('/dashboard/opportunities');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
     <StoryBlock
@@ -819,7 +852,8 @@ export const CareerOpportunitiesStory = () => {
         <div className="space-y-4">
           {opportunities.map((job, i) => (
             <motion.div
-              key={i}
+              key={job.id || i}
+              onClick={handleClick}
               whileHover={{ y: -7, scale: 1.02 }}
               transition={{ type: 'spring', stiffness: 200, damping: 20, mass: 0.4 }}
               className="group relative bg-gradient-to-br from-[#132C5C] to-[#0E1F45] rounded-2xl p-6 border border-blue-400/10 shadow-[0_8px_30px_rgba(0,0,0,0.2)] cursor-pointer transition-all duration-[350ms] ease-out hover:shadow-[0_20px_50px_rgba(59,130,246,0.12)] hover:border-blue-400/20"

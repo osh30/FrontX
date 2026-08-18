@@ -105,4 +105,33 @@ router.get('/collaboration', async (req, res) => {
   }
 });
 
+// @desc    Get public selected career opportunities for landing page
+// @route   GET /api/stats/opportunities
+// @access  Public
+router.get('/opportunities', async (req, res) => {
+  try {
+    const targetTitles = [
+      "Digital Technology Intern",
+      "UX Research Intern",
+      "Junior Product Analyst"
+    ];
+
+    const foundOpps = await Opportunity.find({
+      title: { $in: targetTitles }
+    }).select('title company companyName role').lean();
+
+    const formatted = foundOpps.map(o => ({
+      id: o._id,
+      _id: o._id,
+      role: o.title,
+      company: o.company || o.companyName || 'Corporate Partner'
+    }));
+
+    res.json({ success: true, opportunities: formatted });
+  } catch (error) {
+    console.error('Public opportunities endpoint error:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch public opportunities' });
+  }
+});
+
 module.exports = router;
