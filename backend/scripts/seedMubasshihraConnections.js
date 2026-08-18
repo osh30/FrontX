@@ -22,7 +22,6 @@ const seedMubasshihraConnections = async () => {
     // 2. Target Students
     const studentQueries = [
       { key: 'Fariha Tasnim Nuha', regex: /Fariha/i },
-      { key: 'Shuvo Kumar', regex: /Shuvo/i },
       { key: 'Nur E Jannat', regex: /Nur E|Jannat/i }
     ];
 

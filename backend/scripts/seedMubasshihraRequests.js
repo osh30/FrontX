@@ -54,15 +54,11 @@ const seedMubasshihraRequests = async () => {
       });
 
       if (existing) {
-        if (existing.status !== 'pending' && existing.status !== 'accepted') {
-          existing.status = 'pending';
-          existing.message = item.message;
-          existing.requestType = item.requestType;
-          await existing.save();
-          console.log(`✅ Updated mentorship request to PENDING: ${student.name} ➔ ${alumni.name}`);
-        } else {
-          console.log(`✔ Mentorship request already exists with status "${existing.status}": ${student.name} ➔ ${alumni.name}`);
-        }
+        existing.status = 'pending';
+        existing.message = item.message;
+        existing.requestType = item.requestType;
+        await existing.save();
+        console.log(`✅ Set mentorship request status to PENDING: ${student.name} ➔ ${alumni.name}`);
       } else {
         await MentorshipRequest.create({
           studentId: student._id,
