@@ -100,6 +100,23 @@ Students should not hesitate to ask Alumni meaningful questions and seek guidanc
 
 A strong professional network can become an important part of long-term career development.`,
     tags: ['Networking', 'Alumni', 'Mentorship', 'Growth']
+  },
+  {
+    alumniEmail: 'mubasshihra.nahian@std.uftb.ac.bd',
+    alumniName: 'Mubasshihra Nahian',
+    title: 'Essential Advice for Landing Your First Tech Internship 🚀',
+    category: 'Career Advice',
+    content: `Hey everyone! As an alumnus of Educational Technology & Engineering, I frequently get asked by students how to prepare for tech internships and early career opportunities.
+
+Here are 4 key steps that made the biggest difference for me:
+
+1. **Build 2-3 Solid Projects**: Focus on quality over quantity. A full-stack web or mobile app with clean code, proper documentation, and live deployment speaks louder than a dozen tutorial clones.
+2. **Optimize Your LinkedIn & Resume**: Keep your resume concise (1 page), highlight your technical skills and project metrics, and showcase your GitHub repositories.
+3. **Network & Seek Mentorship**: Reach out to university alumni on FrontX! Asking for feedback on your portfolio or a brief informational chat often opens doors to direct referrals.
+4. **Consistency in Problem Solving**: Spend 30-45 minutes daily practicing data structures, algorithms, or system concepts. Consistency beats last-minute cramming.
+
+Feel free to leave a comment or connect with me if you need resume feedback or career guidance. Rooting for all of you!`,
+    tags: ['Career', 'Internship', 'Engineering', 'Mentorship']
   }
 ];
 
