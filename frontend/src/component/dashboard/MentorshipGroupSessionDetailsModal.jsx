@@ -93,13 +93,13 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => onClose()}>
+    <div className="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4 sm:p-6 backdrop-blur-md lg:pl-64" onClick={() => onClose()}>
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }} 
         animate={{ opacity: 1, scale: 1, y: 0 }} 
         exit={{ opacity: 0, scale: 0.95, y: 20 }} 
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 via-blue-500 to-cyan-400 p-6 text-white relative flex-shrink-0">

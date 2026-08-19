@@ -27,10 +27,10 @@ export const SessionDetailsModal = ({ isOpen, onClose, session }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 backdrop-blur-md lg:pl-64">
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" 
+          className="absolute inset-0 bg-black/70" 
           onClick={onClose} 
         />
         <motion.div 
