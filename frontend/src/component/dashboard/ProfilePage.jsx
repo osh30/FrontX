@@ -463,6 +463,13 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
     }
   };
 
+  const handleDeleteResume = (e) => {
+    if (e) e.stopPropagation();
+    setProfileData(prev => ({ ...prev, resumeUrl: '' }));
+    if (resumeInputRef.current) resumeInputRef.current.value = '';
+    toast.success("Resume removed. Click 'Save Changes' to update your profile.");
+  };
+
   const handleAddInterest = (e) => {
     e.preventDefault();
     if (newInterest.trim() && !profileData.interests.includes(newInterest.trim())) {
@@ -854,15 +861,47 @@ const ProfilePage = ({ user, isEditable, viewedUserId }) => {
             <div className="flex-1 flex flex-col">
               {!profileData.resumeUrl && !isEditing ? (
                 <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
-                  <p className="text-sm text-gray-500">No CV Uploaded</p>
+                  <p className="text-sm text-gray-500 font-medium">No CV Uploaded</p>
+                </div>
+              ) : profileData.resumeUrl && isEditing ? (
+                <div className="flex flex-col items-center justify-center h-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-white relative overflow-hidden group">
+                  <FileText className="w-10 h-10 text-blue-500 mb-2" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <a href={profileData.resumeUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-blue-600 hover:underline inline-flex items-center gap-1">
+                      View CV <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 z-10">
+                    <button
+                      type="button"
+                      onClick={() => resumeInputRef.current?.click()}
+                      className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" /> Replace Resume
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteResume}
+                      className="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg border border-red-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Delete Resume
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-gray-400 mt-3">Supports PDF, DOCX</p>
                 </div>
               ) : (
                 <div onClick={() => isEditing && resumeInputRef.current?.click()} className={`flex flex-col items-center justify-center h-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-2xl p-6 bg-white transition-colors group relative overflow-hidden ${isEditing ? 'hover:bg-blue-50/30 cursor-pointer' : ''}`}>
                   <FileText className="w-10 h-10 text-blue-400 mb-3 group-hover:scale-110 group-hover:text-blue-500 transition-all" />
                   <p className="text-sm font-bold text-gray-800 mb-1 z-10">
-                    {profileData.resumeUrl ? <a href={profileData.resumeUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="hover:underline text-blue-600">View CV</a> : "Upload your CV"}
+                    {profileData.resumeUrl ? (
+                      <a href={profileData.resumeUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="hover:underline text-blue-600 inline-flex items-center gap-1">
+                        View CV <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      "Upload your CV"
+                    )}
                   </p>
-                  {isEditing && <p className="text-xs text-gray-500 font-medium">{profileData.resumeUrl ? "Click to replace" : "Supports PDF, DOCX"}</p>}
+                  {isEditing && <p className="text-xs text-gray-500 font-medium">Click to select PDF or DOCX</p>}
                 </div>
               )}
             </div>
