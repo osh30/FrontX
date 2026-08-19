@@ -19,10 +19,21 @@ const seedMubasshihraConnections = async () => {
 
     console.log(`📌 Found Alumni: ${alumni.name} (${alumni._id})`);
 
-    // 2. Target Students
+    // 2. Ensure connection with Nur E Jannat is deleted so she can send new mentorship requests
+    const jannatStudent = await User.findOne({ name: { $regex: /Nur E|Jannat/i } });
+    if (jannatStudent) {
+      const deleted = await MentorshipRequest.deleteMany({
+        studentId: jannatStudent._id,
+        alumniId: alumni._id
+      });
+      if (deleted.deletedCount > 0) {
+        console.log(`🗑️ Removed ${deleted.deletedCount} connection(s) between ${alumni.name} and ${jannatStudent.name}`);
+      }
+    }
+
+    // 3. Target Connected Students
     const studentQueries = [
-      { key: 'Fariha Tasnim Nuha', regex: /Fariha/i },
-      { key: 'Nur E Jannat', regex: /Nur E|Jannat/i }
+      { key: 'Fariha Tasnim Nuha', regex: /Fariha/i }
     ];
 
     for (const item of studentQueries) {
