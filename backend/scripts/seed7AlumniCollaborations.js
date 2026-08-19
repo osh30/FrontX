@@ -173,6 +173,40 @@ const COLLABORATION_POSTS = [
     outcomes: ['Portfolio Project', 'Research Publication', 'Certificate'],
     benefits: ['Hands-on Development Experience', 'Portfolio Development', 'Mentorship', 'Team Collaboration Experience'],
     deadline: new Date('2026-11-05T23:59:59.000Z')
+  },
+  {
+    alumniEmail: 'mubasshihra.nahian@std.uftb.ac.bd',
+    alumniName: 'Mubasshihra Nahian',
+    title: 'AI-Powered Personalized Learning Recommendation System for University Students',
+    type: 'Capstone Project',
+    domain: 'Artificial Intelligence',
+    overview: "Develop a personalized learning recommendation system that analyzes students' academic interests, skills, learning progress, and course-related activities to recommend relevant learning resources, study materials, and skill-development opportunities.",
+    whyItMatters: 'Students often struggle to identify which learning resources and skills are most relevant to their academic and career goals. A personalized recommendation system can help students discover suitable resources and build a more focused learning path.',
+    responsibilities: ['Data Collection', 'Data Analysis', 'Development', 'Testing', 'UI/UX Design', 'Presentation'],
+    requiredSkills: ['Python', 'Machine Learning', 'Data Analysis', 'React', 'Basic Database Knowledge'],
+    experienceLevel: 'Intermediate',
+    studentCount: 3,
+    duration: '2 Months',
+    outcomes: ['Portfolio Project', 'Certificate', 'Recommendation Letter'],
+    benefits: ['Hands-on Research Experience', 'Mentorship', 'Portfolio Development', 'Networking', 'Research Training', 'Recommendation Letter'],
+    deadline: new Date('2026-09-30T23:59:59.000Z')
+  },
+  {
+    alumniEmail: 'mubasshihra.nahian@std.uftb.ac.bd',
+    alumniName: 'Mubasshihra Nahian',
+    title: 'Machine Learning-Based Early Prediction of Student Academic Performance',
+    type: 'Research Paper',
+    domain: 'Machine Learning',
+    overview: 'Investigate how machine learning techniques can be used to analyze academic, behavioral, and engagement-related factors to predict student academic performance at an early stage. The research will compare multiple machine learning approaches and identify useful factors associated with academic outcomes.',
+    whyItMatters: 'Early identification of students who may struggle academically can help universities provide timely academic support, mentoring, and personalized interventions before performance problems become serious.',
+    responsibilities: ['Literature Review', 'Data Collection', 'Data Analysis', 'Research Writing', 'Report Writing', 'Development', 'Testing', 'Presentation'],
+    requiredSkills: ['Python', 'Machine Learning', 'Data Analysis', 'Statistics', 'Research Writing'],
+    experienceLevel: 'Beginner Friendly',
+    studentCount: 4,
+    duration: '3 Months',
+    outcomes: ['Research Publication', 'Portfolio Project', 'Certificate', 'Recommendation Letter'],
+    benefits: ['Hands-on Research Experience', 'Publication Opportunity', 'Mentorship', 'Portfolio Development', 'Networking', 'Recommendation Letter', 'Research Training'],
+    deadline: new Date('2026-10-15T23:59:59.000Z')
   }
 ];
 
