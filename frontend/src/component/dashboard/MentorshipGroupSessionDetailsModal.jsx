@@ -99,12 +99,12 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
         animate={{ opacity: 1, scale: 1, y: 0 }} 
         exit={{ opacity: 0, scale: 0.95, y: 20 }} 
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 via-blue-500 to-cyan-400 p-6 text-white relative flex-shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition-colors z-10">
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-full transition-colors z-10 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
           
@@ -142,14 +142,14 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
           {activeTab === 'details' ? (
             <div className="space-y-6">
               
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
                   <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
                     <Calendar className="w-5 h-5" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-semibold mb-0.5">Date</p>
-                    <p className="font-bold text-gray-900">{new Date(session.sessionDate).toLocaleDateString()}</p>
+                    <p className="font-bold text-gray-900 text-sm">{new Date(session.sessionDate).toLocaleDateString()}</p>
                   </div>
                 </div>
                 
@@ -159,7 +159,7 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-semibold mb-0.5">Time</p>
-                    <p className="font-bold text-gray-900">{session.sessionTime} ({session.sessionDuration}m)</p>
+                    <p className="font-bold text-gray-900 text-sm">{session.sessionTime} ({session.sessionDuration}m)</p>
                   </div>
                 </div>
                 
@@ -169,7 +169,7 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-semibold mb-0.5">Platform</p>
-                    <p className="font-bold text-gray-900">{meetingPlatformLabel(session)}</p>
+                    <p className="font-bold text-gray-900 text-sm">{meetingPlatformLabel(session)}</p>
                   </div>
                 </div>
 
@@ -179,7 +179,7 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-semibold mb-0.5">Students</p>
-                    <p className="font-bold text-gray-900">{session.selectedStudents?.length || 0}</p>
+                    <p className="font-bold text-gray-900 text-sm">{session.selectedStudents?.length || 0}</p>
                   </div>
                 </div>
               </div>
@@ -212,7 +212,7 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
                 <h3 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
                   <Users className="w-4 h-4 text-purple-600" /> Participants
                 </h3>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {session.selectedStudents?.map(student => (
                     <div key={student._id} className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-xl shadow-sm">
                       <Avatar src={student.profilePicture} alt={student.name} size={40} className="border-2 border-white shadow-sm" />
@@ -278,20 +278,22 @@ export const MentorshipGroupSessionDetailsModal = ({ isOpen, onClose, session, i
         <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 flex-shrink-0">
           {activeTab === 'details' ? (
             <>
-              {session.status === 'Upcoming' && isAlumni && (
+              {session.status !== 'Completed' && session.status !== 'Cancelled' && session.status !== 'Past Session' && (
                 <button 
+                  type="button"
                   onClick={handleCancelSession}
                   disabled={loading}
-                  className="px-5 py-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer border border-red-200"
                 >
                   <Ban className="w-4 h-4" /> Cancel Session
                 </button>
               )}
-              {(session.status === 'Upcoming' || session.status === 'Ongoing' || session.status === 'Active') && (
+              {(session.status === 'Upcoming' || session.status === 'Ongoing' || session.status === 'Active' || session.status === 'Scheduled') && (
                 <button
+                  type="button"
                   onClick={handleJoin}
                   disabled={joining || (session.meetingType !== 'external' && !canJoinSession(session, meetingNow))}
-                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-60"
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/30 rounded-xl text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-60 cursor-pointer"
                 >
                   <Video className="w-4 h-4" /> {joining ? 'Opening…' : (session.meetingType === 'external' ? 'Open' : (sessionJoinState(session, meetingNow).label || 'Join Meeting'))}
                 </button>
