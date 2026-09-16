@@ -100,6 +100,7 @@ const autoSeedAlumni = async () => {
       const seedCommunity = require('./seed5AlumniCommunityPosts');
       const seedMubasshihra = require('./seedMubasshihraConnections');
       const seedMubasshihraReqs = require('./seedMubasshihraRequests');
+      const seed10Students = require('./seed10Students');
 
       if (typeof enrich1 === 'function') await enrich1();
       if (typeof enrich2 === 'function') await enrich2();
@@ -109,6 +110,7 @@ const autoSeedAlumni = async () => {
       if (typeof seedCommunity === 'function') await seedCommunity();
       if (typeof seedMubasshihra === 'function') await seedMubasshihra();
       if (typeof seedMubasshihraReqs === 'function') await seedMubasshihraReqs();
+      if (typeof seed10Students === 'function') await seed10Students();
     } catch (e) {
       console.error('Alumni enrichment auto-run error:', e.message);
     }
