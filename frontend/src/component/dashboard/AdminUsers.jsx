@@ -123,7 +123,7 @@ const AdminUsers = () => {
               onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
               className="appearance-none pl-11 pr-8 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/15 focus:border-blue-400 cursor-pointer shadow-sm transition-all"
             >
-              {['All', 'student', 'alumni', 'admin'].map(r => (
+              {['All', 'student', 'alumni', 'recruiter', 'admin'].map(r => (
                 <option key={r} value={r}>{r === 'All' ? 'All Roles' : r.charAt(0).toUpperCase() + r.slice(1)}</option>
               ))}
             </select>
@@ -172,7 +172,9 @@ const AdminUsers = () => {
                           ? 'bg-gradient-to-br from-purple-500/25 to-purple-600/15 text-purple-300 border border-purple-500/15'
                           : u.role === 'admin'
                             ? 'bg-gradient-to-br from-red-500/25 to-red-600/15 text-red-300 border border-red-500/15'
-                            : 'bg-gradient-to-br from-blue-500/25 to-blue-600/15 text-blue-300 border border-blue-500/15'
+                            : u.role === 'recruiter'
+                              ? 'bg-gradient-to-br from-emerald-500/25 to-emerald-600/15 text-emerald-300 border border-emerald-500/15'
+                              : 'bg-gradient-to-br from-blue-500/25 to-blue-600/15 text-blue-300 border border-blue-500/15'
                       }`}>
                         {u.name?.charAt(0)?.toUpperCase() || '?'}
                       </div>
@@ -180,7 +182,7 @@ const AdminUsers = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold text-white truncate">{u.name}</p>
                       <p className="text-[11px] text-slate-500 truncate mt-0.5">{u.email}</p>
-                      {u.department && <p className="text-[10px] text-slate-600 mt-0.5">{u.department}</p>}
+                      {(u.department || u.companyName) && <p className="text-[10px] text-slate-600 mt-0.5">{u.department || u.companyName}</p>}
                     </div>
                     <div className="flex items-center gap-2.5 shrink-0">
                       <span className={`text-[9px] font-bold uppercase px-2.5 py-1 rounded-md tracking-wider ${
@@ -188,7 +190,9 @@ const AdminUsers = () => {
                           ? 'bg-purple-500/10 text-purple-300 border border-purple-500/10'
                           : u.role === 'admin'
                             ? 'bg-red-500/10 text-red-300 border border-red-500/10'
-                            : 'bg-blue-500/10 text-blue-300 border border-blue-500/10'
+                            : u.role === 'recruiter'
+                              ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/10'
+                              : 'bg-blue-500/10 text-blue-300 border border-blue-500/10'
                       }`}>{u.role}</span>
                       <select
                         value={u.role}
@@ -198,6 +202,7 @@ const AdminUsers = () => {
                       >
                         <option value="student" className="bg-slate-800">Student</option>
                         <option value="alumni" className="bg-slate-800">Alumni</option>
+                        <option value="recruiter" className="bg-slate-800">Recruiter</option>
                       </select>
                       <button
                         onClick={() => setDeleteModal(u)}
