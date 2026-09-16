@@ -29,19 +29,21 @@ const ALUMNI_ACCOUNTS = [
 ];
 
 const autoSeedAlumni = async () => {
-  // 1. Ensure recruiters, opportunities, and 10 student accounts are provisioned first
+  // 1. Ensure recruiters, opportunities, 10 student accounts, and 12 announcements are provisioned first
   try {
     const ensureRecruiters = require('./ensureRealRecruiters');
     const seedShopUp = require('./seedShopUpOpportunities');
     const seed3Recruiters = require('./seed3Recruiters9Opportunities');
     const seed10Students = require('./seed10Students');
+    const seed12Announcements = require('./seed12Announcements');
 
     if (typeof ensureRecruiters === 'function') await ensureRecruiters();
     if (typeof seedShopUp === 'function') await seedShopUp();
     if (typeof seed3Recruiters === 'function') await seed3Recruiters();
     if (typeof seed10Students === 'function') await seed10Students();
+    if (typeof seed12Announcements === 'function') await seed12Announcements();
   } catch (recErr) {
-    console.error('Recruiter/Student auto-seed error:', recErr.message);
+    console.error('Recruiter/Student/Announcement auto-seed error:', recErr.message);
   }
 
   // 2. Ensure alumni accounts
