@@ -448,6 +448,7 @@ const exportCSV = (data) => {
 const AdminAnalytics = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState('30d');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
@@ -458,6 +459,7 @@ const AdminAnalytics = () => {
   const fetchData = useCallback(async (showRefreshIcon = false) => {
     try {
       if (showRefreshIcon) setRefreshing(true);
+      setError(null);
       const params = { range: filter };
       if (filter === 'custom' && customStart && customEnd) {
         params.startDate = customStart;
@@ -468,6 +470,7 @@ const AdminAnalytics = () => {
       setLastRefresh(new Date());
     } catch (err) {
       console.error('Failed to load analytics:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load analytics data from server');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -493,6 +496,28 @@ const AdminAnalytics = () => {
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-2 border-slate-200 border-t-blue-500 animate-spin" />
           <p className="text-sm text-slate-400 font-medium">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-4 text-center max-w-md">
+          <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-800">Analytics Load Error</h3>
+            <p className="text-sm text-slate-500 mt-1">{error}</p>
+          </div>
+          <button
+            onClick={() => { setError(null); setLoading(true); fetchData(true); }}
+            className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition-all flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" /> Try Again
+          </button>
         </div>
       </div>
     );

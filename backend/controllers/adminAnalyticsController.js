@@ -7,6 +7,7 @@ const Blog = require('../models/Blog');
 const BlogComment = require('../models/BlogComment');
 const BlogLike = require('../models/BlogLike');
 const Resource = require('../models/Resource');
+const AdminResource = require('../models/AdminResource');
 const ResourceInteraction = require('../models/ResourceInteraction');
 const ClassNote = require('../models/ClassNote');
 const Opportunity = require('../models/Opportunity');
@@ -87,20 +88,29 @@ const getAnalytics = async (req, res) => {
     const { now, todayStart, weekAgo, monthAgo, yearAgo, dateStart, range } = getDateRange(req);
 
     // ── User counts ──
-    const [totalStudents, totalAlumni, totalAdmins] = await Promise.all([
+    const [totalStudents, totalAlumni, totalRecruiters, totalAdmins] = await Promise.all([
       safeCount(User, { role: 'student' }),
       safeCount(User, { role: 'alumni' }),
+      safeCount(User, { role: 'recruiter' }),
       safeCount(User, { role: 'admin' }),
     ]);
 
-    const [todayStudents, todayAlumni, weekStudents, weekAlumni, monthStudents, monthAlumni] = await Promise.all([
+    const [todayStudents, todayAlumni, todayRecruiters, weekStudents, weekAlumni, weekRecruiters, monthStudents, monthAlumni, monthRecruiters] = await Promise.all([
       safeCount(User, { role: 'student', createdAt: { $gte: todayStart } }),
       safeCount(User, { role: 'alumni', createdAt: { $gte: todayStart } }),
+      safeCount(User, { role: 'recruiter', createdAt: { $gte: todayStart } }),
       safeCount(User, { role: 'student', createdAt: { $gte: weekAgo } }),
       safeCount(User, { role: 'alumni', createdAt: { $gte: weekAgo } }),
+      safeCount(User, { role: 'recruiter', createdAt: { $gte: weekAgo } }),
       safeCount(User, { role: 'student', createdAt: { $gte: monthAgo } }),
       safeCount(User, { role: 'alumni', createdAt: { $gte: monthAgo } }),
+      safeCount(User, { role: 'recruiter', createdAt: { $gte: monthAgo } }),
     ]);
+
+    const totalUsers = totalStudents + totalAlumni + totalRecruiters + totalAdmins;
+    const todayRegistrations = todayStudents + todayAlumni + todayRecruiters;
+    const weekRegistrations = weekStudents + weekAlumni + weekRecruiters;
+    const monthRegistrations = monthStudents + monthAlumni + monthRecruiters;
 
     // ── Login stats ──
     const [dailyLogins, weeklyLogins, monthlyLogins, activeUsersToday, totalLogins] = await Promise.all([
@@ -157,33 +167,81 @@ const getAnalytics = async (req, res) => {
       { $limit: 1 },
     ]);
 
-    // ── Opportunity counts ──
-    const [governmentJobs, privateJobs, scholarships, competitions] = await Promise.all([
-      safeCount(Opportunity, { type: 'Government Job' }),
-      safeCount(Opportunity, { type: 'Private Job' }),
-      safeCount(Opportunity, { type: 'Scholarship' }),
-      safeCount(Opportunity, { type: 'Competition' }),
+    // ── Opportunity counts (Check opportunityType OR type safely) ──
+    const oppGovQuery = { $or: [{ opportunityType: { $regex: /government/i } }, { type: { $regex: /government/i } }] };
+    const oppPrivQuery = { $or: [{ opportunityType: { $regex: /private|internship|remote|part-time|full-time|job/i } }, { type: { $regex: /private|internship|remote|part-time|full-time|job/i } }] };
+    const oppScholQuery = { $or: [{ opportunityType: { $regex: /scholarship/i } }, { type: { $regex: /scholarship/i } }] };
+    const oppCompQuery = { $or: [{ opportunityType: { $regex: /competition/i } }, { type: { $regex: /competition/i } }] };
+
+    const [governmentJobs, privateJobs, scholarships, competitions, totalOpportunities] = await Promise.all([
+      safeCount(Opportunity, oppGovQuery),
+      safeCount(Opportunity, oppPrivQuery),
+      safeCount(Opportunity, oppScholQuery),
+      safeCount(Opportunity, oppCompQuery),
+      safeCount(Opportunity),
     ]);
 
-    // ── Resource stats ──
-    const [recentUploads, totalResourceDownloads, totalResourceViews, mostDownloadedResource] = await Promise.all([
+    // ── Resource stats (Aggregated across Resource, AdminResource, & ClassNote) ──
+    const [
+      legacyResourceCount,
+      adminResourceCount,
+      recentLegacyUploads,
+      recentAdminUploads,
+      recentClassNoteUploads,
+      legacyDownloadsAgg,
+      adminDownloadsAgg,
+      classNoteDownloadsAgg,
+      legacyViewsAgg,
+      classNoteViewsAgg,
+      mostDownloadedLegacy,
+      mostDownloadedAdmin,
+      mostDownloadedNote
+    ] = await Promise.all([
+      safeCount(Resource),
+      safeCount(AdminResource, { status: { $ne: 'archived' } }),
       safeCount(Resource, { createdAt: { $gte: weekAgo } }),
+      safeCount(AdminResource, { createdAt: { $gte: weekAgo }, status: { $ne: 'archived' } }),
+      safeCount(ClassNote, { createdAt: { $gte: weekAgo } }),
       safeAggregate(Resource, [{ $group: { _id: null, total: { $sum: '$downloads' } } }]),
+      safeAggregate(AdminResource, [{ $group: { _id: null, total: { $sum: '$downloadsCount' } } }]),
+      safeAggregate(ClassNote, [{ $group: { _id: null, total: { $sum: '$downloads' } } }]),
       safeAggregate(Resource, [{ $group: { _id: null, total: { $sum: '$views' } } }]),
+      safeAggregate(ClassNote, [{ $group: { _id: null, total: { $sum: '$views' } } }]),
       safeFindOne(Resource, {}, { downloads: -1 }, 'title downloads uploadType category'),
+      safeFindOne(AdminResource, {}, { downloadsCount: -1 }, 'title downloadsCount resourceType category'),
+      safeFindOne(ClassNote, {}, { downloads: -1 }, 'title downloads course subject')
     ]);
 
-    const resourceStats = totalResourceDownloads.length > 0 ? totalResourceDownloads[0].total : 0;
-    const resourceViews = totalResourceViews.length > 0 ? totalResourceViews[0].total : 0;
+    const totalResourceCount = legacyResourceCount + adminResourceCount;
+    const recentUploads = recentLegacyUploads + recentAdminUploads + recentClassNoteUploads;
+    const legacyDownloads = legacyDownloadsAgg.length > 0 ? (legacyDownloadsAgg[0].total || 0) : 0;
+    const adminDownloads = adminDownloadsAgg.length > 0 ? (adminDownloadsAgg[0].total || 0) : 0;
+    const classNoteDownloads = classNoteDownloadsAgg.length > 0 ? (classNoteDownloadsAgg[0].total || 0) : 0;
+    const totalResourceDownloads = legacyDownloads + adminDownloads + classNoteDownloads;
+
+    const legacyViews = legacyViewsAgg.length > 0 ? (legacyViewsAgg[0].total || 0) : 0;
+    const classNoteViews = classNoteViewsAgg.length > 0 ? (classNoteViewsAgg[0].total || 0) : 0;
+    const totalResourceViews = legacyViews + classNoteViews;
+
+    // Pick top downloaded across legacy resource, admin resource, and class notes
+    let mostDownloaded = null;
+    const candidateResources = [];
+    if (mostDownloadedLegacy) candidateResources.push({ title: mostDownloadedLegacy.title, downloads: mostDownloadedLegacy.downloads || 0, uploadType: mostDownloadedLegacy.uploadType || 'File', category: mostDownloadedLegacy.category || 'General' });
+    if (mostDownloadedAdmin) candidateResources.push({ title: mostDownloadedAdmin.title, downloads: mostDownloadedAdmin.downloadsCount || 0, uploadType: mostDownloadedAdmin.resourceType || 'PDF', category: mostDownloadedAdmin.category || 'General' });
+    if (mostDownloadedNote) candidateResources.push({ title: mostDownloadedNote.title, downloads: mostDownloadedNote.downloads || 0, uploadType: 'Class Note', category: mostDownloadedNote.course || mostDownloadedNote.subject || 'Academic' });
+    if (candidateResources.length > 0) {
+      candidateResources.sort((a, b) => b.downloads - a.downloads);
+      mostDownloaded = candidateResources[0];
+    }
 
     // ── Mentorship counts ──
     const [completedSessions, upcomingSessions, activeMentors, studentsMentored, mentorshipCompleted, mentorshipUpcoming] = await Promise.all([
       safeCount(Session, { status: 'Completed' }),
-      safeCount(Session, { status: { $in: ['Upcoming', 'Scheduled'] } }),
+      safeCount(Session, { status: { $in: ['Upcoming', 'Scheduled', 'Ongoing', 'Active'] } }),
       Session.distinct('alumni', { status: { $ne: 'Cancelled' } }).then(ids => ids.length).catch(() => 0),
       Session.distinct('student').then(ids => ids.length).catch(() => 0),
       safeCount(MentorshipSession, { status: 'Completed' }),
-      safeCount(MentorshipSession, { status: 'Upcoming' }),
+      safeCount(MentorshipSession, { status: { $in: ['Upcoming', 'Scheduled', 'Ongoing', 'Active'] } }),
     ]);
 
     const totalMentorSessions = completedSessions + mentorshipCompleted;
@@ -408,12 +466,12 @@ const getAnalytics = async (req, res) => {
 
     res.json({
       overview: {
-        totalUsers: totalStudents + totalAlumni + totalAdmins,
-        totalStudents, totalAlumni, totalAdmins,
-        todayRegistrations: todayStudents + todayAlumni,
-        todayStudents, todayAlumni,
-        weekRegistrations: weekStudents + weekAlumni,
-        monthRegistrations: monthStudents + monthAlumni,
+        totalUsers,
+        totalStudents, totalAlumni, totalRecruiters, totalAdmins,
+        todayRegistrations,
+        todayStudents, todayAlumni, todayRecruiters,
+        weekRegistrations,
+        monthRegistrations,
         todayPosts, todayComments, todayReactions: 0,
         dailyLogins, weeklyLogins, monthlyLogins, activeUsersToday, totalLogins,
       },
@@ -434,15 +492,15 @@ const getAnalytics = async (req, res) => {
         mostLikedBlog: mostLikedBlog ? { title: mostLikedBlog.title, likes: mostLikedBlog.likeCount, author: mostLikedBlog.author?.name || 'Unknown' } : null,
       },
       opportunities: {
-        total: governmentJobs + privateJobs + scholarships + competitions,
+        total: totalOpportunities,
         governmentJobs, privateJobs, scholarships, competitions,
       },
       resources: {
-        total: await safeCount(Resource),
+        total: totalResourceCount,
         totalClassNotes,
-        totalDownloads: resourceStats,
-        totalViews: resourceViews,
-        mostDownloaded: mostDownloadedResource ? { title: mostDownloadedResource.title, downloads: mostDownloadedResource.downloads, uploadType: mostDownloadedResource.uploadType, category: mostDownloadedResource.category } : null,
+        totalDownloads: totalResourceDownloads,
+        totalViews: totalResourceViews,
+        mostDownloaded,
         recentUploads,
       },
       mentorship: {
@@ -728,28 +786,34 @@ const getAnalyticsResources = async (req, res) => {
 // ─── SECTION: Opportunities ───
 const getAnalyticsOpportunities = async (req, res) => {
   try {
-    const [governmentJobs, privateJobs, scholarships, competitions] = await Promise.all([
-      safeCount(Opportunity, { type: 'Government Job' }),
-      safeCount(Opportunity, { type: 'Private Job' }),
-      safeCount(Opportunity, { type: 'Scholarship' }),
-      safeCount(Opportunity, { type: 'Competition' }),
+    const oppGovQuery = { $or: [{ opportunityType: { $regex: /government/i } }, { type: { $regex: /government/i } }] };
+    const oppPrivQuery = { $or: [{ opportunityType: { $regex: /private|internship|remote|part-time|full-time|job/i } }, { type: { $regex: /private|internship|remote|part-time|full-time|job/i } }] };
+    const oppScholQuery = { $or: [{ opportunityType: { $regex: /scholarship/i } }, { type: { $regex: /scholarship/i } }] };
+    const oppCompQuery = { $or: [{ opportunityType: { $regex: /competition/i } }, { type: { $regex: /competition/i } }] };
+
+    const [governmentJobs, privateJobs, scholarships, competitions, totalOpportunities] = await Promise.all([
+      safeCount(Opportunity, oppGovQuery),
+      safeCount(Opportunity, oppPrivQuery),
+      safeCount(Opportunity, oppScholQuery),
+      safeCount(Opportunity, oppCompQuery),
+      safeCount(Opportunity),
     ]);
 
     const recentOpportunities = await safeAggregate(Opportunity, [
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
-      { $project: { title: 1, type: 1, organization: 1, deadline: 1, createdAt: 1 } },
+      { $project: { title: 1, type: '$opportunityType', organization: '$companyName', deadline: 1, createdAt: 1 } },
     ]);
 
     const expiringSoon = await safeAggregate(Opportunity, [
       { $match: { deadline: { $gte: new Date(), $lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) } } },
       { $sort: { deadline: 1 } },
       { $limit: 5 },
-      { $project: { title: 1, type: 1, organization: 1, deadline: 1 } },
+      { $project: { title: 1, type: '$opportunityType', organization: '$companyName', deadline: 1 } },
     ]);
 
     res.json({
-      total: governmentJobs + privateJobs + scholarships + competitions,
+      total: totalOpportunities,
       governmentJobs, privateJobs, scholarships, competitions,
       distribution: [
         { name: 'Government Jobs', value: governmentJobs, fill: '#3B82F6' },
