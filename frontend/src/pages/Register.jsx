@@ -77,7 +77,7 @@ const Register = () => {
     const errs = {};
     if (!form.name.trim()) errs.name = 'Full name is required.';
     if (!form.email.trim()) errs.email = 'Email is required.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Please enter a valid email address.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Use the correct UFTB mail format.';
     if (!form.password) errs.password = 'Password is required.';
     else if (form.password.length < 6) errs.password = 'Password must be at least 6 characters.';
     if (!form.confirmPassword) errs.confirmPassword = 'Please confirm your password.';
@@ -102,22 +102,22 @@ const Register = () => {
         if (isSession1819) {
           const isValid = /^18020(0[1-9]|[1-4][0-9]|50)@icte\.uftb\.ac\.bd$/i.test(cleanEmail);
           if (!isValid) {
-            errs.email = "Use the correct session-based UFTB email format. The email must contain the fixed session prefix followed by a roll number from 01 to 50, ending with @icte.uftb.ac.bd.";
+            errs.email = "Use the correct UFTB mail format.";
           }
         } else if (isSession1920) {
           const isValid = /^19020(0[1-9]|[1-4][0-9]|50)@icte\.uftb\.ac\.bd$/i.test(cleanEmail);
           if (!isValid) {
-            errs.email = "Use the correct session-based UFTB email format. The email must contain the fixed session prefix followed by a roll number from 01 to 50, ending with @icte.uftb.ac.bd.";
+            errs.email = "Use the correct UFTB mail format.";
           }
         } else if (isSession2021) {
           const isValid = /^20020(0[1-9]|[1-4][0-9]|50)@icte\.uftb\.ac\.bd$/i.test(cleanEmail);
           if (!isValid) {
-            errs.email = "Use the correct session-based UFTB email format. The email must contain the fixed session prefix followed by a roll number from 01 to 50, ending with @icte.uftb.ac.bd.";
+            errs.email = "Use the correct UFTB mail format.";
           }
         } else {
           const isValid = /^[^\s@]+@std\.uftb\.ac\.bd$/i.test(cleanEmail);
           if (!isValid) {
-            errs.email = "Please use your official UFTB student email address ending with @std.uftb.ac.bd.";
+            errs.email = "Use the correct UFTB mail format.";
           }
         }
       }
@@ -515,6 +515,14 @@ const Register = () => {
 
       {/* Keyframe animations injected via style tag */}
       <style>{`
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear,
+        input[type="password"]::-webkit-contacts-auto-fill-button,
+        input[type="password"]::-webkit-credentials-auto-fill-button {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
         @keyframes shimmerSweep {
           0%, 100% { background-position: -200% 0; }
           50% { background-position: 200% 0; }
