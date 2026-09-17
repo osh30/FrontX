@@ -78,8 +78,37 @@ const registerUser = async (req, res) => {
     }
 
     if (role === 'student' || role === 'alumni') {
-      if (!email || !email.toLowerCase().endsWith('@std.uftb.ac.bd')) {
-        return res.status(400).json({ message: 'Please use your official UFTB student email address (@std.uftb.ac.bd).' });
+      if (!session || !session.trim()) {
+        return res.status(400).json({ message: 'Session is required.' });
+      }
+
+      const cleanEmail = (email || '').trim().toLowerCase();
+      const cleanSession = session.trim().toLowerCase().replace(/\s+/g, '').replace(/–/g, '-');
+
+      const isSession1819 = cleanSession.includes('18-19') || cleanSession.includes('2018-2019') || cleanSession.includes('18-2019') || cleanSession.includes('2018-19');
+      const isSession1920 = cleanSession.includes('19-20') || cleanSession.includes('2019-2020') || cleanSession.includes('19-2020') || cleanSession.includes('2019-20');
+      const isSession2021 = cleanSession.includes('20-21') || cleanSession.includes('2020-2021') || cleanSession.includes('20-2021') || cleanSession.includes('2020-21');
+
+      if (isSession1819) {
+        const isValid = /^18020(0[1-9]|[1-4][0-9]|50)@icte\.uftb\.ac\.bd$/i.test(cleanEmail);
+        if (!isValid) {
+          return res.status(400).json({ message: "Use the correct session-based UFTB email format. The email must contain the fixed session prefix followed by a roll number from 01 to 50, ending with @icte.uftb.ac.bd." });
+        }
+      } else if (isSession1920) {
+        const isValid = /^19020(0[1-9]|[1-4][0-9]|50)@icte\.uftb\.ac\.bd$/i.test(cleanEmail);
+        if (!isValid) {
+          return res.status(400).json({ message: "Use the correct session-based UFTB email format. The email must contain the fixed session prefix followed by a roll number from 01 to 50, ending with @icte.uftb.ac.bd." });
+        }
+      } else if (isSession2021) {
+        const isValid = /^20020(0[1-9]|[1-4][0-9]|50)@icte\.uftb\.ac\.bd$/i.test(cleanEmail);
+        if (!isValid) {
+          return res.status(400).json({ message: "Use the correct session-based UFTB email format. The email must contain the fixed session prefix followed by a roll number from 01 to 50, ending with @icte.uftb.ac.bd." });
+        }
+      } else {
+        const isValid = /^[^\s@]+@std\.uftb\.ac\.bd$/i.test(cleanEmail);
+        if (!isValid) {
+          return res.status(400).json({ message: "Please use your official UFTB student email address ending with @std.uftb.ac.bd." });
+        }
       }
     }
 
