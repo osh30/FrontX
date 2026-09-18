@@ -1,8 +1,8 @@
 import { API_BASE, SOCKET_URL } from '../../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Calendar, Clock, Video, Users, GraduationCap, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, Clock, Video, Users, GraduationCap, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { joinSessionMeeting, joinMentorshipMeeting, openMeeting, meetingPlatformLabel, canJoinSession, sessionJoinState, meetingPhase } from '../../meeting/lib/sessionJoin';
 import { useMeetingClock } from '../../meeting/hooks/useMeetingClock';
@@ -24,6 +24,8 @@ const normalizeSession = (s, type) => {
       scheduleStart: s.scheduleStart,
       scheduleEnd: s.scheduleEnd,
       hasStarted: s.hasStarted,
+      firstJoinedAt: s.firstJoinedAt,
+      attendance: s.attendance,
       status: s.status,
       description: s.sessionDescription,
       agenda: s.agenda,
@@ -39,6 +41,7 @@ const SessionsPage = () => {
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight');
 
+  const [activeTab, setActiveTab] = useState('upcoming');
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [joiningId, setJoiningId] = useState(null);
@@ -82,7 +85,7 @@ const SessionsPage = () => {
         all = all.concat(data.map(s => normalizeSession(s, 'group')));
       }
 
-      all.sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+      all.sort((a, b) => new Date(b.createdAt || b.date || b.sessionDate) - new Date(a.createdAt || a.date || a.sessionDate));
       setSessions(all);
     } catch (err) {
       console.error('Failed to fetch sessions', err);
@@ -101,81 +104,123 @@ const SessionsPage = () => {
     return () => { socket.disconnect(); };
   }, []);
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  // Classify sessions into upcoming or completed based on real session time & attendance data
+  const classify = (s) => {
+    if (s.status === 'Cancelled') return 'cancelled';
+    if (s.status === 'Completed') return 'completed';
 
-  const renderSessionCard = (session, idx, isLive) => (
-    <motion.div
-      key={session._id}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: idx * 0.05 }}
-      whileHover={{ y: -2 }}
-      id={highlightId === session._id ? 'highlighted-session' : undefined}
-      className={`bg-white/60 backdrop-blur-md rounded-2xl border shadow-sm hover:shadow-lg transition-all overflow-hidden cursor-pointer ${
-        highlightId === session._id ? 'border-purple-400 ring-2 ring-purple-200' : isLive ? 'border-emerald-300 ring-2 ring-emerald-100' : 'border-white/50'
-      }`}
-      onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
-    >
-      <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${isLive ? 'from-emerald-100 to-teal-100 text-emerald-600' : 'from-purple-100 to-blue-100 text-purple-600'} flex items-center justify-center shadow-sm font-bold flex-col shrink-0`}>
-          <span className="text-[10px] uppercase">{new Date(session.date || session.sessionDate).toLocaleString('default', { month: 'short' })}</span>
-          <span className="text-lg leading-none">{new Date(session.date || session.sessionDate).getDate()}</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h4 className="font-bold text-gray-900 truncate">{session.title}</h4>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">{session.type}</span>
-            {session._sessionType === 'group' && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center gap-1">
-                <Users className="w-3 h-3" /> Group
-              </span>
-            )}
-            {isLive && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center gap-1">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+    const phase = meetingPhase(s, meetingNow).phase;
+    const isPast = phase === 'ended' || s.status === 'Past Session';
+
+    if (isPast) {
+      const hasAttendance = s.hasStarted === true ||
+        s.firstJoinedAt != null ||
+        (Array.isArray(s.attendance) && s.attendance.some(a => a.status === 'Present' || a.attended === true));
+      return hasAttendance ? 'completed' : 'past_unattended';
+    }
+
+    return 'upcoming';
+  };
+
+  const upcomingSessions = sessions.filter(s => classify(s) === 'upcoming');
+  const completedSessions = sessions.filter(s => classify(s) === 'completed');
+
+  const renderSessionCard = (session, idx) => {
+    const phase = meetingPhase(session, meetingNow).phase;
+    const isLive = phase === 'active' || session.status === 'Ongoing' || session.status === 'Active';
+    const isCompleted = classify(session) === 'completed';
+
+    return (
+      <motion.div
+        key={session._id}
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: idx * 0.04 }}
+        whileHover={{ y: -2 }}
+        id={highlightId === session._id ? 'highlighted-session' : undefined}
+        className={`bg-white/60 backdrop-blur-md rounded-2xl border shadow-sm hover:shadow-lg transition-all overflow-hidden cursor-pointer ${
+          highlightId === session._id
+            ? 'border-purple-400 ring-2 ring-purple-200'
+            : isLive
+            ? 'border-emerald-300 ring-2 ring-emerald-100'
+            : isCompleted
+            ? 'border-emerald-200/80'
+            : 'border-white/50'
+        }`}
+        onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
+      >
+        <div className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${
+            isLive
+              ? 'from-emerald-100 to-teal-100 text-emerald-600'
+              : isCompleted
+              ? 'from-emerald-50 to-teal-50 text-emerald-600'
+              : 'from-purple-100 to-blue-100 text-purple-600'
+          } flex items-center justify-center shadow-sm font-bold flex-col shrink-0`}>
+            <span className="text-[10px] uppercase">{new Date(session.date || session.sessionDate).toLocaleString('default', { month: 'short' })}</span>
+            <span className="text-lg leading-none">{new Date(session.date || session.sessionDate).getDate()}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h4 className="font-bold text-gray-900 truncate">{session.title}</h4>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold">{session.type}</span>
+              {session._sessionType === 'group' && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center gap-1">
+                  <Users className="w-3 h-3" /> Group
                 </span>
-                Live Now
+              )}
+              {isLive && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center gap-1">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  Live Now
+                </span>
+              )}
+              {isCompleted && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Completed
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+              <span className="flex items-center gap-1">
+                <GraduationCap className="w-3.5 h-3.5" /> {session.alumni?.name || session.alumniId?.name || 'Mentor'}
               </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> {session.time || session.sessionTime}
+              </span>
+              {(session.meetingType || session.platform || session.meetingPlatform) ? (
+                <span className="flex items-center gap-1">
+                  <Video className="w-3.5 h-3.5" /> {meetingPlatformLabel(session)}
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto shrink-0" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
+              className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors shadow-sm"
+            >
+              View Details
+            </button>
+            {!isCompleted && (session.meetingType === 'frontx' || session.meetingLink) && (
+              <button
+                onClick={() => handleJoin(session)}
+                disabled={joiningId === session._id || (session.meetingType === 'frontx' && !canJoinSession(session, meetingNow))}
+                className={`px-6 py-2 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-60 ${
+                  isLive ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg' : 'bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg'
+                }`}
+              >
+                <ExternalLink className="w-3.5 h-3.5" /> {joiningId === session._id ? 'Opening…' : (session.meetingType === 'frontx' ? (sessionJoinState(session, meetingNow).label || 'Join') : 'Open')}
+              </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-            <span className="flex items-center gap-1">
-              <GraduationCap className="w-3.5 h-3.5" /> {session.alumni?.name || session.alumniId?.name || 'Mentor'}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" /> {session.time || session.sessionTime}
-            </span>
-            {session.meetingType || session.platform || session.meetingPlatform ? (
-              <span className="flex items-center gap-1">
-                <Video className="w-3.5 h-3.5" /> {meetingPlatformLabel(session)}
-              </span>
-            ) : null}
-          </div>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto shrink-0" onClick={e => e.stopPropagation()}>
-          <button
-            onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
-            className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors shadow-sm"
-          >
-            View Details
-          </button>
-          {(session.meetingType === 'frontx' || session.meetingLink) && (
-            <button
-              onClick={() => handleJoin(session)}
-              disabled={joiningId === session._id || (session.meetingType === 'frontx' && !canJoinSession(session, meetingNow))}
-              className={`px-6 py-2 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center gap-1.5 disabled:opacity-60 ${
-                isLive ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg' : 'bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:shadow-lg'
-              }`}
-            >
-              <ExternalLink className="w-3.5 h-3.5" /> {joiningId === session._id ? 'Opening…' : (session.meetingType === 'frontx' ? (sessionJoinState(session, meetingNow).label || 'Join') : 'Open')}
-            </button>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   if (loading) {
     return (
@@ -185,25 +230,11 @@ const SessionsPage = () => {
     );
   }
 
-  const finalStatus = ['Completed', 'Cancelled', 'Past Session'];
-
-  // Classify sessions by their real schedule window (scheduleStart/scheduleEnd from DB,
-  // or date + start time + duration) compared against the ticking `meetingNow` clock so
-  // sessions move between Upcoming / Live / Past automatically without a manual refresh.
-  const classify = (s) => {
-    if (finalStatus.includes(s.status)) return 'past';
-    const phase = meetingPhase(s, meetingNow).phase;
-    if (phase === 'ended') return 'past';
-    if (phase === 'active' || s.status === 'Ongoing' || s.status === 'Active') return 'live';
-    return 'upcoming';
-  };
-
-  const upcoming = sessions.filter(s => classify(s) === 'upcoming');
-  const liveNow = sessions.filter(s => classify(s) === 'live');
-  const past = sessions.filter(s => classify(s) === 'past');
+  const currentDisplayList = activeTab === 'upcoming' ? upcomingSessions : completedSessions;
 
   return (
     <div className="p-8 max-w-7xl mx-auto w-full">
+      {/* Header Banner */}
       <div className="relative overflow-hidden rounded-[24px] p-8 md:p-12 mb-8 bg-gradient-to-br from-[#0F172A] to-[#1E3A8A] shadow-2xl shadow-blue-900/30">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-500/10 rounded-full blur-[100px]" />
@@ -221,87 +252,91 @@ const SessionsPage = () => {
           </motion.div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 drop-shadow-sm">My Sessions</h1>
           <p className="text-blue-100/80 max-w-2xl mx-auto leading-relaxed">
-            View and join your scheduled mentorship sessions. Stay connected with your mentors, track upcoming meetings, and continue your learning journey.
+            View and join your scheduled mentorship sessions. Track upcoming meetings and review your completed sessions.
           </p>
         </div>
       </div>
 
-      {sessions.length === 0 ? (
-        <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
-          <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-900 mb-1">No sessions yet</p>
-          <p className="text-sm text-gray-500">When an alumni schedules a session with you, it will appear here.</p>
-        </div>
-      ) : (
-        <div className="space-y-10">
-          {liveNow.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-                </span>
-                Live Now ({liveNow.length})
-              </h2>
-              <div className="space-y-4">
-                {liveNow.map((session, idx) => renderSessionCard(session, idx, true))}
-              </div>
-            </section>
-          )}
+      {/* Tabs Navigation */}
+      <div className="flex items-center gap-3 p-1.5 bg-white/60 backdrop-blur-md rounded-2xl border border-gray-200/80 shadow-sm mb-8 w-full sm:w-auto self-start">
+        <button
+          onClick={() => setActiveTab('upcoming')}
+          className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+            activeTab === 'upcoming'
+              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/60'
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          <span>Upcoming Sessions</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+            activeTab === 'upcoming' ? 'bg-white/20 text-white' : 'bg-purple-100 text-purple-700'
+          }`}>
+            {upcomingSessions.length}
+          </span>
+        </button>
 
-          {upcoming.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-purple-600" /> Upcoming Sessions ({upcoming.length})
-              </h2>
-              <div className="space-y-4">
-                {upcoming.map((session, idx) => renderSessionCard(session, idx, false))}
-              </div>
-            </section>
-          )}
+        <button
+          onClick={() => setActiveTab('completed')}
+          className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+            activeTab === 'completed'
+              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/60'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          <span>Completed Sessions</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+            activeTab === 'completed' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'
+          }`}>
+            {completedSessions.length}
+          </span>
+        </button>
+      </div>
 
-          {past.length > 0 && (
-            <section>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-gray-500" /> Past Sessions ({past.length})
-              </h2>
-              <div className="space-y-3">
-                {past.map((session, idx) => (
-                  <motion.div
-                    key={session._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: idx * 0.03 }}
-                    className="bg-white/40 backdrop-blur-md rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                    onClick={() => navigate(`/dashboard/sessions/${session._id}?type=${session._sessionType}`)}
-                  >
-                    <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 font-bold flex-col shrink-0">
-                        <span className="text-[10px] uppercase">{new Date(session.date || session.sessionDate).toLocaleString('default', { month: 'short' })}</span>
-                        <span className="text-base leading-none">{new Date(session.date || session.sessionDate).getDate()}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="font-semibold text-gray-800 truncate">{session.title}</h4>
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                            session.status === 'Cancelled' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'
-                          }`}>{session.status}</span>
-                        </div>
-                        <p className="text-sm text-gray-500">{session.alumni?.name || session.alumniId?.name || 'Mentor'} &bull; {formatDate(session.date || session.sessionDate)}</p>
-                      </div>
-                      <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl text-sm font-medium transition-colors shadow-sm">
-                        View Details
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
+      {/* Content Area */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          {currentDisplayList.length === 0 ? (
+            <div className="p-12 text-center bg-white/40 backdrop-blur-xl rounded-3xl border border-dashed border-gray-200 shadow-sm">
+              {activeTab === 'upcoming' ? (
+                <>
+                  <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="w-8 h-8 text-purple-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">No Upcoming Sessions</h3>
+                  <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    You don't have any upcoming sessions scheduled.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">No Completed Sessions</h3>
+                  <p className="text-sm text-gray-500 max-w-md mx-auto">
+                    You don't have any completed sessions yet.
+                  </p>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {currentDisplayList.map((session, idx) => renderSessionCard(session, idx))}
+            </div>
           )}
-        </div>
-      )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
 
 export default SessionsPage;
+
