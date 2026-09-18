@@ -948,7 +948,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }
   const isVerified = week.geminiVerification?.matched;
   const hasNote = !!week.notePdfUrl;
   const isPublished = week.isPublished === true;
-  const isLocked = week.locked === true && !isMissed && !isCompleted;
+  const isLocked = false;
   const isActive = week.isActive === true || week.status === 'pending';
 
   const getStatusBarColor = () => {
@@ -957,7 +957,6 @@ const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }
     if (isMissed) return 'bg-red-500';
     if (isNotApplicable) return 'bg-gray-300';
     if (isActive) return 'bg-indigo-500';
-    if (isLocked) return 'bg-gray-300';
     return 'bg-amber-400';
   };
 
@@ -968,7 +967,6 @@ const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }
     if (isNotApplicable) return { text: 'Not Applicable', classes: 'bg-gray-100 text-gray-500 border border-gray-200' };
     if (isUpcoming) return { text: 'Upcoming', classes: 'bg-slate-100 text-slate-600 border border-slate-200' };
     if (isActive) return { text: 'Pending', classes: 'bg-amber-50 text-amber-700 border border-amber-200 font-semibold' };
-    if (isLocked) return { text: 'Locked', classes: 'bg-gray-100 text-gray-500 border border-gray-200' };
     return { text: 'Pending', classes: 'bg-amber-50 text-amber-700 border border-amber-200' };
   };
 
@@ -981,8 +979,7 @@ const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }
         isCompleted ? 'border-indigo-200 shadow-indigo-50' :
         isMissed ? 'border-red-200 bg-red-50/10 shadow-red-50 ring-1 ring-red-200' :
         isNotApplicable ? 'border-gray-200 opacity-60 bg-gray-50/50' :
-        isActive ? 'border-indigo-200 shadow-indigo-50 ring-1 ring-indigo-100' :
-        isLocked ? 'border-gray-200 opacity-75' : 'border-gray-100'
+        isActive ? 'border-indigo-200 shadow-indigo-50 ring-1 ring-indigo-100' : 'border-gray-100'
       }`}>
       <div className="flex flex-col md:flex-row items-stretch">
         {/* Left: Status indicator */}
@@ -996,10 +993,9 @@ const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }
             isMissed ? 'bg-red-100 text-red-600' :
             isNotApplicable ? 'bg-gray-100 text-gray-400' :
             isActive ? 'bg-indigo-100 text-indigo-600' :
-            isLocked ? 'bg-gray-100 text-gray-500' :
             'bg-amber-100 text-amber-600'
           }`}>
-            {isLocked && !isMissed ? <Lock className="w-5 h-5" /> : <span className="text-lg font-bold">{week.weekNumber}</span>}
+            <span className="text-lg font-bold">{week.weekNumber}</span>
           </div>
 
           {/* Content */}
@@ -1060,14 +1056,6 @@ const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }
                 </span>
               </div>
             )}
-
-            {/* Locked message */}
-            {isLocked && !isMissed && !isNotApplicable && week.startDate && (
-              <p className="text-[11px] text-gray-500 mt-1.5 italic">
-                <Lock className="w-3 h-3 inline mr-1" />
-                Unlocks on {fmtDateLong(week.startDate)}
-              </p>
-            )}
           </div>
 
           {/* Actions */}
@@ -1078,43 +1066,41 @@ const WeekCard = ({ week, courseId, uploading, onUpload, publishing, onPublish }
                 <Eye className="w-3.5 h-3.5" /> View Note
               </a>
             )}
-            {!isNotApplicable && (!isLocked || isMissed) && (
-              <>
-                <input type="file" accept=".pdf" ref={fileInputRef} onChange={onUpload} className="hidden" />
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
-                    isCompleted
-                      ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100'
-                      : isMissed
-                      ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200 font-bold'
-                      : 'bg-gray-900 text-white hover:bg-indigo-600'
-                  } disabled:opacity-50`}>
-                  {uploading ? <Loader className="w-3.5 h-3.5 animate-spin" /> :
-                    hasNote ? <><Upload className="w-3.5 h-3.5" /> Re-upload</> :
-                    isMissed ? <><Upload className="w-3.5 h-3.5" /> Upload Missing Note</> :
-                    <><Upload className="w-3.5 h-3.5" /> Upload Note</>}
-                </button>
+            <>
+              <input type="file" accept=".pdf" ref={fileInputRef} onChange={onUpload} className="hidden" />
+              <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+                  isCompleted
+                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100'
+                    : isMissed
+                    ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200 font-bold'
+                    : 'bg-gray-900 text-white hover:bg-indigo-600'
+                } disabled:opacity-50`}>
+                {uploading ? <Loader className="w-3.5 h-3.5 animate-spin" /> :
+                  hasNote ? <><Upload className="w-3.5 h-3.5" /> Re-upload</> :
+                  isMissed ? <><Upload className="w-3.5 h-3.5" /> Upload Missing Note</> :
+                  <><Upload className="w-3.5 h-3.5" /> Upload Note</>}
+              </button>
 
-                {isPublished ? (
-                  <span className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5 shadow-sm">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Published ✓
-                  </span>
-                ) : (
-                  <button
-                    onClick={onPublish}
-                    disabled={!hasNote || publishing}
-                    title={!hasNote ? "Upload a study note first to enable publishing to Learnings" : "Publish your note so all FrontX students can view it in Learnings"}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm ${
-                      !hasNote
-                        ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white cursor-pointer shadow-indigo-200'
-                    } disabled:opacity-60`}
-                  >
-                    {publishing ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <><Globe className="w-3.5 h-3.5" /> Publish</>}
-                  </button>
-                )}
-              </>
-            )}
+              {isPublished ? (
+                <span className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5 shadow-sm">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Published ✓
+                </span>
+              ) : (
+                <button
+                  onClick={onPublish}
+                  disabled={!hasNote || publishing}
+                  title={!hasNote ? "Upload a study note first to enable publishing to Learnings" : "Publish your note so all FrontX students can view it in Learnings"}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm ${
+                    !hasNote
+                      ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white cursor-pointer shadow-indigo-200'
+                  } disabled:opacity-60`}
+                >
+                  {publishing ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <><Globe className="w-3.5 h-3.5" /> Publish</>}
+                </button>
+              )}
+            </>
           </div>
         </div>
       </div>

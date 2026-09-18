@@ -371,11 +371,11 @@ exports.getPlanner = async (req, res) => {
     const effectiveStartDate = academicCalendar ? academicCalendar.startDate : planner.semesterStartDate;
     const currentWeek = getCurrentWeekNumber(effectiveStartDate);
 
-    // Enrich each week with lock status and active state
+    // Enrich each week with lock status and active state (all weeks unlocked for note upload)
     for (const course of plannerObj.courses) {
       for (const week of course.weeks) {
-        week.locked = week.status !== 'completed' && week.status !== 'not-applicable' && !isWeekUnlocked(week.startDate, effectiveStartDate);
-        week.isActive = !week.locked && (week.status === 'pending' || week.status === 'missed') &&
+        week.locked = false;
+        week.isActive = (week.status === 'pending' || week.status === 'missed') &&
           week.startDate && new Date().setHours(0,0,0,0) >= new Date(week.startDate).setHours(0,0,0,0) &&
           week.endDate && new Date().setHours(0,0,0,0) <= new Date(week.endDate).setHours(0,0,0,0);
       }
@@ -660,10 +660,7 @@ exports.uploadWeekNote = async (req, res) => {
     const week = course.weeks.id(req.params.weekId);
     if (!week) return res.status(404).json({ message: 'Week not found.' });
 
-    // Smart week unlock check
-    if (week.startDate && week.status !== 'completed' && week.status !== 'missed' && !isWeekUnlocked(week.startDate, planner.semesterStartDate)) {
-      return res.status(403).json({ message: `This week is locked. Upload will be available from ${new Date(week.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}.` });
-    }
+    // Allow note upload for any week at any time regardless of calendar dates
 
     if (!req.file) return res.status(400).json({ message: 'PDF file is required.' });
 
@@ -833,11 +830,7 @@ exports.getStats = async (req, res) => {
       totalWeeks += course.weeks.length;
       completed += course.weeks.filter(w => w.status === 'completed').length;
       for (const week of course.weeks) {
-        if (week.status === 'completed' || (week.startDate && isWeekUnlocked(week.startDate, planner.semesterStartDate))) {
-          unlocked++;
-        } else {
-          locked++;
-        }
+        unlocked++;
       }
     }
 
