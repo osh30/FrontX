@@ -300,25 +300,19 @@ export const CollaborationPage = ({ onViewProfile }) => {
 
           {/* Filter Controls Panel */}
           <motion.div variants={fadeInUp} className="bg-white rounded-3xl border border-gray-200/80 p-5 md:p-6 shadow-sm space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3">
-              <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
-                <Filter className="w-4 h-4 text-purple-600" />
-                <span>Filter Opportunities</span>
-                {hasActiveFilters && (
-                  <span className="ml-1 text-[11px] font-semibold bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded-full">
-                    Active
-                  </span>
-                )}
-              </div>
-              {hasActiveFilters && (
+            {hasActiveFilters && (
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded-full">
+                  Filters Active
+                </span>
                 <button
                   onClick={clearAllFilters}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5" /> Clear Filters
                 </button>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
               {/* 1. Research Type */}
