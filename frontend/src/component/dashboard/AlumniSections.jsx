@@ -7,7 +7,8 @@ import {
   Download, Upload, Lightbulb, UserCheck, 
   Settings, Bell, Star, TrendingUp, 
   CheckCircle, XCircle, MoreVertical, FileText, Video, Eye, ShieldCheck, ThumbsUp, Heart, Info, ListFilter,
-  ExternalLink, Tag, SlidersHorizontal, X, ArrowUpDown, Bookmark, Sparkles
+  ExternalLink, Tag, SlidersHorizontal, X, ArrowUpDown, Bookmark, Sparkles,
+  Trash2, Edit3, User, RotateCcw, FilterX, GraduationCap, BookOpen, Code, Send
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ScheduleSessionModal } from './ScheduleSessionModal';
@@ -561,32 +562,201 @@ export const CareerOpportunitiesManagement = ({ isPreview, onViewAll }) => {
 
 // 5. COLLABORATION & RESEARCH SECTION
 export const CollaborationResearch = ({ isPreview, onViewAll }) => {
-  const [topics, setTopics] = useState([]);
   const navigate = useNavigate();
+  const [myTopics, setMyTopics] = useState([]);
+  const [otherTopics, setOtherTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Tab State: 'my-collaborations' | 'other-alumni'
+  const [activeTab, setActiveTab] = useState('my-collaborations');
+
+  // Filter & Search States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('All');
+  const [selectedDomain, setSelectedDomain] = useState('All');
+  const [selectedExperience, setSelectedExperience] = useState('All');
+  const [selectedStatus, setSelectedStatus] = useState('All');
+  const [sortBy, setSortBy] = useState('Latest');
+
+  const userData = localStorage.getItem('user');
+  const currentUser = userData ? JSON.parse(userData) : null;
+  const currentUserId = currentUser?._id || currentUser?.id;
 
   const fetchTopics = async () => {
     try {
-      const res = await fetch(`${API_BASE}/collaboration/alumni`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTopics(data);
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [myRes, allRes] = await Promise.all([
+        fetch(`${API_BASE}/collaboration/alumni`, { headers }),
+        fetch(`${API_BASE}/collaboration`, { headers })
+      ]);
+
+      let myData = [];
+      let allData = [];
+
+      if (myRes.ok) {
+        myData = await myRes.json();
       }
+      if (allRes.ok) {
+        allData = await allRes.json();
+      }
+
+      setMyTopics(myData);
+
+      // Other alumni topics = all topics excluding current logged in user's topics
+      const otherData = allData.filter(topic => {
+        const alumniId = topic.alumni?._id ? topic.alumni._id.toString() : topic.alumni?.toString();
+        return !currentUserId || alumniId !== currentUserId.toString();
+      });
+      setOtherTopics(otherData);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching collaboration topics:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchTopics();
+
+    const socket = io(SOCKET_URL);
+    socket.on('research:new', fetchTopics);
+    socket.on('research:updated', fetchTopics);
+    socket.on('research:deleted', fetchTopics);
+    return () => socket.disconnect();
   }, []);
 
-  const displayTopics = isPreview ? topics.slice(0, 2) : topics;
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Are you sure you want to delete this research collaboration? This action cannot be undone.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/collaboration/${postId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchTopics();
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to delete post.');
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+    }
+  };
 
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-6">
-      {isPreview ? (
+  const targetTopics = activeTab === 'my-collaborations' ? myTopics : otherTopics;
+
+  const hasActiveFilters = 
+    searchQuery.trim() !== '' ||
+    selectedType !== 'All' ||
+    selectedDomain !== 'All' ||
+    selectedExperience !== 'All' ||
+    selectedStatus !== 'All' ||
+    sortBy !== 'Latest';
+
+  const clearAllFilters = () => {
+    setSearchQuery('');
+    setSelectedType('All');
+    setSelectedDomain('All');
+    setSelectedExperience('All');
+    setSelectedStatus('All');
+    setSortBy('Latest');
+  };
+
+  const filteredTopics = targetTopics.filter(topic => {
+    const topicExpired = topic.isExpired || (topic.deadline && new Date(topic.deadline) < new Date());
+
+    // 1. Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesTitle = topic.title?.toLowerCase().includes(q);
+      const matchesDomain = topic.domain?.toLowerCase().includes(q);
+      const matchesAlumniName = topic.alumni?.name?.toLowerCase().includes(q);
+      const matchesOverview = topic.overview?.toLowerCase().includes(q);
+      const matchesSkills = topic.requiredSkills?.some(s => s.toLowerCase().includes(q));
+
+      if (!matchesTitle && !matchesDomain && !matchesAlumniName && !matchesOverview && !matchesSkills) {
+        return false;
+      }
+    }
+
+    // 2. Research Type
+    if (selectedType !== 'All') {
+      if (selectedType === 'Other') {
+        const knownTypes = [
+          'Research Paper', 'Survey Research', 'Review Paper', 
+          'Industrial Research', 'Capstone Project', 'Conference Paper', 
+          'Journal Publication'
+        ];
+        if (knownTypes.includes(topic.type)) return false;
+      } else {
+        if (topic.type !== selectedType) return false;
+      }
+    }
+
+    // 3. Research Domain
+    if (selectedDomain !== 'All') {
+      if (selectedDomain === 'Other') {
+        const knownDomains = [
+          'Artificial Intelligence', 'Machine Learning', 'Cyber Security',
+          'Data Science', 'IoT', 'Web Development',
+          'Healthcare Technology', 'Software Engineering'
+        ];
+        if (knownDomains.includes(topic.domain)) return false;
+      } else {
+        if (topic.domain !== selectedDomain) return false;
+      }
+    }
+
+    // 4. Experience Level
+    if (selectedExperience !== 'All') {
+      if (topic.experienceLevel !== selectedExperience) return false;
+    }
+
+    // 5. Status
+    if (selectedStatus === 'Active') {
+      if (topicExpired || topic.status === 'closed') return false;
+    } else if (selectedStatus === 'Expired') {
+      if (!topicExpired && topic.status !== 'closed') return false;
+    }
+
+    return true;
+  }).sort((a, b) => {
+    if (sortBy === 'Oldest') {
+      return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    } else if (sortBy === 'Deadline Soon') {
+      const dA = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+      const dB = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+      return dA - dB;
+    } else {
+      // Latest
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    }
+  });
+
+  const RESEARCH_TYPES = [
+    'All', 'Research Paper', 'Survey Research', 'Review Paper', 
+    'Industrial Research', 'Capstone Project', 'Conference Paper', 
+    'Journal Publication', 'Other'
+  ];
+
+  const RESEARCH_DOMAINS = [
+    'All', 'Artificial Intelligence', 'Machine Learning', 'Cyber Security',
+    'Data Science', 'IoT', 'Web Development', 'Healthcare Technology', 
+    'Software Engineering', 'Other'
+  ];
+
+  const EXPERIENCE_LEVELS = ['All', 'Beginner Friendly', 'Intermediate', 'Advanced'];
+  const STATUS_OPTIONS = ['All', 'Active', 'Expired'];
+  const SORT_OPTIONS = ['Latest', 'Oldest', 'Deadline Soon'];
+
+  if (isPreview) {
+    const displayTopics = myTopics.slice(0, 2);
+    return (
+      <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-6">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Collaboration</h2>
@@ -595,128 +765,386 @@ export const CollaborationResearch = ({ isPreview, onViewAll }) => {
             Go to Collaboration <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-      ) : (
-        <motion.div
-          variants={fadeInUp}
-          className="relative overflow-hidden rounded-[24px] p-8 md:p-12 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] shadow-2xl shadow-slate-900/30"
-        >
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-[100px]" />
-            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px]" />
-            <div className="absolute top-1/3 left-1/2 w-48 h-48 bg-cyan-400/5 rounded-full blur-[80px]" />
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-40" />
-          </div>
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 drop-shadow-sm">Collaboration</h1>
-              <p className="text-slate-300/80 max-w-xl leading-relaxed">
-                Discover innovative research ideas, collaborate with students and fellow alumni, and contribute to meaningful academic and industry-driven projects.
-              </p>
+        <div className="space-y-6">
+          {displayTopics.length === 0 ? (
+            <div className="p-8 text-center text-gray-500 bg-white rounded-3xl border border-dashed border-gray-200">
+              No collaboration topics published yet.
             </div>
-            <button onClick={() => navigate('/alumni/collaboration/create-topic')} className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 shrink-0">
-              <Lightbulb className="w-4 h-4" /> Publish New Topic
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      <div className="space-y-8">
-        {displayTopics.length === 0 && !isPreview && (
-          <div className="p-12 text-center text-gray-500 bg-white rounded-3xl border border-dashed border-gray-200 shadow-sm">
-            <Lightbulb className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-lg font-medium">No collaboration posts found</p>
-            <p className="text-sm mt-1">Create your first collaboration topic to get started.</p>
-          </div>
-        )}
-        {displayTopics.map(topic => (
-          <motion.div
-            key={topic._id}
-            variants={fadeInUp}
-            className="bg-white rounded-3xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
-          >
-            <div className="p-6 md:p-8">
-              {/* Top Row: Title + Status */}
-              <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-1 group-hover:text-[#1E3A8A] transition-colors">{topic.title}</h3>
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-                    <span className="font-semibold text-[#1E3A8A]">{topic.alumni?.name || 'You'}</span>
-                    <span className="text-gray-300">|</span>
-                    <span>{topic.alumni?.department || topic.type}</span>
-                    <span className="text-gray-300">|</span>
-                    <span>{topic.createdAt ? new Date(topic.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
-                  </div>
+          ) : (
+            displayTopics.map(topic => (
+              <div key={topic._id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-gray-900 text-lg">{topic.title}</h4>
+                  <p className="text-xs text-gray-500 mt-1">{topic.domain} • {topic.type}</p>
                 </div>
-                <span className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${
-                  topic.status === 'active'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : topic.status === 'closed'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-[#1E3A8A]/10 text-[#1E3A8A]'
-                }`}>{topic.status}</span>
-              </div>
-
-              {/* Description */}
-              <p className="text-sm text-gray-600 leading-relaxed mb-5">{topic.overview || topic.description}</p>
-
-              {/* Required Skills */}
-              {topic.requiredSkills?.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-5">
-                  {topic.requiredSkills.map((skill, i) => (
-                    <span key={i} className="px-3 py-1.5 bg-gray-50 border border-gray-200 text-gray-700 rounded-lg text-xs font-semibold">{skill}</span>
-                  ))}
-                </div>
-              )}
-
-              {/* Meta Row */}
-              <div className="flex flex-wrap items-center gap-5 text-sm text-gray-500 pt-5 border-t border-gray-100">
-                {topic.studentCount && (
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Users className="w-4 h-4 text-[#1E3A8A]" />
-                    <span><strong className="text-gray-900">{topic.studentCount}</strong> team size</span>
-                  </span>
-                )}
-                {topic.applicantCount !== undefined && (
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" />
-                    <span><strong className="text-gray-900">{topic.applicantCount || 0}</strong> applicant{(topic.applicantCount || 0) !== 1 ? 's' : ''}</span>
-                  </span>
-                )}
-                {topic.deadline && (
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Calendar className="w-4 h-4 text-red-500" />
-                    <span>Deadline: <strong className="text-gray-900">{new Date(topic.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong></span>
-                  </span>
-                )}
-                {topic.duration && (
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span><strong className="text-gray-900">{topic.duration}</strong></span>
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Bottom Action Bar */}
-            <div className="px-6 md:px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => isPreview ? onViewAll() : navigate(`/alumni/collaboration/${topic._id}/review`)}
-                  className="px-5 py-2.5 bg-gradient-to-r from-[#0F172A] to-[#1E3A8A] text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg hover:shadow-[#1E3A8A]/30 transition-all flex items-center gap-2"
-                >
-                  <CheckCircle className="w-4 h-4" /> Review Applications
+                <button onClick={onViewAll} className="px-4 py-2 bg-purple-50 text-purple-600 rounded-xl text-xs font-bold hover:bg-purple-100 transition-all">
+                  Manage
                 </button>
               </div>
+            ))
+          )}
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-8">
+      {/* Hero Banner */}
+      <motion.div
+        variants={fadeInUp}
+        className="relative overflow-hidden rounded-[24px] p-8 md:p-12 bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#1E3A8A] shadow-2xl shadow-slate-900/30"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-20 -right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-[100px]" />
+          <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/10 rounded-full blur-[120px]" />
+          <div className="absolute top-1/3 left-1/2 w-48 h-48 bg-cyan-400/5 rounded-full blur-[80px]" />
+        </div>
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 drop-shadow-sm">Collaboration</h1>
+            <p className="text-slate-300/80 max-w-xl leading-relaxed">
+              Discover innovative research ideas, collaborate with students and fellow alumni, and contribute to meaningful academic and industry-driven projects.
+            </p>
+          </div>
+          <button onClick={() => navigate('/alumni/collaboration/create-topic')} className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 shrink-0">
+            <Lightbulb className="w-4 h-4" /> Publish New Topic
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Tabs Navigation */}
+      <motion.div variants={fadeInUp} className="flex items-center gap-3 bg-slate-100 p-1.5 rounded-2xl w-fit">
+        <button
+          onClick={() => { setActiveTab('my-collaborations'); clearAllFilters(); }}
+          className={`px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2.5 ${
+            activeTab === 'my-collaborations'
+              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <User className="w-4 h-4" /> My Collaborations ({myTopics.length})
+        </button>
+        <button
+          onClick={() => { setActiveTab('other-alumni'); clearAllFilters(); }}
+          className={`px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2.5 ${
+            activeTab === 'other-alumni'
+              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+          }`}
+        >
+          <Users className="w-4 h-4" /> Other Alumni ({otherTopics.length})
+        </button>
+      </motion.div>
+
+      {/* Filter & Search Bar */}
+      <motion.div variants={fadeInUp} className="bg-white rounded-3xl border border-gray-200/80 p-5 md:p-6 shadow-sm space-y-4">
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded-full">
+              Filters Active
+            </span>
+            <button
+              onClick={clearAllFilters}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Clear Filters
+            </button>
+          </div>
+        )}
+
+        {/* Search input */}
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={activeTab === 'my-collaborations' ? "Search your collaborations by title, domain, or skills..." : "Search other alumni collaborations by title, alumni name, domain, or skills..."}
+            className="w-full pl-11 pr-10 py-3 bg-slate-50 border border-gray-200 rounded-2xl text-xs text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter dropdowns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3.5">
+          {/* Research Type */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+              <BookOpen className="w-3.5 h-3.5 text-purple-500" /> Research Type
+            </label>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="w-full bg-slate-50 border border-gray-200 text-gray-800 text-xs font-medium rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+            >
+              {RESEARCH_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+
+          {/* Research Domain */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+              <Tag className="w-3.5 h-3.5 text-blue-500" /> Domain
+            </label>
+            <select
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+              className="w-full bg-slate-50 border border-gray-200 text-gray-800 text-xs font-medium rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+            >
+              {RESEARCH_DOMAINS.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+
+          {/* Experience Level */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+              <GraduationCap className="w-3.5 h-3.5 text-green-500" /> Experience
+            </label>
+            <select
+              value={selectedExperience}
+              onChange={(e) => setSelectedExperience(e.target.value)}
+              className="w-full bg-slate-50 border border-gray-200 text-gray-800 text-xs font-medium rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+            >
+              {EXPERIENCE_LEVELS.map(e => <option key={e} value={e}>{e}</option>)}
+            </select>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-red-500" /> Status
+            </label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="w-full bg-slate-50 border border-gray-200 text-gray-800 text-xs font-medium rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+            >
+              {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          {/* Sort By */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+              <ArrowUpDown className="w-3.5 h-3.5 text-amber-500" /> Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full bg-slate-50 border border-gray-200 text-gray-800 text-xs font-medium rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all cursor-pointer"
+            >
+              {SORT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Results Header */}
+      {!loading && (
+        <div className="flex items-center justify-between text-sm text-gray-600 px-1 font-medium">
+          <span>
+            Showing <strong className="text-gray-900 font-bold">{filteredTopics.length}</strong> {filteredTopics.length === 1 ? 'collaboration' : 'collaborations'}
+          </span>
+          {hasActiveFilters && (
+            <button onClick={clearAllFilters} className="text-xs font-semibold text-purple-600 hover:text-purple-800 flex items-center gap-1">
+              <RotateCcw className="w-3.5 h-3.5" /> Reset filters
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Cards List or Empty State */}
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"></div>
+        </div>
+      ) : filteredTopics.length === 0 ? (
+        <motion.div variants={fadeInUp} className="text-center py-16 px-6 bg-white rounded-3xl border border-dashed border-gray-200 shadow-sm space-y-4">
+          <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mx-auto">
+            <FilterX className="w-7 h-7" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">
+              {activeTab === 'my-collaborations' 
+                ? (myTopics.length === 0 ? "No collaborations posted yet." : "No collaborations match your selected filters.")
+                : (otherTopics.length === 0 ? "No collaborations found from other alumni." : "No collaborations match your selected filters.")}
+            </h3>
+            <p className="text-sm text-gray-500 max-w-md mx-auto">
+              {activeTab === 'my-collaborations' && myTopics.length === 0
+                ? "Publish your first research or project topic to start collaborating with students."
+                : "Try adjusting your search criteria or resetting your filters."}
+            </p>
+          </div>
+          {activeTab === 'my-collaborations' && myTopics.length === 0 ? (
+            <button
+              onClick={() => navigate('/alumni/collaboration/create-topic')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all"
+            >
+              <Lightbulb className="w-4 h-4" /> Publish New Topic
+            </button>
+          ) : (
+            hasActiveFilters && (
               <button
-                onClick={isPreview ? onViewAll : () => navigate(`/dashboard/collaboration/${topic._id}`)}
-                className="px-4 py-2.5 text-[#1E3A8A] hover:bg-[#1E3A8A]/5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1"
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all"
               >
-                View Details <ChevronRight className="w-4 h-4" />
+                <RotateCcw className="w-4 h-4" /> Clear Filters
               </button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            )
+          )}
+        </motion.div>
+      ) : (
+        <div className="space-y-6">
+          {filteredTopics.map(topic => {
+            const topicExpired = topic.isExpired || (topic.deadline && new Date(topic.deadline) < new Date());
+            const isOwnTopic = activeTab === 'my-collaborations';
+
+            return (
+              <motion.div
+                key={topic._id}
+                variants={fadeInUp}
+                className="bg-white rounded-3xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
+              >
+                <div className="p-6 md:p-8">
+                  {/* Top Row: Title + Status */}
+                  <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-1 group-hover:text-[#1E3A8A] transition-colors">{topic.title}</h3>
+                      <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                        <span className="font-semibold text-[#1E3A8A]">{isOwnTopic ? 'You' : (topic.alumni?.name || 'Alumni')}</span>
+                        <span className="text-gray-300">•</span>
+                        <span>{topic.alumni?.department || topic.domain || 'Alumni'}</span>
+                        <span className="text-gray-300">•</span>
+                        <span>{topic.createdAt ? new Date(topic.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
+                      </div>
+                    </div>
+                    <span className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide ${
+                      topicExpired
+                        ? 'bg-red-100 text-red-700'
+                        : topic.status === 'closed'
+                        ? 'bg-gray-100 text-gray-600'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {topicExpired ? 'Expired' : (topic.status || 'Active')}
+                    </span>
+                  </div>
+
+                  {/* Badges Row */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {topic.type && (
+                      <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-lg uppercase tracking-wide">{topic.type}</span>
+                    )}
+                    {topic.domain && (
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-lg flex items-center gap-1">
+                        <Tag className="w-3 h-3" /> {topic.domain}
+                      </span>
+                    )}
+                    {topic.experienceLevel && (
+                      <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-lg flex items-center gap-1">
+                        <GraduationCap className="w-3 h-3" /> {topic.experienceLevel}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Overview */}
+                  <p className="text-sm text-gray-600 leading-relaxed mb-5 line-clamp-3">{topic.overview || topic.description}</p>
+
+                  {/* Required Skills */}
+                  {topic.requiredSkills?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      {topic.requiredSkills.map((skill, i) => (
+                        <span key={i} className="px-2.5 py-1 bg-gray-50 border border-gray-200 text-gray-700 rounded-md text-xs font-semibold">{skill}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Meta Row */}
+                  <div className="flex flex-wrap items-center gap-5 text-sm text-gray-500 pt-5 border-t border-gray-100">
+                    {topic.studentCount && (
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Users className="w-4 h-4 text-purple-500" />
+                        <span><strong className="text-gray-900">{topic.studentCount}</strong> seats</span>
+                      </span>
+                    )}
+                    {topic.applicantCount !== undefined && (
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span><strong className="text-gray-900">{topic.applicantCount || 0}</strong> applicant{(topic.applicantCount || 0) !== 1 ? 's' : ''}</span>
+                      </span>
+                    )}
+                    {topic.deadline && (
+                      <span className={`flex items-center gap-1.5 font-medium ${topicExpired ? 'text-red-500' : ''}`}>
+                        <Calendar className="w-4 h-4 text-red-500" />
+                        <span>Deadline: <strong className="text-gray-900">{new Date(topic.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong></span>
+                      </span>
+                    )}
+                    {topic.duration && (
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Clock className="w-4 h-4 text-blue-500" />
+                        <span><strong className="text-gray-900">{topic.duration}</strong></span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom Action Bar */}
+                <div className="px-6 md:px-8 py-4 bg-gray-50 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isOwnTopic ? (
+                      <>
+                        <button
+                          onClick={() => navigate(`/alumni/collaboration/${topic._id}/review`)}
+                          className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-1.5"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" /> Review Applications ({topic.applicantCount || 0})
+                        </button>
+                        <button
+                          onClick={() => navigate(`/dashboard/collaboration/${topic._id}`)}
+                          className="px-3.5 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeletePost(topic._id)}
+                          className="px-3.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {topicExpired ? (
+                          <span className="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 flex items-center gap-1">
+                            <X className="w-3.5 h-3.5" /> Application Deadline Passed
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => navigate(`/dashboard/collaboration/${topic._id}/apply`)}
+                            className="px-5 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-1.5"
+                          >
+                            <Send className="w-3.5 h-3.5" /> Apply to Join
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => navigate(`/dashboard/collaboration/${topic._id}`)}
+                    className="px-4 py-2 text-slate-700 hover:text-purple-600 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ml-auto"
+                  >
+                    View Details <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </motion.div>
   );
 };
