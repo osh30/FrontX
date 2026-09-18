@@ -94,27 +94,27 @@ export const RecommendedMentors = ({ onViewProfile, limit = 2 }) => {
           View All <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-stretch">
         {mentors.map((mentor) => (
           <motion.div
             key={mentor._id}
             whileHover={{ y: -5 }}
-            className="bg-white/50 backdrop-blur-md rounded-2xl p-6 border border-white/50 shadow-md transition-all relative overflow-hidden group cursor-pointer"
+            className="bg-white/50 backdrop-blur-md rounded-2xl p-6 border border-white/50 shadow-md transition-all relative overflow-hidden group cursor-pointer flex flex-col h-full justify-between"
             onClick={() => onViewProfile && onViewProfile(mentor._id)}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative z-10 flex items-start gap-4">
-              <Avatar src={mentor.profilePicture} alt={mentor.name} size={56} className="border-2 border-white shadow-sm shrink-0" />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-lg text-gray-900 truncate">{mentor.name}</h3>
-                <p className="text-sm text-gray-500 truncate">{mentor.department || 'Alumni'}</p>
-                <p className="text-sm font-medium text-purple-600 mt-0.5 truncate">
-                  {mentor.careerInterest || 'Alumni Mentor'}
-                </p>
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            <div className="relative z-10 flex-1 flex flex-col">
+              <div className="flex items-start gap-4">
+                <Avatar src={mentor.profilePicture} alt={mentor.name} size={56} className="border-2 border-white shadow-sm shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg text-gray-900 truncate">{mentor.name}</h3>
+                  <p className="text-sm text-gray-500 truncate">{mentor.department || 'Alumni'}</p>
+                  <p className="text-sm font-medium text-purple-600 mt-0.5 truncate">
+                    {mentor.careerInterest || 'Alumni Mentor'}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="relative z-10 mt-4">
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mt-4 mb-4">
                 {(mentor.interests || []).slice(0, 3).map((skill, i) => (
                   <span key={i} className="text-xs bg-white text-gray-600 px-2 py-1 rounded-md border border-gray-100 shadow-sm">{skill}</span>
                 ))}
@@ -122,6 +122,8 @@ export const RecommendedMentors = ({ onViewProfile, limit = 2 }) => {
                   <span className="text-xs text-gray-500 italic">No interests listed</span>
                 )}
               </div>
+            </div>
+            <div className="relative z-10 mt-auto pt-2 w-full">
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 className="w-full py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-purple-600 transition-colors shadow-md"

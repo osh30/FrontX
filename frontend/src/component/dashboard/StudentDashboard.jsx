@@ -746,36 +746,34 @@ const MentorshipPage = ({ onViewProfile }) => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {alumni.map((person) => (
               <div
                 key={person._id}
-                className="bg-white/50 backdrop-blur-md rounded-2xl border border-white/50 shadow-md hover:shadow-xl transition-all overflow-hidden group cursor-pointer"
+                className="bg-white/50 backdrop-blur-md rounded-2xl border border-white/50 shadow-md hover:shadow-xl transition-all overflow-hidden group cursor-pointer flex flex-col h-full justify-between"
                 onClick={() => onViewProfile && onViewProfile(person._id)}
               >
-                <div className="p-6">
-                  <div className="flex flex-col items-center text-center">
-                    <Avatar src={person.profilePicture} alt={person.name} size={80} className="border-2 border-white shadow-md mb-4" />
-                    <h3 className="font-bold text-lg text-gray-900">{person.name}</h3>
-                    <p className="text-sm text-gray-500 mb-1">{person.department || 'Alumni'}</p>
-                    {person.graduationYear && (
-                      <p className="text-xs text-gray-500 mb-1">Graduated: {person.graduationYear}</p>
-                    )}
-                    <p className="text-sm font-medium text-purple-600 mb-4">
-                      {person.careerInterest || person.bio?.split('.')[0] || 'Alumni Mentor'}
-                    </p>
-                    {person.interests && person.interests.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 justify-center mb-4">
-                        {person.interests.slice(0, 3).map((interest, i) => (
-                          <span key={i} className="text-[10px] font-medium px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
-                            {interest}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                <div className="p-6 flex-1 flex flex-col items-center text-center">
+                  <Avatar src={person.profilePicture} alt={person.name} size={80} className="border-2 border-white shadow-md mb-4 shrink-0" />
+                  <h3 className="font-bold text-lg text-gray-900">{person.name}</h3>
+                  <p className="text-sm text-gray-500 mb-1">{person.department || 'Alumni'}</p>
+                  {person.graduationYear && (
+                    <p className="text-xs text-gray-500 mb-1">Graduated: {person.graduationYear}</p>
+                  )}
+                  <p className="text-sm font-medium text-purple-600 mb-3">
+                    {person.careerInterest || person.bio?.split('.')[0] || 'Alumni Mentor'}
+                  </p>
+                  {person.interests && person.interests.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 justify-center mt-auto pt-2">
+                      {person.interests.slice(0, 3).map((interest, i) => (
+                        <span key={i} className="text-[10px] font-medium px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="px-6 pb-6">
+                <div className="px-6 pb-6 pt-0 mt-auto w-full">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     className="w-full py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-purple-600 transition-colors shadow-md"
