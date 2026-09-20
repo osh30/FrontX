@@ -8,6 +8,7 @@ const auditLogSchema = new mongoose.Schema({
       'mentorship_request_sent',
       'mentorship_request_accepted',
       'mentorship_request_declined',
+      'mentorship_connection_removed',
       'conversation_auto_created',
       'notification_sent'
     ]

@@ -400,10 +400,14 @@ const handleRemoveConnection = async (req, res) => {
       ]
     });
 
-    await createAuditLog('mentorship_connection_removed', currentUserId, currentUserId, targetUserId, {
-      targetUserId,
-      deletedCount: deleted.deletedCount
-    });
+    try {
+      await createAuditLog('mentorship_connection_removed', currentUserId, currentUserId, targetUserId, {
+        targetUserId,
+        deletedCount: deleted.deletedCount
+      });
+    } catch (auditError) {
+      console.warn('AuditLog creation warning in handleRemoveConnection:', auditError.message);
+    }
 
     emitToRoom(req, currentUserId.toString(), 'connection_removed', { targetUserId });
     emitToRoom(req, targetUserId.toString(), 'connection_removed', { targetUserId: currentUserId });
