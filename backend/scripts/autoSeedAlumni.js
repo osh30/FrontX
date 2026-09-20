@@ -105,6 +105,7 @@ const autoSeedAlumni = async () => {
       const seedMubasshihra = require('./seedMubasshihraConnections');
       const seedMubasshihraReqs = require('./seedMubasshihraRequests');
       const seed10Students = require('./seed10Students');
+      const setupMahbubDemo = require('./setup_mahbub_demo');
 
       if (typeof enrich1 === 'function') await enrich1();
       if (typeof enrich2 === 'function') await enrich2();
@@ -115,6 +116,7 @@ const autoSeedAlumni = async () => {
       if (typeof seedMubasshihra === 'function') await seedMubasshihra();
       if (typeof seedMubasshihraReqs === 'function') await seedMubasshihraReqs();
       if (typeof seed10Students === 'function') await seed10Students();
+      if (typeof setupMahbubDemo === 'function') await setupMahbubDemo();
     } catch (e) {
       console.error('Alumni enrichment auto-run error:', e.message);
     }

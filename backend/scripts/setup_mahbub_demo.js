@@ -17,27 +17,32 @@ const URIS = [
 ].filter(Boolean);
 
 const setupMahbubDemoData = async () => {
-  let connected = false;
-  for (const uri of URIS) {
-    try {
-      console.log(`Connecting to database: ${uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`);
-      await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
-      console.log(`✅ Successfully connected to MongoDB.`);
-      connected = true;
-      break;
-    } catch (err) {
-      console.warn(`⚠️ Connection failed to ${uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}: ${err.message}`);
-    }
-  }
+  const isStandAlone = require.main === module;
+  let selfConnected = false;
 
-  if (!connected) {
-    console.error('ERROR: Could not connect to any MongoDB URI.');
-    process.exit(1);
+  if (mongoose.connection.readyState !== 1) {
+    for (const uri of URIS) {
+      try {
+        console.log(`Connecting to database: ${uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`);
+        await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+        console.log(`✅ Successfully connected to MongoDB.`);
+        selfConnected = true;
+        break;
+      } catch (err) {
+        console.warn(`⚠️ Connection failed to ${uri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}: ${err.message}`);
+      }
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      console.error('ERROR: Could not connect to any MongoDB URI.');
+      if (isStandAlone) process.exit(1);
+      return;
+    }
   }
 
   try {
     // 1. Find recruiter Mahbub Alam by email / name
-    const recruiter = await User.findOne({
+    let recruiter = await User.findOne({
       $or: [
         { email: 'mahbub.alam@pathao.com' },
         { name: /Mahbub Alam/i, role: 'recruiter' }
@@ -45,8 +50,17 @@ const setupMahbubDemoData = async () => {
     });
 
     if (!recruiter) {
-      console.error('ERROR: Recruiter Mahbub Alam (mahbub.alam@pathao.com) not found in database.');
-      process.exit(1);
+      console.log('[-] Recruiter Mahbub Alam (mahbub.alam@pathao.com) not found in database. Creating user record...');
+      recruiter = await User.create({
+        name: 'Mahbub Alam',
+        email: 'mahbub.alam@pathao.com',
+        password: 'RecruiterPassword123!',
+        companyName: 'Pathao Bangladesh',
+        role: 'recruiter',
+        status: 'approved',
+        bio: 'Lead Engineering Recruiter sourcing Software Engineers and Product Leads for Pathao.',
+        companyLogo: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=200&q=80'
+      });
     }
 
     console.log(`\n=== RECRUITER ACCOUNT ===`);
@@ -174,7 +188,7 @@ const setupMahbubDemoData = async () => {
     const opp2 = opportunities[1] || opportunities[0];
 
     // 3. Find Nur E Jannat (Student 1)
-    const nureStudent = await User.findOne({
+    let nureStudent = await User.findOne({
       role: 'student',
       $or: [
         { name: /Nur E Jannat/i },
@@ -184,32 +198,32 @@ const setupMahbubDemoData = async () => {
     });
 
     if (!nureStudent) {
-      console.error('ERROR: Registered student Nur E Jannat not found in database.');
-      process.exit(1);
+      nureStudent = await User.findOne({ role: 'student' });
     }
 
-    console.log(`\n=== STUDENT 1 (Nur E Jannat) ===`);
+    if (!nureStudent) {
+      console.log('[-] No student found in database to create applications.');
+      return;
+    }
+
+    console.log(`\n=== STUDENT 1 (${nureStudent.name}) ===`);
     console.log(`ID: ${nureStudent._id}`);
     console.log(`Name: ${nureStudent.name}`);
     console.log(`Email: ${nureStudent.email}`);
-    console.log(`Department: ${nureStudent.department || 'Educational Technology and Engineering'}`);
 
     // 4. Find Second Registered Student (Student 2)
-    const secondStudent = await User.findOne({
+    let secondStudent = await User.findOne({
       role: 'student',
       _id: { $ne: nureStudent._id }
     }).sort({ createdAt: 1 });
 
     if (!secondStudent) {
-      console.error('ERROR: Could not find a second existing student in database.');
-      process.exit(1);
+      secondStudent = nureStudent;
     }
 
     console.log(`\n=== STUDENT 2 (${secondStudent.name}) ===`);
     console.log(`ID: ${secondStudent._id}`);
     console.log(`Name: ${secondStudent.name}`);
-    console.log(`Email: ${secondStudent.email}`);
-    console.log(`Department: ${secondStudent.department || 'Educational Technology and Engineering'}`);
 
     // 5. Create or Reuse Application 1 (Nur E Jannat)
     let app1 = await Application.findOne({
@@ -277,11 +291,11 @@ const setupMahbubDemoData = async () => {
 
     // 7. Create or Reuse Upcoming Scheduled Interviews (Idempotent)
     const futureDate1 = new Date();
-    futureDate1.setDate(futureDate1.getDate() + 2); // 2 days from today
+    futureDate1.setDate(futureDate1.getDate() + 2);
     futureDate1.setHours(11, 0, 0, 0);
 
     const futureDate2 = new Date();
-    futureDate2.setDate(futureDate2.getDate() + 4); // 4 days from today
+    futureDate2.setDate(futureDate2.getDate() + 4);
     futureDate2.setHours(14, 30, 0, 0);
 
     let interview1 = await Interview.findOne({
@@ -360,11 +374,17 @@ const setupMahbubDemoData = async () => {
     console.log(`==================================================\n`);
 
   } catch (err) {
-    console.error('Execution error:', err);
+    console.error('Execution error in Mahbub demo setup:', err);
   } finally {
-    await mongoose.disconnect();
-    console.log('MongoDB disconnected cleanly.');
+    if (selfConnected) {
+      await mongoose.disconnect();
+      console.log('MongoDB disconnected cleanly.');
+    }
   }
 };
 
-setupMahbubDemoData();
+module.exports = setupMahbubDemoData;
+
+if (require.main === module) {
+  setupMahbubDemoData();
+}
