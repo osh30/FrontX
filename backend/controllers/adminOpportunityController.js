@@ -51,6 +51,17 @@ const getOpportunities = async (req, res) => {
     // Migrate any old docs that belong to this admin but lack createdByRole
     await migrateOldAdminOpps(req.user.id);
 
+    // Auto-ensure 5 Government Jobs exist in DB
+    try {
+      const oppGovtCount = await Opportunity.countDocuments({ opportunityType: 'Government Job' });
+      if (oppGovtCount < 5) {
+        const seed5GovtJobs = require('../scripts/seed5GovtJobs');
+        await seed5GovtJobs();
+      }
+    } catch (e) {
+      console.error('Auto seed 5 govt jobs check non-blocking error:', e.message);
+    }
+
     let query = { createdByRole: 'admin' };
 
     if (search) {
