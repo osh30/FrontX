@@ -53,8 +53,8 @@ const getOpportunities = async (req, res) => {
 
     // Auto-ensure 5 Government Jobs exist in DB
     try {
-      const oppGovtCount = await Opportunity.countDocuments({ opportunityType: 'Government Job' });
-      if (oppGovtCount < 5) {
+      const cpaExist = await Opportunity.exists({ title: { $regex: 'Chittagong Port Authority', $options: 'i' } });
+      if (!cpaExist) {
         const seed5GovtJobs = require('../scripts/seed5GovtJobs');
         await seed5GovtJobs();
       }

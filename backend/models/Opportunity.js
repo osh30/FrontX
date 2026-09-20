@@ -78,6 +78,10 @@ const opportunitySchema = new mongoose.Schema({
     type: String,
     default: 'Inside FrontX'
   },
+  applicationUrl: {
+    type: String,
+    default: ''
+  },
   visibility: {
     type: [String],
     enum: ['student', 'alumni'],
