@@ -176,6 +176,17 @@ app.get("/api/test-users", async (req, res) => {
   }
 });
 
+// Explicit Trigger Endpoint for Mahbub Demo Setup
+app.get('/api/seed-mahbub-now', async (req, res) => {
+  try {
+    const setupMahbubDemoData = require('./scripts/setup_mahbub_demo');
+    await setupMahbubDemoData();
+    res.json({ success: true, message: 'Mahbub demo data seeded successfully!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Test Route
 app.get("/", (req, res) => {
   res.json({ message: "FrontX Server Running", status: "active" });
