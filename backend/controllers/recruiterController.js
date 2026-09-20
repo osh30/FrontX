@@ -1604,6 +1604,284 @@ const messageCandidate = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════════════════
+// RECRUITER SETTINGS
+// ═══════════════════════════════════════════════════════
+
+const getSettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const user = await User.findById(req.user.id).select('-password').lean();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const defaultNotificationSettings = {
+      inApp: {
+        newApplication: true,
+        applicationStatusUpdates: true,
+        interviewScheduled: true,
+        interviewReminder: true,
+        opportunityUpdates: true,
+        systemAnnouncements: true
+      },
+      email: {
+        newApplication: true,
+        interviewScheduled: true,
+        interviewReminder: true,
+        applicationUpdates: true,
+        importantAccountNotifications: true
+      }
+    };
+
+    const defaultPrivacySettings = {
+      profileVisibility: 'public',
+      showContactInfo: true,
+      showCompanyInfo: true
+    };
+
+    const notificationSettings = {
+      inApp: { ...defaultNotificationSettings.inApp, ...(user.notificationSettings?.inApp || {}) },
+      email: { ...defaultNotificationSettings.email, ...(user.notificationSettings?.email || {}) }
+    };
+
+    const privacySettings = {
+      ...defaultPrivacySettings,
+      ...(user.privacySettings || {})
+    };
+
+    res.json({
+      profile: {
+        name: user.name || '',
+        email: user.email || '',
+        phoneNumber: user.phoneNumber || '',
+        designation: user.designation || '',
+        department: user.department || '',
+        linkedinLink: user.linkedinLink || user.githubLink || '',
+        bio: user.bio || '',
+        profilePicture: user.profilePicture || ''
+      },
+      company: {
+        companyName: user.companyName || '',
+        industryType: user.industryType || '',
+        companyWebsite: user.companyWebsite || '',
+        officeAddress: user.officeAddress || user.companyAddress || '',
+        companyDescription: user.companyDescription || '',
+        companyLogo: user.companyLogo || ''
+      },
+      themePreference: user.themePreference || 'system',
+      notificationSettings,
+      privacySettings
+    });
+  } catch (error) {
+    console.error('Get recruiter settings error:', error);
+    res.status(500).json({ message: 'Failed to fetch settings', error: error.message });
+  }
+};
+
+const updateProfileSettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const { name, phoneNumber, designation, department, linkedinLink, bio, profilePicture } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'Full Name is required' });
+    }
+
+    const updates = {
+      name: name.trim(),
+      phoneNumber: phoneNumber ? phoneNumber.trim() : '',
+      designation: designation ? designation.trim() : '',
+      department: department ? department.trim() : '',
+      linkedinLink: linkedinLink ? linkedinLink.trim() : '',
+      bio: bio ? bio.trim() : ''
+    };
+
+    if (profilePicture !== undefined) {
+      updates.profilePicture = profilePicture;
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true, runValidators: true }).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    console.error('Update profile settings error:', error);
+    res.status(500).json({ message: 'Failed to update profile settings', error: error.message });
+  }
+};
+
+const updateCompanySettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const { companyName, industryType, companyWebsite, officeAddress, companyDescription, companyLogo } = req.body;
+
+    if (!companyName || !companyName.trim()) {
+      return res.status(400).json({ message: 'Company name is required' });
+    }
+
+    if (companyWebsite && companyWebsite.trim()) {
+      try { new URL(companyWebsite); }
+      catch { return res.status(400).json({ message: 'Invalid website URL' }); }
+    }
+
+    const updates = {
+      companyName: companyName.trim(),
+      industryType: industryType ? industryType.trim() : '',
+      companyWebsite: companyWebsite ? companyWebsite.trim() : '',
+      officeAddress: officeAddress ? officeAddress.trim() : '',
+      companyAddress: officeAddress ? officeAddress.trim() : '',
+      companyDescription: companyDescription ? companyDescription.trim() : ''
+    };
+
+    if (companyLogo !== undefined) {
+      updates.companyLogo = companyLogo;
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true, runValidators: true }).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    await Opportunity.updateMany(
+      { recruiter: req.user.id },
+      { $set: { companyName: user.companyName } }
+    );
+
+    res.json({ message: 'Company settings updated successfully', user });
+  } catch (error) {
+    console.error('Update company settings error:', error);
+    res.status(500).json({ message: 'Failed to update company settings', error: error.message });
+  }
+};
+
+const updatePasswordSettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Both current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect current password' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Update password settings error:', error);
+    res.status(500).json({ message: 'Failed to update password', error: error.message });
+  }
+};
+
+const updateAppearanceSettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const { themePreference } = req.body;
+    if (!['light', 'dark', 'system'].includes(themePreference)) {
+      return res.status(400).json({ message: 'Invalid theme preference' });
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, { themePreference }, { new: true }).select('themePreference');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ message: 'Appearance settings updated successfully', themePreference: user.themePreference });
+  } catch (error) {
+    console.error('Update appearance settings error:', error);
+    res.status(500).json({ message: 'Failed to update appearance settings', error: error.message });
+  }
+};
+
+const updateNotificationSettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const { notificationSettings } = req.body;
+    if (!notificationSettings) {
+      return res.status(400).json({ message: 'Notification settings data is required' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { notificationSettings },
+      { new: true }
+    ).select('notificationSettings');
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ message: 'Notification settings updated successfully', notificationSettings: user.notificationSettings });
+  } catch (error) {
+    console.error('Update notification settings error:', error);
+    res.status(500).json({ message: 'Failed to update notification settings', error: error.message });
+  }
+};
+
+const updatePrivacySettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const { privacySettings } = req.body;
+    if (!privacySettings) {
+      return res.status(400).json({ message: 'Privacy settings data is required' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { privacySettings },
+      { new: true }
+    ).select('privacySettings');
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ message: 'Privacy settings updated successfully', privacySettings: user.privacySettings });
+  } catch (error) {
+    console.error('Update privacy settings error:', error);
+    res.status(500).json({ message: 'Failed to update privacy settings', error: error.message });
+  }
+};
+
+const deactivateAccountSettings = async (req, res) => {
+  try {
+    if (!requireRecruiter(req, res)) return;
+
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required to deactivate account' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect password. Account deactivation failed.' });
+    }
+
+    user.isActive = false;
+    user.status = 'suspended';
+    user.deletedAt = new Date();
+    await user.save();
+
+    res.json({ message: 'Account deactivated successfully' });
+  } catch (error) {
+    console.error('Deactivate account settings error:', error);
+    res.status(500).json({ message: 'Failed to deactivate account', error: error.message });
+  }
+};
+
+// ═══════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════
 
@@ -1644,5 +1922,15 @@ module.exports = {
   inviteCandidate,
   messageCandidate,
   getOpportunityRequests,
-  resubmitOpportunity
+  resubmitOpportunity,
+
+  // Settings Endpoints
+  getSettings,
+  updateProfileSettings,
+  updateCompanySettings,
+  updatePasswordSettings,
+  updateAppearanceSettings,
+  updateNotificationSettings,
+  updatePrivacySettings,
+  deactivateAccountSettings
 };

@@ -39,7 +39,15 @@ const {
   saveCandidate,
   getSavedCandidates,
   inviteCandidate,
-  messageCandidate
+  messageCandidate,
+  getSettings,
+  updateProfileSettings,
+  updateCompanySettings,
+  updatePasswordSettings,
+  updateAppearanceSettings,
+  updateNotificationSettings,
+  updatePrivacySettings,
+  deactivateAccountSettings
 } = require('../controllers/recruiterController');
 
 // All routes require authentication + recruiter role
@@ -47,6 +55,16 @@ router.use(protectRecruiter);
 
 // ─── Dashboard ───
 router.get('/dashboard', getDashboard);
+
+// ─── Settings ───
+router.get('/settings', getSettings);
+router.put('/settings/profile', updateProfileSettings);
+router.put('/settings/company', updateCompanySettings);
+router.put('/settings/password', updatePasswordSettings);
+router.put('/settings/appearance', updateAppearanceSettings);
+router.put('/settings/notifications', updateNotificationSettings);
+router.put('/settings/privacy', updatePrivacySettings);
+router.post('/settings/deactivate', deactivateAccountSettings);
 
 // ─── Profile ───
 router.get('/profile', getProfile);

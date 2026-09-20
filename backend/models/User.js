@@ -83,6 +83,35 @@ const userSchema = new mongoose.Schema({
     savedAt: { type: Date, default: Date.now }
   }],
 
+  // Recruiter & Social additions
+  linkedinLink: { type: String, default: '' },
+
+  // Notification Preferences
+  notificationSettings: {
+    inApp: {
+      newApplication: { type: Boolean, default: true },
+      applicationStatusUpdates: { type: Boolean, default: true },
+      interviewScheduled: { type: Boolean, default: true },
+      interviewReminder: { type: Boolean, default: true },
+      opportunityUpdates: { type: Boolean, default: true },
+      systemAnnouncements: { type: Boolean, default: true }
+    },
+    email: {
+      newApplication: { type: Boolean, default: true },
+      interviewScheduled: { type: Boolean, default: true },
+      interviewReminder: { type: Boolean, default: true },
+      applicationUpdates: { type: Boolean, default: true },
+      importantAccountNotifications: { type: Boolean, default: true }
+    }
+  },
+
+  // Privacy & Visibility Settings
+  privacySettings: {
+    profileVisibility: { type: String, enum: ['public', 'limited'], default: 'public' },
+    showContactInfo: { type: Boolean, default: true },
+    showCompanyInfo: { type: Boolean, default: true }
+  },
+
   // Privacy
   recruiterVisible: { type: Boolean, default: true },
 
