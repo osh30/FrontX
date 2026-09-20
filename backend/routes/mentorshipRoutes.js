@@ -383,4 +383,48 @@ router.get('/connections/:userId', protect, async (req, res) => {
   }
 });
 
+// DELETE /api/mentorship/connection/:targetUserId - Remove connection between current user and target user
+const handleRemoveConnection = async (req, res) => {
+  try {
+    const { targetUserId } = req.params;
+    const currentUserId = req.user.id;
+
+    if (!isValidObjectId(targetUserId)) {
+      return res.status(400).json({ message: 'Invalid target user ID.' });
+    }
+
+    const deleted = await MentorshipRequest.deleteMany({
+      $or: [
+        { alumniId: currentUserId, studentId: targetUserId },
+        { alumniId: targetUserId, studentId: currentUserId }
+      ]
+    });
+
+    await createAuditLog('mentorship_connection_removed', currentUserId, currentUserId, targetUserId, {
+      targetUserId,
+      deletedCount: deleted.deletedCount
+    });
+
+    emitToRoom(req, currentUserId.toString(), 'connection_removed', { targetUserId });
+    emitToRoom(req, targetUserId.toString(), 'connection_removed', { targetUserId: currentUserId });
+    emitToRoom(req, currentUserId.toString(), 'request_updated');
+    emitToRoom(req, targetUserId.toString(), 'request_updated');
+
+    const io = req.app.get('io');
+    if (io) io.emit('request_updated');
+
+    res.json({
+      success: true,
+      message: 'Connection removed successfully.',
+      deletedCount: deleted.deletedCount
+    });
+  } catch (error) {
+    console.error('Error removing connection:', error);
+    res.status(500).json({ message: 'Failed to remove connection', error: error.message });
+  }
+};
+
+router.delete('/connection/:targetUserId', protect, handleRemoveConnection);
+router.delete('/connections/:targetUserId', protect, handleRemoveConnection);
+
 module.exports = router;

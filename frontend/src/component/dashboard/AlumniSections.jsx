@@ -8,9 +8,11 @@ import {
   Settings, Bell, Star, TrendingUp, 
   CheckCircle, XCircle, MoreVertical, FileText, Video, Eye, ShieldCheck, ThumbsUp, Heart, Info, ListFilter,
   ExternalLink, Tag, SlidersHorizontal, X, ArrowUpDown, Bookmark, Sparkles,
-  Trash2, Edit3, User, RotateCcw, FilterX, GraduationCap, BookOpen, Code, Send
+  Trash2, Edit3, User, RotateCcw, FilterX, GraduationCap, BookOpen, Code, Send,
+  AlertTriangle, UserX, Loader2, UserMinus, Mail
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { ScheduleSessionModal } from './ScheduleSessionModal';
 import { SessionDetailsModal } from './SessionDetailsModal';
 import { SessionFeedbackModal } from './SessionFeedbackModal';
@@ -136,11 +138,21 @@ export const WelcomeSection = ({ userName }) => {
   );
 };
 
-// 2. STUDENT REQUESTS SECTION
+// 2. STUDENT REQUESTS & CONNECTIONS SECTION
 export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, onViewChat }) => {
+  const [activeTab, setActiveTab] = useState('requests'); // 'requests' | 'connections'
   const [requests, setRequests] = useState([]);
+  const [connections, setConnections] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [schedulingStudent, setSchedulingStudent] = useState(null);
+  const [connectionSearch, setConnectionSearch] = useState('');
+
+  // Remove Connection modal state
+  const [removingStudent, setRemovingStudent] = useState(null);
+  const [removing, setRemoving] = useState(false);
+
+  const currentUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  })();
 
   const fetchRequests = async () => {
     try {
@@ -154,22 +166,47 @@ export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, on
         setRequests(data.filter(r => r.status === 'pending'));
       }
     } catch (err) {
-      console.error(err);
+      console.error('Fetch requests error:', err);
+    }
+  };
+
+  const fetchConnections = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token || !currentUser._id) return;
+      const res = await fetch(`${API_BASE}/mentorship/connections/${currentUser._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConnections(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error('Fetch connections error:', err);
+    }
+  };
+
+  const refreshAll = async () => {
+    try {
+      await Promise.all([fetchRequests(), fetchConnections()]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRequests();
+    refreshAll();
 
     const socket = io(SOCKET_URL);
-    socket.on('request_updated', () => {
+    const handleUpdate = () => {
       fetchRequests();
-    });
-    socket.on('mentorship:request', () => {
-      fetchRequests();
-    });
+      fetchConnections();
+    };
+
+    socket.on('request_updated', handleUpdate);
+    socket.on('mentorship:request', handleUpdate);
+    socket.on('mentorship:accepted', handleUpdate);
+    socket.on('connection_removed', handleUpdate);
 
     return () => {
       socket.disconnect();
@@ -177,9 +214,9 @@ export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, on
   }, []);
 
   const handleUpdateStatus = async (req, status) => {
-    // Optimistically update UI to instantly remove handled request
+    // Optimistic update
     setRequests(prev => prev.filter(r => r._id !== req._id));
-    
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/mentorship/request/${req._id}/status`, {
@@ -191,23 +228,65 @@ export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, on
         body: JSON.stringify({ status })
       });
       if (res.ok) {
-        if (status === 'accepted' && onViewChat) {
-          onViewChat();
+        if (status === 'accepted') {
+          toast.success(`Accepted mentorship request from ${req.studentName}`);
+          fetchConnections();
+          if (onViewChat) onViewChat();
+        } else {
+          toast.success('Request declined');
         }
       } else {
-        // If it fails, we should ideally revert the optimistic update
         fetchRequests();
       }
     } catch (err) {
-      console.error(err);
-      // toast.error("An error occurred");
+      console.error('Update request status error:', err);
+      fetchRequests();
     }
   };
+
+  const handleConfirmRemoveConnection = async () => {
+    if (!removingStudent) return;
+    const studentId = removingStudent._id || removingStudent.id;
+    setRemoving(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/mentorship/connection/${studentId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setConnections(prev => prev.filter(c => (c._id || c.id) !== studentId));
+        toast.success('Connection removed successfully.');
+        setRemovingStudent(null);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.message || 'Failed to remove connection.');
+      }
+    } catch (err) {
+      console.error('Remove connection error:', err);
+      toast.error('Network error removing connection.');
+    } finally {
+      setRemoving(false);
+    }
+  };
+
+  const filteredConnections = useMemo(() => {
+    if (!connectionSearch.trim()) return connections;
+    const q = connectionSearch.toLowerCase();
+    return connections.filter(c =>
+      (c.name && c.name.toLowerCase().includes(q)) ||
+      (c.department && c.department.toLowerCase().includes(q)) ||
+      (c.session && c.session.toLowerCase().includes(q)) ||
+      (c.email && c.email.toLowerCase().includes(q))
+    );
+  }, [connections, connectionSearch]);
 
   const displayRequests = isPreview ? requests.slice(0, 3) : requests;
 
   if (loading) return null;
-  if (requests.length === 0 && isPreview) return null;
+  if (requests.length === 0 && connections.length === 0 && isPreview) return null;
 
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" className="space-y-6">
@@ -231,82 +310,264 @@ export const StudentRequestsSection = ({ isPreview, onViewAll, onViewProfile, on
           </div>
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 drop-shadow-sm">Student Requests</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 drop-shadow-sm">Student Requests &amp; Connections</h1>
               <p className="text-slate-300/80 max-w-xl leading-relaxed">
-                Review mentorship requests from students, connect with aspiring learners, and help them achieve their academic and career goals.
+                Review mentorship requests from students, connect with aspiring learners, and manage your active student connections.
               </p>
             </div>
-            {requests.length > 0 && (
-              <span className="px-5 py-2.5 bg-white/10 backdrop-blur-sm border border-white/10 text-white rounded-xl text-sm font-semibold shadow-lg shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/10 text-white rounded-xl text-xs font-semibold shadow-lg">
                 {requests.length} Pending
               </span>
-            )}
+              <span className="px-4 py-2 bg-emerald-500/20 backdrop-blur-sm border border-emerald-400/30 text-emerald-300 rounded-xl text-xs font-semibold shadow-lg">
+                {connections.length} Connected
+              </span>
+            </div>
           </div>
         </motion.div>
       )}
 
-      <div className={isPreview ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6" : "grid grid-cols-1 xl:grid-cols-2 gap-6"}>
-        {displayRequests.length === 0 && !isPreview && (
-          <div className="p-8 text-center text-gray-500 bg-white/40 rounded-2xl border border-dashed border-gray-200">
-            No pending student requests.
+      {/* Tabs Row (when not in preview mode) */}
+      {!isPreview && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-slate-800 pb-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab('requests')}
+              className={`px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
+                activeTab === 'requests'
+                  ? 'bg-[#0F172A] text-white shadow-lg shadow-slate-900/20'
+                  : 'bg-white dark:bg-slate-800/80 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              Requests ({requests.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('connections')}
+              className={`px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
+                activeTab === 'connections'
+                  ? 'bg-[#0F172A] text-white shadow-lg shadow-slate-900/20'
+                  : 'bg-white dark:bg-slate-800/80 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700'
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              Connections ({connections.length})
+            </button>
           </div>
-        )}
-        {displayRequests.map((req) => (
-          <motion.div key={req._id} variants={fadeInUp} whileHover={{ y: -4 }} className={`bg-white/80 backdrop-blur-xl p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-6 items-start justify-between w-full`}>
-            
-            {/* Left Side: Student Info */}
-            <div className="flex items-center gap-4 flex-1">
-              <Avatar src={req.studentId?.profilePicture} alt="Student" size={64} className="border-2 border-white shadow-md" />
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">{req.studentName}</h3>
-                <div className="flex flex-wrap items-center gap-2 mt-1">
-                  {req.studentDepartment && <span className="text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">{req.studentDepartment}</span>}
-                  {req.studentSession && <span className="text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">{req.studentSession}</span>}
-                </div>
-              </div>
-            </div>
-            
-            {/* Middle Side: Request Info */}
-            <div className={`w-full ${!isPreview ? 'border-t border-gray-100 pt-4' : 'pt-2'}`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-1 rounded-md">{req.requestType}</span>
-                <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {new Date(req.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              {!isPreview && (
-                <p className="text-sm text-gray-600 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-100">"{req.message}"</p>
+
+          {/* Search bar inside Connections tab */}
+          {activeTab === 'connections' && (
+            <div className="relative w-full sm:w-72">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={connectionSearch}
+                onChange={e => setConnectionSearch(e.target.value)}
+                placeholder="Search name, dept, session..."
+                className="w-full pl-10 pr-9 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+              {connectionSearch && (
+                <button
+                  onClick={() => setConnectionSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
+          )}
+        </div>
+      )}
 
-            {/* Right Side: Actions */}
-            <div className="flex flex-wrap items-center gap-3 w-full border-t border-gray-100 pt-4 mt-auto">
-              <button 
-                onClick={() => onViewProfile && req.studentId && onViewProfile(req.studentId._id)}
-                className="flex-1 lg:flex-none px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
-              >
-                <Eye className="w-4 h-4" /> View Profile
-              </button>
-              
-              <button 
-                onClick={() => handleUpdateStatus(req, 'accepted')} 
-                className="flex-1 lg:flex-none px-4 py-2.5 bg-gray-900 hover:bg-purple-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
-              >
-                <CheckCircle className="w-4 h-4" /> Accept
-              </button>
-              
-              <button 
-                onClick={() => handleUpdateStatus(req, 'rejected')} 
-                className="flex-1 lg:flex-none px-4 py-2.5 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-100 hover:border-red-500 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
-              >
-                <XCircle className="w-4 h-4" /> Decline
-              </button>
+      {/* TAB 1: REQUESTS */}
+      {(activeTab === 'requests' || isPreview) && (
+        <div className={isPreview ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6" : "grid grid-cols-1 xl:grid-cols-2 gap-6"}>
+          {displayRequests.length === 0 && !isPreview && (
+            <div className="col-span-full p-12 text-center text-gray-500 bg-white/40 dark:bg-slate-800/40 rounded-3xl border border-dashed border-gray-200 dark:border-slate-700 space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-slate-800 flex items-center justify-center mx-auto text-blue-600">
+                <Users className="w-6 h-6" />
+              </div>
+              <h4 className="font-bold text-gray-900 dark:text-white">No Pending Requests</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                You currently have no pending mentorship requests from students.
+              </p>
             </div>
+          )}
+          {displayRequests.map((req) => (
+            <motion.div key={req._id} variants={fadeInUp} whileHover={{ y: -4 }} className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col gap-6 items-start justify-between w-full`}>
+              {/* Left Side: Student Info */}
+              <div className="flex items-center gap-4 flex-1">
+                <Avatar src={req.studentId?.profilePicture} alt="Student" size={64} className="border-2 border-white dark:border-slate-700 shadow-md" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{req.studentName}</h3>
+                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                    {req.studentDepartment && <span className="text-xs text-blue-700 bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">{req.studentDepartment}</span>}
+                    {req.studentSession && <span className="text-xs text-purple-700 bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 px-2 py-0.5 rounded-full font-medium">{req.studentSession}</span>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Middle Side: Request Info */}
+              <div className={`w-full ${!isPreview ? 'border-t border-gray-100 dark:border-slate-800 pt-4' : 'pt-2'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 px-2 py-1 rounded-md">{req.requestType}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {new Date(req.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                {!isPreview && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed bg-gray-50/50 dark:bg-slate-800/50 p-4 rounded-xl border border-gray-100 dark:border-slate-700/50">"{req.message}"</p>
+                )}
+              </div>
+
+              {/* Right Side: Actions */}
+              <div className="flex flex-wrap items-center gap-3 w-full border-t border-gray-100 dark:border-slate-800 pt-4 mt-auto">
+                <button 
+                  onClick={() => onViewProfile && req.studentId && onViewProfile(req.studentId._id || req.studentId)}
+                  className="flex-1 lg:flex-none px-4 py-2.5 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  <Eye className="w-4 h-4" /> View Profile
+                </button>
+
+                <button 
+                  onClick={() => handleUpdateStatus(req, 'accepted')} 
+                  className="flex-1 lg:flex-none px-4 py-2.5 bg-gray-900 dark:bg-blue-600 hover:bg-purple-600 dark:hover:bg-blue-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" /> Accept
+                </button>
+
+                <button 
+                  onClick={() => handleUpdateStatus(req, 'rejected')} 
+                  className="flex-1 lg:flex-none px-4 py-2.5 bg-red-50 dark:bg-red-950/40 hover:bg-red-500 hover:text-white text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50 hover:border-red-500 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  <XCircle className="w-4 h-4" /> Decline
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* TAB 2: CONNECTIONS */}
+      {activeTab === 'connections' && !isPreview && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredConnections.length === 0 && (
+            <div className="col-span-full p-12 text-center text-gray-500 bg-white/40 dark:bg-slate-800/40 rounded-3xl border border-dashed border-gray-200 dark:border-slate-700 space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-slate-800 flex items-center justify-center mx-auto text-emerald-600">
+                <UserCheck className="w-6 h-6" />
+              </div>
+              <h4 className="font-bold text-gray-900 dark:text-white">
+                {connectionSearch ? 'No matching connections found' : 'No Connected Students Yet'}
+              </h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                {connectionSearch ? 'Try adjusting your search criteria.' : 'When you accept student requests, connected students will appear here.'}
+              </p>
+            </div>
+          )}
+
+          {filteredConnections.map((student) => {
+            const studentId = student._id || student.id;
+            return (
+              <motion.div
+                key={studentId}
+                variants={fadeInUp}
+                whileHover={{ y: -4 }}
+                className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between w-full space-y-5"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-4">
+                    <Avatar src={student.profilePicture} alt={student.name} size={56} className="border-2 border-white dark:border-slate-700 shadow-md" />
+                    <div>
+                      <h3 className="text-base font-bold text-gray-900 dark:text-white">{student.name}</h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {student.department && (
+                          <span className="text-[11px] font-semibold text-blue-700 bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                            {student.department}
+                          </span>
+                        )}
+                        {student.session && (
+                          <span className="text-[11px] font-semibold text-purple-700 bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 px-2 py-0.5 rounded-full">
+                            {student.session}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 rounded-full text-[11px] font-bold shrink-0">
+                    <UserCheck className="w-3 h-3" /> Connected
+                  </span>
+                </div>
+
+                {student.bio && (
+                  <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 bg-gray-50/60 dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-700/50">
+                    "{student.bio}"
+                  </p>
+                )}
+
+                <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-slate-800">
+                  <button
+                    onClick={() => onViewProfile && onViewProfile(studentId)}
+                    className="flex-1 py-2.5 px-3 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> View Profile
+                  </button>
+                  <button
+                    onClick={() => setRemovingStudent(student)}
+                    className="py-2.5 px-3 bg-red-50 dark:bg-red-950/40 hover:bg-red-500 hover:text-white text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/50 hover:border-red-500 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <UserX className="w-3.5 h-3.5" /> Remove
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Confirmation Modal: Remove Connection */}
+      <AnimatePresence>
+        {removingStudent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 max-w-md w-full border border-gray-100 dark:border-slate-800"
+            >
+              <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Remove Connection?</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+                Are you sure you want to remove <span className="font-semibold text-gray-800 dark:text-gray-200">{removingStudent.name}</span> from your connections?
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setRemovingStudent(null)}
+                  disabled={removing}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 rounded-xl font-semibold text-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmRemoveConnection}
+                  disabled={removing}
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {removing ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserX className="w-4 h-4" />}
+                  {removing ? 'Removing...' : 'Remove Connection'}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        ))}
-      </div>
-      
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
