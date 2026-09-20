@@ -211,11 +211,21 @@ const setupMahbubDemoData = async () => {
     console.log(`Name: ${nureStudent.name}`);
     console.log(`Email: ${nureStudent.email}`);
 
-    // 4. Find Second Registered Student (Student 2)
+    // 4. Find Nishat Jahan explicitly (Student 2)
     let secondStudent = await User.findOne({
       role: 'student',
-      _id: { $ne: nureStudent._id }
-    }).sort({ createdAt: 1 });
+      $or: [
+        { name: /Nishat Jahan/i },
+        { email: /nishat/i }
+      ]
+    });
+
+    if (!secondStudent) {
+      secondStudent = await User.findOne({
+        role: 'student',
+        _id: { $ne: nureStudent._id }
+      }).sort({ createdAt: 1 });
+    }
 
     if (!secondStudent) {
       secondStudent = nureStudent;
@@ -224,6 +234,16 @@ const setupMahbubDemoData = async () => {
     console.log(`\n=== STUDENT 2 (${secondStudent.name}) ===`);
     console.log(`ID: ${secondStudent._id}`);
     console.log(`Name: ${secondStudent.name}`);
+
+    // Clean up applications & interviews for any other students under Mahbub Alam
+    await Application.deleteMany({
+      recruiter: recruiter._id,
+      student: { $nin: [nureStudent._id, secondStudent._id] }
+    });
+    await Interview.deleteMany({
+      recruiter: recruiter._id,
+      student: { $nin: [nureStudent._id, secondStudent._id] }
+    });
 
     // 5. Create or Reuse Application 1 (Nur E Jannat)
     let app1 = await Application.findOne({
