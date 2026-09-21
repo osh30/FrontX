@@ -83,6 +83,17 @@ const getJobs = async (req, res) => {
       console.error('Auto seed 5 govt jobs check non-blocking error:', e.message);
     }
 
+    // Auto-ensure 5 Non-Government IT Jobs exist in DB
+    try {
+      const enosisExist = await Opportunity.exists({ title: { $regex: 'Senior DevOps Engineer', $options: 'i' } });
+      if (!enosisExist) {
+        const seed5ITJobs = require('../scripts/seed5ITJobs');
+        await seed5ITJobs();
+      }
+    } catch (e) {
+      console.error('Auto seed 5 IT jobs check non-blocking error:', e.message);
+    }
+
     // Fetch from Job model
     const jobsRaw = await Job.find(query)
       .populate('postedBy', 'name email profile')

@@ -250,7 +250,7 @@ export default function OpportunityDetailsPage() {
             </p>
           )}
 
-          {deadline && (
+          {deadline ? (
             <div className="mt-6 inline-flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
               <Calendar className="w-4 h-4 text-rose-500 shrink-0" />
               <span className="text-sm font-medium text-slate-600">Application Deadline:</span>
@@ -264,6 +264,14 @@ export default function OpportunityDetailsPage() {
                   {daysLeft === 0 ? 'Deadline today' : `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`}
                 </span>
               ) : null}
+            </div>
+          ) : (
+            <div className="mt-6 inline-flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+              <Calendar className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span className="text-sm font-medium text-slate-600">Application Deadline:</span>
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 rounded-full px-2.5 py-1">
+                Rolling / Ongoing
+              </span>
             </div>
           )}
 

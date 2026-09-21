@@ -128,10 +128,15 @@ const OpportunityCard = ({ opp, index, appliedIds }) => {
             </span>
           )}
 
-          {formattedDeadline && (
+          {formattedDeadline ? (
             <span className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800/80 text-slate-300 border border-slate-700/50 flex items-center gap-1">
               <Calendar className="w-3 h-3 text-slate-400" />
               {formattedDeadline}
+            </span>
+          ) : (
+            <span className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-emerald-400" />
+              Rolling / Ongoing
             </span>
           )}
         </div>
