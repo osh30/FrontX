@@ -352,6 +352,14 @@ const getRecruiters = async (req, res) => {
       }
     } catch (e) {}
 
+    try {
+      const pathaoInternExist = await Opportunity.exists({ title: 'Software Engineering Intern', companyName: /Pathao/i });
+      if (!pathaoInternExist) {
+        const seedPathao2NewOpps = require('../scripts/seedPathao2NewOpps');
+        if (typeof seedPathao2NewOpps === 'function') await seedPathao2NewOpps();
+      }
+    } catch (e) {}
+
     const recruiters = await User.find({ role: 'recruiter' }).select('-password').lean();
 
     const enrichedRecruiters = await Promise.all(recruiters.map(async (r) => {
