@@ -94,6 +94,17 @@ const getJobs = async (req, res) => {
       console.error('Auto seed 5 IT jobs check non-blocking error:', e.message);
     }
 
+    // Auto-ensure 5 Competitions exist in DB
+    try {
+      const compExist = await Opportunity.exists({ title: { $regex: 'RevenueCat Shipaton', $options: 'i' } });
+      if (!compExist) {
+        const seed5Competitions = require('../scripts/seed5Competitions');
+        await seed5Competitions();
+      }
+    } catch (e) {
+      console.error('Auto seed 5 competitions check non-blocking error:', e.message);
+    }
+
     // Fetch from Job model
     const jobsRaw = await Job.find(query)
       .populate('postedBy', 'name email profile')
