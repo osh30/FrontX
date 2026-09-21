@@ -384,39 +384,51 @@ const RecruitersPage = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {selectedRecruiter.opportunities.map((opp, i) => (
-                        <div
-                          key={opp._id || i}
-                          className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:border-blue-300 transition-all flex items-center justify-between gap-3"
-                        >
-                          <div>
-                            <p className="text-xs font-bold text-slate-900">{opp.title}</p>
-                            <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 flex-wrap">
-                              {(opp.type || opp.opportunityType) && (
-                                <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                                  {opp.type || opp.opportunityType}
-                                </span>
-                              )}
-                              {opp.location && (
-                                <span className="flex items-center gap-0.5">
-                                  <MapPin className="w-3 h-3 text-slate-400" />
-                                  {opp.location}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <button
+                      {selectedRecruiter.opportunities.map((opp, i) => {
+                        const targetId = opp._id || opp.id;
+                        return (
+                          <div
+                            key={targetId || i}
                             onClick={() => {
-                              setShowDrawer(false);
-                              navigate(`/dashboard/career?opp=${opp._id}`);
+                              if (targetId) {
+                                setShowDrawer(false);
+                                navigate(`/dashboard/career/${targetId}`);
+                              }
                             }}
-                            className="p-2 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-xl transition-all shrink-0"
-                            title="View Job Details"
+                            className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:border-blue-300 transition-all flex items-center justify-between gap-3 cursor-pointer"
                           >
-                            <ExternalLink className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                            <div>
+                              <p className="text-xs font-bold text-slate-900">{opp.title}</p>
+                              <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 flex-wrap">
+                                {(opp.type || opp.opportunityType) && (
+                                  <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                                    {opp.type || opp.opportunityType}
+                                  </span>
+                                )}
+                                {opp.location && (
+                                  <span className="flex items-center gap-0.5">
+                                    <MapPin className="w-3 h-3 text-slate-400" />
+                                    {opp.location}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (targetId) {
+                                  setShowDrawer(false);
+                                  navigate(`/dashboard/career/${targetId}`);
+                                }
+                              }}
+                              className="p-2 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-xl transition-all shrink-0"
+                              title="View Job Details"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
