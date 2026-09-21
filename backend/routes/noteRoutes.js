@@ -9,6 +9,7 @@ router.get('/student/:id', protect, noteController.getNotesByStudent);
 router.get('/', protect, noteController.getAllNotes);
 router.post('/', protect, upload.single('file'), noteController.createNote);
 router.get('/:id', protect, noteController.getNoteById);
+router.put('/:id', protect, upload.single('file'), noteController.updateNote);
 router.post('/:id/view', protect, noteController.incrementViews);
 router.post('/:id/download', protect, noteController.incrementDownloads);
 router.delete('/:id', protect, noteController.deleteNote);

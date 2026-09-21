@@ -12,7 +12,7 @@ const createNote = async (req, res) => {
       return res.status(403).json({ message: "Only students can publish class notes." });
     }
 
-    const { title, subject, description, department, course, semester, weekOrTopic } = req.body;
+    const { title, subject, description, department, course, semester, weekOrTopic, status } = req.body;
     
     if (!req.file) {
       return res.status(400).json({ message: "PDF file is required." });
@@ -22,14 +22,15 @@ const createNote = async (req, res) => {
     
     const newNote = new ClassNote({
       studentId: req.user.id,
-      title,
-      subject,
-      description,
+      title: title?.trim(),
+      subject: subject || course || title?.trim() || '',
+      description: description || '',
       pdfUrl: result.secure_url,
-      department: department || '',
+      department: department || 'Educational Technology and Engineering',
       course: course || '',
       semester: semester || '',
-      weekOrTopic: weekOrTopic || ''
+      weekOrTopic: weekOrTopic || '',
+      status: status === 'unpublished' ? 'unpublished' : 'published'
     });
 
     await newNote.save();
@@ -53,9 +54,15 @@ const createNote = async (req, res) => {
 // @access  Private
 const getAllNotes = async (req, res) => {
   try {
-    const { search, department, semester, course, weekOrTopic, sort } = req.query;
+    const { search, department, semester, course, weekOrTopic, sort, myNotes } = req.query;
 
     let query = {};
+
+    if (myNotes === 'true') {
+      query.studentId = req.user.id;
+    } else {
+      query.status = { $ne: 'unpublished' };
+    }
 
     if (search) {
       query.$or = [
@@ -112,6 +119,52 @@ const getNoteById = async (req, res) => {
   }
 };
 
+// @desc    Update existing class note
+// @route   PUT /api/notes/:id
+// @access  Private (Owner only)
+const updateNote = async (req, res) => {
+  try {
+    const note = await ClassNote.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: "Note not found." });
+    }
+
+    if (note.studentId.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to edit this note." });
+    }
+
+    const { title, subject, description, department, course, semester, weekOrTopic, status } = req.body;
+
+    if (title !== undefined) note.title = title.trim();
+    if (subject !== undefined) note.subject = subject;
+    if (description !== undefined) note.description = description;
+    if (department !== undefined) note.department = department;
+    if (course !== undefined) note.course = course;
+    if (semester !== undefined) note.semester = semester;
+    if (weekOrTopic !== undefined) note.weekOrTopic = weekOrTopic;
+    if (status !== undefined) note.status = status;
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file, 'frontx/notes');
+      note.pdfUrl = result.secure_url;
+    }
+
+    await note.save();
+
+    const populated = await ClassNote.findById(note._id).populate('studentId', 'name profilePicture department');
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('new_note_uploaded', populated);
+    }
+
+    res.json(populated);
+  } catch (error) {
+    console.error("Error updating note:", error);
+    res.status(500).json({ message: 'Failed to update note', error: error.message });
+  }
+};
+
 // @desc    Increment view count for a note
 // @route   POST /api/notes/:id/view
 // @access  Private
@@ -155,7 +208,11 @@ const incrementDownloads = async (req, res) => {
 // @access  Private
 const getNotesByStudent = async (req, res) => {
   try {
-    const notes = await ClassNote.find({ studentId: req.params.id }).sort({ createdAt: -1 });
+    const query = { studentId: req.params.id };
+    if (req.params.id !== req.user.id) {
+      query.status = { $ne: 'unpublished' };
+    }
+    const notes = await ClassNote.find(query).sort({ createdAt: -1 });
     res.json(notes);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch notes', error: error.message });
@@ -216,6 +273,7 @@ module.exports = {
   createNote,
   getAllNotes,
   getNoteById,
+  updateNote,
   incrementViews,
   incrementDownloads,
   getNotesByStudent,
