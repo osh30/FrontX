@@ -107,7 +107,7 @@ const getJobs = async (req, res) => {
 
     // Fetch from Job model
     const jobsRaw = await Job.find(query)
-      .populate('postedBy', 'name email profile')
+      .populate('postedBy', 'name email profile role companyName')
       .populate('linkedOpportunityId')
       .sort('-createdAt')
       .lean();
@@ -123,8 +123,11 @@ const getJobs = async (req, res) => {
           oppType = 'Government Job';
         }
       }
+      const creatorRole = j.createdByRole || j.postedBy?.role || j.linkedOpportunityId?.createdByRole || (j.postedBy ? 'recruiter' : 'admin');
       return {
         ...j,
+        postedByRole: creatorRole,
+        createdByRole: creatorRole,
         opportunityType: oppType || 'Private Job',
         eligibility: j.linkedOpportunityId?.eligibility?.experienceRequired || j.eligibility || '',
         applicationUrl: j.linkedOpportunityId?.applicationUrl || j.applicationUrl || '',
@@ -183,35 +186,40 @@ const getJobs = async (req, res) => {
       const oppQuery = conditions.length === 1 ? conditions[0] : { $and: conditions };
 
       const rawOpps = await Opportunity.find(oppQuery)
-        .populate('recruiter', 'name email profilePicture companyName companyWebsite')
+        .populate('recruiter', 'name email profilePicture companyName companyWebsite role')
         .sort({ createdAt: -1 })
         .lean();
 
       // Convert Opportunity records to Job-shaped objects for frontend compatibility
-      adminOpps = rawOpps.map(opp => ({
-        _id: opp._id,
-        title: opp.title,
-        company: opp.companyName || 'Admin Posted',
-        opportunityType: opp.opportunityType,
-        description: opp.description?.about || '',
-        eligibility: opp.eligibility?.experienceRequired || '',
-        applicationUrl: opp.applicationUrl || '',
-        requirements: opp.skills || [],
-        location: opp.location || '',
-        salaryRange: {
-          min: opp.salary?.min || 0,
-          max: opp.salary?.max || 0,
-          currency: opp.salary?.currency || 'BDT',
-        },
-        jobType: OPPORTUNITY_TO_JOB_TYPE[opp.opportunityType] || 'full-time',
-        experienceLevel: 'entry',
-        postedBy: opp.recruiter || opp.companyId,
-        deadline: opp.deadline || null,
-        isActive: true,
-        linkedOpportunityId: opp._id,
-        createdAt: opp.createdAt,
-        updatedAt: opp.updatedAt,
-      }));
+      adminOpps = rawOpps.map(opp => {
+        const creatorRole = opp.createdByRole || (opp.recruiter?.role) || (opp.recruiter ? 'recruiter' : 'admin');
+        return {
+          _id: opp._id,
+          title: opp.title,
+          company: opp.companyName || 'Admin Posted',
+          opportunityType: opp.opportunityType,
+          description: opp.description?.about || '',
+          eligibility: opp.eligibility?.experienceRequired || '',
+          applicationUrl: opp.applicationUrl || '',
+          requirements: opp.skills || [],
+          location: opp.location || '',
+          salaryRange: {
+            min: opp.salary?.min || 0,
+            max: opp.salary?.max || 0,
+            currency: opp.salary?.currency || 'BDT',
+          },
+          jobType: OPPORTUNITY_TO_JOB_TYPE[opp.opportunityType] || 'full-time',
+          experienceLevel: 'entry',
+          postedBy: opp.recruiter || opp.companyId,
+          postedByRole: creatorRole,
+          createdByRole: creatorRole,
+          deadline: opp.deadline || null,
+          isActive: true,
+          linkedOpportunityId: opp._id,
+          createdAt: opp.createdAt,
+          updatedAt: opp.updatedAt,
+        };
+      });
     } catch (oppErr) {
       console.error('Admin opportunity fallback query failed (non-blocking):', oppErr.message);
     }

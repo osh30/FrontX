@@ -17,6 +17,7 @@ const TYPE_CONFIG = {
   'Private Job': { label: 'Private Job', bg: 'bg-purple-500/15', text: 'text-purple-400', border: 'border-purple-500/25', icon: Briefcase },
   'Scholarship': { label: 'Scholarship', bg: 'bg-emerald-500/15', text: 'text-emerald-400', border: 'border-emerald-500/25', icon: GraduationCap },
   'Competition': { label: 'Competition', bg: 'bg-amber-500/15', text: 'text-amber-400', border: 'border-amber-500/25', icon: Trophy },
+  'Recruiter Job': { label: 'Recruiter Job', bg: 'bg-indigo-500/15', text: 'text-indigo-400', border: 'border-indigo-500/25', icon: Building2 },
 };
 
 const fadeUp = {
@@ -282,9 +283,15 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
     return 'Private Job';
   };
 
+  const isRecruiterJob = (job) => {
+    const role = job.postedByRole || job.createdByRole || job.postedBy?.role || job.recruiter?.role || job.linkedOpportunityId?.createdByRole;
+    return role === 'recruiter';
+  };
+
   // Filter jobs by selected opportunity type
   const filteredJobs = jobs.filter((job) => {
     if (selectedType === 'All') return true;
+    if (selectedType === 'Recruiter Job') return isRecruiterJob(job);
     const oppType = getOppType(job);
     if (selectedType === 'Government Job') return oppType === 'Government Job';
     if (selectedType === 'Private Job') return oppType === 'Private Job' || (oppType !== 'Scholarship' && oppType !== 'Competition' && oppType !== 'Government Job');
@@ -319,6 +326,11 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
       id: 'Competition',
       label: 'Competitions',
       count: jobs.filter(j => getOppType(j) === 'Competition').length
+    },
+    {
+      id: 'Recruiter Job',
+      label: 'Recruiter Jobs',
+      count: jobs.filter(j => isRecruiterJob(j)).length
     },
   ];
 
@@ -454,10 +466,14 @@ const PremiumCareerOpportunities = ({ limit = null, fullPage = false }) => {
       ) : displayJobs.length === 0 ? (
         <div className="text-center py-20 bg-white border border-slate-200 rounded-3xl">
           <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-700 font-bold text-base">No opportunities found</p>
+          <p className="text-slate-700 font-bold text-base">
+            {selectedType === 'Recruiter Job' ? 'No recruiter opportunities available yet.' : 'No opportunities found'}
+          </p>
           <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
             {selectedType !== 'All'
-              ? `No ${selectedType} entries matched your criteria. Try selecting "All Opportunities".`
+              ? selectedType === 'Recruiter Job'
+                ? 'Check back later when recruiters post new job openings.'
+                : `No ${selectedType} entries matched your criteria. Try selecting "All Opportunities".`
               : 'Check back later for new opportunities.'}
           </p>
           {selectedType !== 'All' && (

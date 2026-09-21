@@ -149,6 +149,7 @@ app.use('/api/notes', require('./routes/noteRoutes'));
 app.use('/api/community-posts', require('./routes/communityPostRoutes'));
 app.use('/api/ai-analysis', require('./routes/aiAnalysisRoutes'));
 app.use('/api/progress', require('./routes/progressRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
 app.use('/api/search', require('./routes/searchRoutes'));

@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { getProgress, getCareerGrowth, refreshProgress } = require('../controllers/progressController');
+const { getCareerGrowth } = require('../controllers/progressController');
 const { protect } = require('../middleware/auth');
 
-router.get('/', protect, getProgress);
+// GET /api/analytics/career-growth - Returns authenticated student's monthly activity trend
 router.get('/career-growth', protect, getCareerGrowth);
-router.get('/refresh', protect, refreshProgress);
 
 module.exports = router;

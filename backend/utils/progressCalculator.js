@@ -6,19 +6,31 @@ const MentorshipSession = require('../models/MentorshipSession');
 const CommunityPost = require('../models/CommunityPost');
 const SkillAnalysis = require('../models/SkillAnalysis');
 const CollaborationApplication = require('../models/CollaborationApplication');
+const Application = require('../models/Application');
+const Activity = require('../models/Activity');
+const Interview = require('../models/Interview');
+const StudyPlanner = require('../models/StudyPlanner');
 const Progress = require('../models/Progress');
 
 const recalculateProgress = async (userId) => {
   try {
-    const [user, notes, mentorships, sessions, groupSessions, communityPosts, analysis, acceptedCollaborations] = await Promise.all([
+    const [
+      user, notes, mentorships, sessions, groupSessions, communityPosts,
+      analysis, acceptedCollaborations, applications, userActivities,
+      interviews, studyPlanner
+    ] = await Promise.all([
       User.findById(userId).select('-password'),
       ClassNote.find({ studentId: userId }),
-      MentorshipRequest.find({ studentId: userId, status: { $in: ['accepted', 'completed'] } }),
-      Session.find({ student: userId, status: 'Completed' }),
-      MentorshipSession.find({ selectedStudents: userId, status: 'Completed' }),
+      MentorshipRequest.find({ studentId: userId }),
+      Session.find({ student: userId }),
+      MentorshipSession.find({ selectedStudents: userId }),
       CommunityPost.find({ originalAuthor: userId }),
       SkillAnalysis.findOne({ userId }),
-      CollaborationApplication.find({ student: userId, status: 'accepted' })
+      CollaborationApplication.find({ student: userId }),
+      Application.find({ student: userId }),
+      Activity.find({ user: userId, isGlobal: { $ne: true } }),
+      Interview.find({ student: userId }),
+      StudyPlanner.findOne({ userId })
     ]);
 
     if (!user) return null;
@@ -31,24 +43,49 @@ const recalculateProgress = async (userId) => {
     user.certificates.forEach(c => {
       activities.push({ type: 'certificate', title: c.title, date: c.createdAt || user.createdAt });
     });
-    acceptedCollaborations.forEach(ac => {
-      activities.push({ type: 'research', title: 'Accepted Collaboration', date: ac.updatedAt || ac.createdAt });
+    (acceptedCollaborations || []).forEach(ac => {
+      activities.push({ type: 'research', title: 'Collaboration', date: ac.createdAt || ac.updatedAt });
     });
-    notes.forEach(n => {
+    (notes || []).forEach(n => {
       activities.push({ type: 'note', title: n.title, date: n.createdAt });
     });
-    mentorships.forEach(m => {
+    (mentorships || []).forEach(m => {
       activities.push({ type: 'mentorship', title: m.requestType || 'Mentorship Session', date: m.createdAt });
     });
-    sessions.forEach(s => {
-      activities.push({ type: 'session', title: s.title, date: s.createdAt || s.date });
+    (sessions || []).forEach(s => {
+      activities.push({ type: 'session', title: s.title || 'Mentoring Session', date: s.createdAt || s.date });
     });
-    groupSessions.forEach(gs => {
-      activities.push({ type: 'group_session', title: gs.sessionTitle, date: gs.createdAt || gs.sessionDate });
+    (groupSessions || []).forEach(gs => {
+      activities.push({ type: 'group_session', title: gs.sessionTitle || 'Group Session', date: gs.createdAt || gs.sessionDate });
     });
-    communityPosts.forEach(cp => {
+    (communityPosts || []).forEach(cp => {
       activities.push({ type: 'community', title: 'Community Post', date: cp.createdAt });
     });
+    (applications || []).forEach(app => {
+      activities.push({ type: 'application', title: 'Job Application', date: app.createdAt });
+    });
+    (userActivities || []).forEach(act => {
+      activities.push({ type: 'activity', title: act.title, date: act.createdAt });
+    });
+    (interviews || []).forEach(inv => {
+      activities.push({ type: 'interview', title: inv.title || 'Interview', date: inv.createdAt || inv.date });
+    });
+    if (analysis) {
+      activities.push({ type: 'ai_analysis', title: 'AI Skill Analysis', date: analysis.generatedAt || analysis.createdAt });
+    }
+    if (studyPlanner && studyPlanner.courses) {
+      studyPlanner.courses.forEach(c => {
+        (c.weeks || []).forEach(w => {
+          if (w.status === 'completed' || w.publishedAt || w.verifiedAt || w.noteUploadedAt) {
+            activities.push({
+              type: 'study_plan',
+              title: `Completed Week ${w.weekNumber}`,
+              date: w.publishedAt || w.verifiedAt || w.noteUploadedAt || w.endDate || c.addedAt
+            });
+          }
+        });
+      });
+    }
 
     activities.sort((a, b) => new Date(a.date) - new Date(b.date));
     activities = activities.filter(a => {
@@ -135,21 +172,34 @@ const recalculateProgress = async (userId) => {
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const key = `${monthNames[d.getMonth()]} ${d.getFullYear().toString().substring(2)}`;
-      timelineMap[key] = { projects: 0, certificates: 0, research: 0, sessions: 0, community: 0, notes: 0, total: 0 };
+      timelineMap[key] = {
+        month: key,
+        projects: 0,
+        certificates: 0,
+        research: 0,
+        sessions: 0,
+        community: 0,
+        notes: 0,
+        applications: 0,
+        activities: 0,
+        total: 0
+      };
     }
     activities.forEach(act => {
       const d = new Date(act.date);
       const key = `${monthNames[d.getMonth()]} ${d.getFullYear().toString().substring(2)}`;
       if (timelineMap[key]) {
+        timelineMap[key].total++;
+        timelineMap[key].activities++;
         const cat = act.type === 'project' ? 'projects' :
                    act.type === 'certificate' ? 'certificates' :
                    act.type === 'research' ? 'research' :
-                   (act.type === 'session' || act.type === 'group_session') ? 'sessions' :
+                   (act.type === 'session' || act.type === 'group_session' || act.type === 'mentorship') ? 'sessions' :
                    act.type === 'community' ? 'community' :
-                   act.type === 'note' ? 'notes' : null;
+                   act.type === 'note' ? 'notes' :
+                   act.type === 'application' ? 'applications' : null;
         if (cat && timelineMap[key][cat] !== undefined) {
           timelineMap[key][cat]++;
-          timelineMap[key].total++;
         }
       }
     });
